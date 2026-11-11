@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!--
+  프로젝트 article 템플릿 (프로젝트 13개 공통, 원본에 없는 문장은 쓰지 않는다)
+  - 프로젝트 클래스를 가진 article에 id, 플랫폼 data 속성(app 또는 web), 상태 data 속성(live, closed, article, apk, pending), 제목 연결 aria 속성을 둔다.
+  - 자식 순서는 고정: 3단계 제목, 메타 목록(dl), 포인트 슬롯, 스크린샷 슬롯, 상태·링크 묶음.
+  - 메타 목록의 dt 순서: 소속, 플랫폼, 담당 업무(원본 설명이 있을 때만), 퍼블 기여도. 기간 행은 만들지 않는다(D-07, 회사 재직 기간이 대신함).
+  - 퍼블 기여도는 data 요소(숫자 값)와 퍼센트 텍스트이고, 원본에 맥락이 있을 때만 가운뎃점 뒤에 덧붙인다.
+  - 포인트 슬롯은 내용이 없는 동안 hidden 상태로 두고, 내용이 생기면 hidden을 지우고 문장 1~2개를 넣는다.
+  - 스크린샷 슬롯은 Phase 4 전까지 비워 두고 보조기기에서 숨긴다.
+  - 상태가 pending이면 상태·링크 묶음 자체를 생략한다(배지와 링크 모두 없음).
+  - 외부 링크는 새 탭 링크 속성을 모두 갖고, 목적지가 드러나는 텍스트를 쓴다.
+-->
+
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -111,6 +123,51 @@
       <p class="eyebrow">03</p>
       <h2 id="gi-data-title">지아이데이타.</h2>
       <p class="period"><time datetime="2024-09">2024.09</time> ~ <time datetime="2026-09">2026.09</time></p>
+
+      <article class="project" id="gi-calculator" data-platform="web" data-status="live" aria-labelledby="gi-calculator-title">
+        <h3 id="gi-calculator-title">보험상품산출기·상품소개페이지</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>지아이데이타</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>웹/앱 모두 화면 유지보수</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+        </div>
+      </article>
+
+      <article class="project" id="gi-event" data-platform="web" data-status="live" aria-labelledby="gi-event-title">
+        <h3 id="gi-event-title">이벤트페이지등록</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>지아이데이타</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>관리자 페이지 연동으로 이벤트 관리</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+        </div>
+      </article>
+
+      <article class="project" id="gi-oneday" data-platform="app" data-status="live" aria-labelledby="gi-oneday-title">
+        <h3 id="gi-oneday-title">원데이보험앱화면리뉴얼</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>지아이데이타</dd></div>
+          <div><dt>플랫폼</dt><dd>App</dd></div>
+          <div><dt>담당 업무</dt><dd>메인인트로, 상품소개페이지 리뉴얼 담당</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="app" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+        </div>
+      </article>
     </section>
 
     <section id="kn-curation" class="company" aria-labelledby="kn-curation-title">
@@ -118,18 +175,166 @@
       <h2 id="kn-curation-title">케이엔큐레이션.</h2>
       <p class="period"><time datetime="2023-09">2023.09</time> ~ <time datetime="2024-03">2024.03</time></p>
       <p class="company-desc">Angular 기반 앱, 반응형 웹 구축 및 유지 보수</p>
+
+      <article class="project" id="kn-puring" data-platform="app" data-status="apk" aria-labelledby="kn-puring-title">
+        <h3 id="kn-puring-title">puring</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>App</dd></div>
+          <div><dt>담당 업무</dt><dd>앱 제작 · APK 보유</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="app" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">APK 보유</p>
+        </div>
+      </article>
+
+      <article class="project" id="kn-roadpill" data-platform="web" data-status="closed" aria-labelledby="kn-roadpill-title">
+        <h3 id="kn-roadpill-title">로드필</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>현재 운영 종료</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="50">50%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 종료</p>
+        </div>
+      </article>
+
+      <article class="project" id="kn-wecankids" data-platform="web" data-status="live" aria-labelledby="kn-wecankids-title">
+        <h3 id="kn-wecankids-title">위캔키즈클럽</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="50">50%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+          <p class="links"><a href="https://www.wecankids.club/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
+        </div>
+      </article>
+
+      <article class="project" id="kn-linkalba" data-platform="web" data-status="pending" aria-labelledby="kn-linkalba-title">
+        <h3 id="kn-linkalba-title">링크알바</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+      </article>
+
+      <article class="project" id="kn-fsd" data-platform="web" data-status="live" aria-labelledby="kn-fsd-title">
+        <h3 id="kn-fsd-title">FSD 코스메틱</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+          <p class="links"><a href="https://www.fsdcosmetic.com/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
+        </div>
+      </article>
+
+      <article class="project" id="kn-greenda" data-platform="web" data-status="live" aria-labelledby="kn-greenda-title">
+        <h3 id="kn-greenda-title">그린다</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="80">80%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+          <p class="links"><a href="https://green-da.co.kr/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
+        </div>
+      </article>
+
+      <article class="project" id="kn-universe" data-platform="web" data-status="article" aria-labelledby="kn-universe-title">
+        <h3 id="kn-universe-title">universe</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 / 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능 · 디자인·기능은 ChatGPT와 거의 유사</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="100">100%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">관련 기사</p>
+          <p class="links"><a href="https://www.lg.co.kr/media/release/26532" target="_blank" rel="noopener">관련 기사 보기<span class="visually-hidden"> (새 탭)</span></a></p>
+        </div>
+      </article>
     </section>
 
     <section id="bistones" class="company" aria-labelledby="bistones-title">
       <p class="eyebrow">05</p>
       <h2 id="bistones-title">비스톤스.</h2>
       <p class="period"><time datetime="2022-01">2022.01</time> ~ <time datetime="2023-07">2023.07</time></p>
+
+      <article class="project" id="bs-addy" data-platform="web" data-status="closed" aria-labelledby="bs-addy-title">
+        <h3 id="bs-addy-title">CJ종합광고운영플랫폼 ‘ADDY’</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>비스톤스</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>웹사이트 반응형 구축 · 현재 운영 종료</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="70">70%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 종료</p>
+        </div>
+      </article>
+
+      <article class="project" id="bs-samsung" data-platform="web" data-status="live" aria-labelledby="bs-samsung-title">
+        <h3 id="bs-samsung-title">삼성E스토어기획전프로모션</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>비스톤스</dd></div>
+          <div><dt>플랫폼</dt><dd>Web</dd></div>
+          <div><dt>담당 업무</dt><dd>기획전 프로모션 구축 / 유지보수</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="50">50%</data> · 2인 1팀으로 50:50 분담</dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 중</p>
+          <p class="links"><a href="https://samsungebiz.com/event/galaxycampus/" target="_blank" rel="noopener">기획전 보기<span class="visually-hidden"> (새 탭)</span></a></p>
+        </div>
+      </article>
     </section>
 
     <section id="abbey-road" class="company" aria-labelledby="abbey-road-title">
       <p class="eyebrow">06</p>
       <h2 id="abbey-road-title">애비로드.</h2>
       <p class="period"><time datetime="2021-08">2021.08</time> ~ <time datetime="2021-12">2021.12</time></p>
+
+      <article class="project" id="ab-peach" data-platform="app" data-status="closed" aria-labelledby="ab-peach-title">
+        <h3 id="ab-peach-title">교보생명 금융 마이데이터 서비스 앱 ‘피치(Peach)’</h3>
+        <dl class="meta">
+          <div><dt>소속</dt><dd>애비로드</dd></div>
+          <div><dt>플랫폼</dt><dd>App</dd></div>
+          <div><dt>담당 업무</dt><dd>앱 구축 프로젝트에서 화면의 초기 설계 작업을 담당 · 현재 운영 종료</dd></div>
+          <div><dt>퍼블 기여도</dt><dd><data value="30">30%</data></dd></div>
+        </dl>
+        <div class="point" data-slot="point" hidden></div>
+        <figure class="shot" data-slot="screenshot" data-frame="app" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 종료</p>
+        </div>
+      </article>
     </section>
 
     <section id="contact" aria-labelledby="contact-title">
