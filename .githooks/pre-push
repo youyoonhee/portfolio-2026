@@ -1,0 +1,13 @@
+#!/bin/sh
+# Full-tree + history privacy scan before anything leaves this machine.
+command -v node >/dev/null 2>&1 || { echo "pre-push: node not found (blocking)"; exit 1; }
+node tools/check-repo.mjs --self-test || exit 1
+node tools/check-repo.mjs || exit 1
+node tools/check-repo.mjs --history || exit 1
+# The source-text checks are the real "no invented facts" gate; run them when the source exists locally.
+if [ -f .planning/source/portfolio-pdf.txt ]; then
+  node tools/check-content.mjs --require-source || exit 1
+else
+  echo "pre-push: WARNING source text not found, content-vs-source checks were NOT run"
+fi
+exit 0

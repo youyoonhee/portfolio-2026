@@ -1,3 +1,4 @@
 #!/bin/sh
 command -v node >/dev/null 2>&1 || { echo "pre-commit: node not found (blocking)"; exit 1; }
+node tools/check-repo.mjs --self-test || exit 1
 exec node tools/check-repo.mjs --staged
