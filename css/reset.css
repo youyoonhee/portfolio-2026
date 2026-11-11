@@ -29,6 +29,12 @@
     max-inline-size: 100%;
   }
 
+  /* keep the aspect ratio when width/height attributes are wider than the container */
+  img,
+  video {
+    block-size: auto;
+  }
+
   img,
   figure {
     display: block;
