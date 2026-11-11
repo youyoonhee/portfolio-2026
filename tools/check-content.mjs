@@ -141,30 +141,57 @@ register('headings', () => {
 register('hero', () => {
   const m = manifest.hero;
   if (!m) return skip('hero', 'not in manifest');
-  const header = byTag('header')[0];
-  if (!header) return fail('hero', 'header missing');
-  const h1 = header.kids.length ? descendants(header).find((e) => isEl(e) && e.tag === 'h1') : null;
-  if (!h1) return fail('hero', 'h1 not inside header');
+  const header = byTag('header').find((h) => hasClass(h, 'site-header'));
+  if (!header) return fail('hero', 'header.site-header missing');
+  const mark = elsIn(header, 'p').find((p) => hasClass(p, 'wordmark'));
+  if (!mark || textIn(mark) !== m.eyebrow) return fail('hero', 'p.wordmark missing or differs from hero.eyebrow');
+  if (elsIn(header, 'h1').length) return fail('hero', 'h1 must not be inside the site header');
+  const main = byTag('main')[0];
+  const cover = main && main.kids.find((k) => isEl(k) && k.tag === 'section');
+  if (!cover || cover.attrs.id !== 'cover') return fail('hero', 'section#cover must be the first section of main');
+  const h1 = elsIn(cover, 'h1')[0];
+  if (!h1) return fail('hero', 'h1 not inside section#cover');
   const lines = textNodesIn(h1);
   if (JSON.stringify(lines) !== JSON.stringify(m.lines)) return fail('hero', `h1 lines mismatch: ${JSON.stringify(lines)}`);
-  const own = textNodesIn(header);
-  for (const key of ['eyebrow', 'subline', 'intro']) {
-    if (!own.includes(m[key])) return fail('hero', `${key} text missing`);
+  const own = textNodesIn(cover);
+  for (const key of ['subline', 'intro']) {
+    if (!own.includes(m[key])) return fail('hero', `${key} text missing in cover`);
   }
-  const mail = descendants(header).find((e) => isEl(e) && e.tag === 'a' && e.attrs.href === `mailto:${m.email}`);
+  const mail = elsIn(cover, 'a').find((e) => e.attrs.href === `mailto:${m.email}`);
   if (!mail || textIn(mail) !== m.email) return fail('hero', 'mailto link missing or link text differs from address');
   pass('hero');
 });
 
 register('nav', () => {
   if (!manifest.nav) return skip('nav', 'not in manifest');
-  const header = byTag('header')[0];
-  const navs = header ? descendants(header).filter((e) => isEl(e) && e.tag === 'nav') : [];
-  const nav = navs.find((n) => n.attrs['aria-label']);
-  if (!nav) return fail('nav', 'nav[aria-label] missing in header');
-  const links = descendants(nav).filter((e) => isEl(e) && e.tag === 'a').map((a) => ({ href: a.attrs.href, text: textIn(a) }));
+  const header = byTag('header').find((h) => hasClass(h, 'site-header'));
+  if (!header) return fail('nav', 'header.site-header missing');
+  const nav = elsIn(header, 'nav').find((n) => n.attrs.id === 'site-nav' && n.attrs['aria-label']);
+  if (!nav) return fail('nav', 'nav#site-nav[aria-label] missing in header');
+  const links = elsIn(nav, 'a').map((a) => ({ href: a.attrs.href, text: textIn(a) }));
   if (JSON.stringify(links) !== JSON.stringify(manifest.nav)) return fail('nav', `nav links differ: ${JSON.stringify(links)}`);
+  const btns = elsIn(header, 'button').filter((e) => hasClass(e, 'nav-toggle'));
+  const btn = btns[0];
+  if (btns.length !== 1) return fail('nav', 'exactly one button.nav-toggle required');
+  if (btn.attrs.type !== 'button' || btn.attrs['aria-expanded'] !== 'false' || btn.attrs['aria-controls'] !== 'site-nav') {
+    return fail('nav', 'button.nav-toggle needs type=button, aria-expanded=false, aria-controls=site-nav');
+  }
+  const spans = elsIn(btn, 'span').filter((e) => hasClass(e, 'visually-hidden'));
+  if (spans.length !== 1 || textIn(spans[0]) !== '메뉴' || textIn(btn) !== '메뉴') {
+    return fail('nav', 'button.nav-toggle must contain only span.visually-hidden "메뉴"');
+  }
   pass('nav');
+});
+
+register('allowlist-reasons', () => {
+  const reasons = manifest.uiAllowlistReasons;
+  if (!reasons) return skip('allowlist-reasons', 'not in manifest');
+  const allow = new Set((manifest.uiAllowlist || []).map(normalize));
+  for (const [k, v] of Object.entries(reasons)) {
+    if (!allow.has(normalize(k))) return fail('allowlist-reasons', `reason key not in uiAllowlist: "${k}"`);
+    if (typeof v !== 'string' || v.trim() === '') return fail('allowlist-reasons', `empty reason for "${k}"`);
+  }
+  pass('allowlist-reasons');
 });
 
 register('sections', () => {

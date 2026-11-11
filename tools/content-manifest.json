@@ -58,8 +58,12 @@
     "담당 업무",
     "사이트 보기",
     "관련 기사 보기",
-    "기획전 보기"
+    "기획전 보기",
+    "메뉴"
   ],
+  "uiAllowlistReasons": {
+    "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)"
+  },
   "forbiddenText": [
     "Phone",
     "GI Data",
@@ -98,6 +102,7 @@
     }
   ],
   "sections": [
+    "cover",
     "skills",
     "career",
     "gi-data",
