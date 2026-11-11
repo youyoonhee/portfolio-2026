@@ -11,7 +11,7 @@
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: 기반과 실제 콘텐츠 페이지** - 개인정보 경계를 세우고, 원본 PDF의 모든 내용을 시맨틱 `index.html` 한 장으로 옮겨 브라우저에서 바로 본다
+- [x] **Phase 1: 기반과 실제 콘텐츠 페이지** - 개인정보 경계를 세우고, 원본 PDF의 모든 내용을 시맨틱 `index.html` 한 장으로 옮겨 브라우저에서 바로 본다 (completed 2026-11-11)
 - [ ] **Phase 2: 디자인 시스템과 반응형 + PDF spike** - 직접 쓴 CSS로 단정한 미니멀 디자인을 입히고 375/768/1440에서 완성하며, 레이아웃이 굳기 전에 PDF 위험을 확인한다
 - [ ] **Phase 3: 인터랙션과 제출용 PDF** - 키보드·모션·JS 없는 상태를 다듬고, 명령 하나로 전화번호가 들어간 제출용 PDF를 만든다
 - [ ] **Phase 4: 스크린샷 통합** - 사용자가 준 스크린샷을 검수·최적화해 프레임에 넣고, 확대 보기와 PDF 용량까지 마무리한다
@@ -50,7 +50,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 01-04-PLAN.md — 원본 대조표(누락 0·새 수치 0), 링크 생존·개인정보 최종 확인, 사용자 브라우저 확인
+- [x] 01-04-PLAN.md — 원본 대조표(누락 0·새 수치 0), 링크 생존·개인정보 최종 확인, 사용자 브라우저 확인
 
 **UI hint**: yes
 
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 기반과 실제 콘텐츠 페이지 | 3/4 | In Progress|  |
+| 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete   | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 0/TBD | Not started | - |
 | 3. 인터랙션과 제출용 PDF | 0/TBD | Not started | - |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
