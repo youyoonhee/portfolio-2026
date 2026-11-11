@@ -85,7 +85,7 @@ try {
   if (shots) mkdirSync(shots, { recursive: true });
 
   const origin = new URL(url).origin;
-  for (const [w, h] of [[375, 812], [768, 1024], [1440, 900]]) {
+  for (const [w, h] of [[320, 812], [375, 812], [768, 1024], [1440, 900]]) {
     await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 });
     await send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}w=${w}` });
     // poll until the new document (not about:blank / the previous width's page) is complete
@@ -117,7 +117,7 @@ try {
     report(oOk, `${p} overflow: viewport ${o.vw}, scrollWidth ${o.scrollW}, body ${o.bodyScrollW}${oOk ? '' : ' offenders ' + JSON.stringify(o.wide)}`);
 
     // (b) grid columns
-    const want = w === 375 ? 1 : w === 768 ? 2 : 3;
+    const want = w <= 375 ? 1 : w === 768 ? 2 : 3;
     const g = await evalJs(`[...document.querySelectorAll('.project-grid')].map((e) => ({ id: e.parentElement.id, cols: getComputedStyle(e).gridTemplateColumns.split(' ').filter(Boolean).length }))`);
     const gOk = g.length === EXPECT.companies && g.every((x) => x.cols === want);
     report(gOk, `${p} grid columns: want ${want}, got ${JSON.stringify(g.map((x) => x.id + ':' + x.cols))}`);

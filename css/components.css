@@ -69,8 +69,21 @@
       min-block-size: 48px;
     }
 
+    /* one fixed-height row (matches --header-h: 112px); extra links scroll sideways instead of wrapping */
     html:not(.js) .site-nav ul {
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-block: 2px;
+      scrollbar-width: none;
+    }
+
+    html:not(.js) .site-nav li {
+      flex: none;
+    }
+
+    html:not(.js) .site-nav a {
+      white-space: nowrap;
     }
   }
 
