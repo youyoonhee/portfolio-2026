@@ -1,0 +1,48 @@
+@layer layout {
+  main > section,
+  body > footer,
+  .header-bar {
+    inline-size: min(100% - 2 * var(--gutter), var(--wrap-max));
+    margin-inline: auto;
+  }
+
+  body {
+    padding-block-start: var(--header-h);
+  }
+
+  .site-header {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 50;
+    background: var(--color-bg);
+    box-shadow: var(--shadow-header);
+  }
+
+  /* inert until Phase 3 sets the attribute */
+  .site-header[data-hidden="true"] {
+    transform: translateY(-100%);
+  }
+
+  .header-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    min-block-size: 64px;
+
+    @media (min-width: 900px) {
+      min-block-size: 72px;
+    }
+  }
+
+  .cover {
+    min-block-size: min(100svh - var(--header-h), 880px);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    text-align: center;
+    padding-block: var(--space-2xl);
+    gap: var(--space-lg);
+  }
+}

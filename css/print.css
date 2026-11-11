@@ -1,0 +1,17 @@
+@layer print {
+  @media print {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .site-header,
+    .nav-toggle,
+    .skip-link,
+    .site-nav {
+      display: none !important;
+    }
+  }
+}

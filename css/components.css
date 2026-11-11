@@ -1,0 +1,184 @@
+@layer components {
+  .wordmark {
+    font-size: var(--text-label);
+    font-weight: var(--weight-semibold);
+    line-height: 1.4;
+    color: var(--color-ink);
+    letter-spacing: 0.04em;
+  }
+
+  .site-nav ul {
+    display: flex;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    color: var(--color-ink-2);
+    text-decoration: none;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 8px;
+      block-size: 1px;
+      background: currentcolor;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--dur) var(--ease);
+    }
+
+    &:hover {
+      color: var(--color-ink);
+    }
+
+    &:hover::after,
+    &[aria-current="true"]::after {
+      transform: scaleX(1);
+    }
+
+    &[aria-current="true"] {
+      color: var(--color-accent);
+    }
+  }
+
+  /* hamburger: hidden at >= 900px and in the no-JS state */
+  .nav-toggle {
+    display: none;
+  }
+
+  /* below 900px, no JS: nav is a full-width second row */
+  @media (max-width: 899.98px) {
+    html:not(.js) .wordmark {
+      display: flex;
+      align-items: center;
+      min-block-size: 64px;
+    }
+
+    html:not(.js) .site-nav {
+      flex-basis: 100%;
+      min-block-size: 48px;
+    }
+
+    html:not(.js) .site-nav ul {
+      flex-wrap: wrap;
+    }
+  }
+
+  /* declared for Phase 3, unused until JS adds html.js */
+  @media (max-width: 899.98px) {
+    html.js .nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 44px;
+      block-size: 44px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--color-ink);
+      cursor: pointer;
+      position: relative;
+
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        inset-inline: 11px;
+        block-size: 2px;
+        background: currentcolor;
+      }
+
+      &::before {
+        inset-block-start: 15px;
+        box-shadow: 0 7px 0 currentcolor;
+      }
+
+      &::after {
+        inset-block-start: 29px;
+      }
+    }
+
+    html.js .site-nav {
+      display: none;
+    }
+
+    html.js .site-nav[data-open="true"] {
+      display: block;
+      flex-basis: 100%;
+      padding: var(--space-md);
+      border-block-start: 1px solid var(--color-line);
+      background: var(--color-bg);
+
+      & ul {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      & a {
+        min-block-size: 48px;
+      }
+    }
+  }
+
+  @media (min-width: 900px) {
+    .nav-toggle {
+      display: none !important;
+    }
+  }
+
+  .cover-sub {
+    font-size: var(--text-label);
+    line-height: 1.4;
+    color: var(--color-ink-3);
+  }
+
+  .cover h1 {
+    font-size: var(--text-display);
+    font-weight: var(--weight-semibold);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+  }
+
+  .cover-intro {
+    max-inline-size: 28em;
+    font-size: var(--text-body);
+    color: var(--color-ink-2);
+    margin-inline: auto;
+  }
+
+  .cover-mail a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: -9999px;
+    inset-block-start: 0;
+
+    &:focus {
+      position: fixed;
+      inset-inline-start: 0;
+      z-index: 100;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent);
+      color: var(--color-bg);
+      font-size: var(--text-body);
+      font-weight: var(--weight-semibold);
+    }
+  }
+}

@@ -14,11 +14,12 @@
     "check:repo": "node tools/check-repo.mjs",
     "check:selftest": "node tools/check-repo.mjs --self-test",
     "check:history": "node tools/check-repo.mjs --history",
-    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:history",
+    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:history && npm run check:contrast",
     "check:links": "linkinator http://localhost:3000 --recurse",
     "prepare": "node tools/install-hooks.mjs",
     "check:source": "node tools/check-content.mjs --require-source",
-    "fonts:copy": "node tools/copy-fonts.mjs"
+    "fonts:copy": "node tools/copy-fonts.mjs",
+    "check:contrast": "node tools/check-contrast.mjs"
   },
   "devDependencies": {
     "html-validate": "11.21.0",

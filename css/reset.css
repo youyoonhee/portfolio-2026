@@ -1,0 +1,41 @@
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body,
+  h1,
+  h2,
+  h3,
+  p,
+  ul,
+  ol,
+  dl,
+  dd,
+  figure {
+    margin: 0;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  img,
+  picture,
+  svg,
+  video {
+    max-inline-size: 100%;
+  }
+
+  img,
+  figure {
+    display: block;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+}
