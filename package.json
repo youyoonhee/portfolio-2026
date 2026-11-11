@@ -15,7 +15,8 @@
     "check:history": "node tools/check-repo.mjs --history",
     "check": "npm run validate && npm run check:content && npm run check:repo",
     "check:links": "linkinator http://localhost:3000 --recurse",
-    "prepare": "git config core.hooksPath .githooks && git config core.ignorecase false || exit 0"
+    "prepare": "git config core.hooksPath .githooks && git config core.ignorecase false || exit 0",
+    "check:source": "node tools/check-content.mjs --require-source"
   },
   "devDependencies": {
     "html-validate": "11.21.0",

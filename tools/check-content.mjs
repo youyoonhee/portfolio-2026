@@ -458,6 +458,42 @@ register('source-numbers', () => {
   pass('source-numbers');
 });
 
+register('source-coverage', () => {
+  if (!sourceGate('source-coverage')) return;
+  const cov = manifest.sourceCoverage;
+  if (!cov) return fail('source-coverage', 'sourceCoverage missing in manifest');
+  const src = normalize(source);
+  const siteText = visibleTexts.map(normalize).join('');
+  let siteN = 0;
+  let excludedN = 0;
+  for (const c of cov) {
+    const n = normalize(c.text);
+    if (!src.includes(n)) return fail('source-coverage', `table entry not in source: "${c.text}"`);
+    if (c.status === 'site') {
+      siteN++;
+      if (!siteText.includes(n)) return fail('source-coverage', `missing ${c.text}`);
+    } else if (c.status === 'excluded') {
+      excludedN++;
+      if (!c.reason) return fail('source-coverage', `excluded entry without reason: "${c.text}"`);
+    } else return fail('source-coverage', `bad status for "${c.text}"`);
+  }
+  const frags = cov.map((c) => normalize(c.text)).filter(Boolean).sort((a, b) => b.length - a.length);
+  const pats = (manifest.excludedPatterns || []).map((e) => new RegExp(e.pattern, 'g'));
+  const unmapped = [];
+  source.split(/\r?\n/).forEach((line, i) => {
+    if (PHONE_RE.test(line)) return; // never echoed
+    let t = line;
+    for (const re of pats) t = t.replace(re, ' ');
+    t = normalize(t);
+    for (const f of frags) t = t.split(f).join('');
+    if (t.replace(/[\d\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e…]/g, '') !== '') {
+      unmapped.push(PHONE_RE.test(t) ? `line ${i + 1} (content hidden)` : `line ${i + 1}: "${t}"`);
+    }
+  });
+  if (unmapped.length) return fail('source-coverage', `unmapped source text on ${unmapped.join('; ')}`);
+  pass(`source-coverage (site ${siteN} / excluded ${excludedN} / unmapped 0)`);
+});
+
 for (const [name, fn] of checks) {
   try { fn(); } catch (e) { fail(name, `exception: ${e.message}`); }
 }
