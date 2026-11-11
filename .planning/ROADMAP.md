@@ -29,7 +29,13 @@
   3. 원본 대조표에서 누락 0건, 원본에 없는 수치 0건이 확인되고, 걸린 링크는 모두 실제로 열린다(죽은 서비스에는 링크 대신 상태 배지)
   4. 커밋 전 전화번호 패턴 검사가 돌고 공개 트리에서 0건이며, `_screenshots/`, `private/`, `dist/`, `*.pdf`가 git에 잡히지 않는다
   5. Node 22에서 html-validate(와 `tools/check-content.mjs`)가 오류 0건으로 통과하고, 제목 구조가 h1 → h2 → h3이며 파일명·경로가 소문자 kebab-case·상대경로다
-**Plans**: TBD
+**Plans**: 4 plans (4 waves, 순차 vertical slice)
+
+Plans:
+- [ ] 01-01-PLAN.md — Walking skeleton: 전화번호 pre-commit 훅·금지 경로·파일명 검사, Node 22 도구, 콘텐츠 검사 엔진, 실제 표지·Contact가 담긴 index.html
+- [ ] 01-02-PLAN.md — Skills(Tech stack.)·Career(Career & Work.) 최신순 + 회사 섹션 4개와 앵커 이동
+- [ ] 01-03-PLAN.md — 프로젝트 13개 article(같은 항목 순서, 상태 배지, 살아 있는 링크 5개, 빈 퍼블리싱 포인트 자리)
+- [ ] 01-04-PLAN.md — 원본 대조표(누락 0·새 수치 0), 링크 생존·개인정보 최종 확인, 사용자 브라우저 확인
 **UI hint**: yes
 
 ### Phase 2: 디자인 시스템과 반응형 + PDF spike
@@ -95,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 기반과 실제 콘텐츠 페이지 | 0/TBD | Not started | - |
+| 1. 기반과 실제 콘텐츠 페이지 | 0/4 | Not started | - |
 | 2. 디자인 시스템과 반응형 + PDF spike | 0/TBD | Not started | - |
 | 3. 인터랙션과 제출용 PDF | 0/TBD | Not started | - |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
