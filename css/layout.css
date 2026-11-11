@@ -47,15 +47,25 @@
   }
 
   /* keywords: surface panel, every block expanded (Phase 3 adds scroll switching) */
-  .keywords {
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding-block: var(--space-xl);
-    padding-inline: var(--space-lg);
+  /* the panel ground reaches one gutter past the wrap, so the content keeps the wrap edges */
+  .keywords,
+  #contact {
+    position: relative;
+    isolation: isolate;
 
-    @media (min-width: 1024px) {
-      padding-inline: var(--space-3xl);
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline: calc(-1 * var(--gutter));
+      z-index: -1;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
     }
+  }
+
+  .keywords {
+    padding-block: var(--space-xl);
   }
 
   .keyword-block {
@@ -198,14 +208,12 @@
   /* contact panel */
   #contact {
     margin-block: var(--space-2xl);
-    padding: var(--space-2xl);
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
+    padding-block: var(--space-2xl);
     text-align: center;
 
     @media (min-width: 1024px) {
       margin-block: var(--space-3xl);
-      padding: var(--space-3xl);
+      padding-block: var(--space-3xl);
       text-align: start;
     }
 
@@ -231,7 +239,7 @@
   body > footer {
     padding-block: var(--space-2xl);
     border-block-start: 1px solid var(--color-line);
-    text-align: center;
+    text-align: start;
 
     small {
       font-size: var(--text-label);

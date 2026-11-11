@@ -165,15 +165,18 @@
   }
 
   .skip-link {
-    position: absolute;
-    inset-inline-start: -9999px;
+    position: fixed;
+    inset-inline-start: 0;
     inset-block-start: 0;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding: 8px 16px;
+    transform: translateY(-100%);
 
     &:focus {
-      position: fixed;
-      inset-inline-start: 0;
-      z-index: 100;
-      padding: 8px 16px;
+      transform: none;
       border-radius: var(--radius-sm);
       background: var(--color-accent);
       color: var(--color-bg);

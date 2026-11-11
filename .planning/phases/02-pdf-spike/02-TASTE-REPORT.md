@@ -58,3 +58,30 @@ Counts are rows in the log across all widths (1440, 390, and the 320/768 sweeps)
 | page-meta, share-meta | 0 | 2 | defer | OG/meta tags belong to the deploy phase | Phase 5 |
 
 Inline links inside running sentences are exempt from the 44px rule (WCAG 2.5.8 inline exception).
+
+## Run 2 (after the CSS fixes in this plan)
+
+- 1440x900: 10 screens, 39 FAIL, 12 WARN
+- 390x844: 17 screens, 18 FAIL, 8 WARN
+- 320 and 768 sweeps: 0 FAIL (off-viewport and hero-fill no longer reported)
+- Total: **57 FAIL, 20 WARN** (run 1: 63 FAIL, 23 WARN)
+
+Fixes (CSS only, no markup change):
+
+- Skip link: always `position: fixed` at the top left, parked with `translateY(-100%)` instead of `-9999px`, with a 44px box; `:focus` sets `transform: none` at `z-index: 100`. Clears off-viewport (1 to 0), tap-size (3 WARN to 0), keeps focus-hidden at 0.
+- Keywords and contact panels: the surface ground moved to a `::before` that reaches one gutter past the wrap, and the inner inline padding was removed, so content sits on the wrap's left and right edges. The panel ground is one gutter wider than the wrap rather than flush with it (UI-SPEC asked for an equal outer edge; the checker measures content, so content equality was chosen). Clears the keywords and contact container-edges FAILs.
+- Footer text set to `text-align: start`. Clears the two footer text FAILs.
+
+Before/after per fixed class:
+
+| class | run 1 FAIL / WARN | run 2 FAIL / WARN | remaining reason |
+|-------|-------------------|-------------------|------------------|
+| focus-hidden | 0 / 0 | 0 / 0 | - |
+| tap-size | 0 / 3 | 0 / 0 | - |
+| off-viewport | 1 / 0 | 0 / 0 | - |
+| hero-fill | 1 / 0 | 0 / 0 | cleared as a side effect |
+| container-edges | 9 / 0 | 5 / 0 | cover (defer Phase 3, centred hero) and 4 kit-structure rows (waive W-1) |
+
+All other classes are unchanged from run 1 and keep the decisions in the table above. No item is marked `fix in 02-06`.
+
+Checks after the fixes: `npm run check`, `npm run check:source`, `npm run check:layout` exit 0 (no overflow at 375/768/1440, anchors, 44px tap targets). `.taste-skill/build.json` and `waivers.json` do not exist; `git diff HEAD -- index.html` is empty.
