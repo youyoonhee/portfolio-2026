@@ -12,10 +12,11 @@
     "validate": "html-validate index.html",
     "check:content": "node tools/check-content.mjs",
     "check:repo": "node tools/check-repo.mjs",
+    "check:selftest": "node tools/check-repo.mjs --self-test",
     "check:history": "node tools/check-repo.mjs --history",
-    "check": "npm run validate && npm run check:content && npm run check:repo",
+    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:history",
     "check:links": "linkinator http://localhost:3000 --recurse",
-    "prepare": "git config core.hooksPath .githooks && git config core.ignorecase false || exit 0",
+    "prepare": "node tools/install-hooks.mjs",
     "check:source": "node tools/check-content.mjs --require-source"
   },
   "devDependencies": {
