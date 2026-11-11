@@ -77,7 +77,13 @@
     "samsung.com/sec",
     "linkalba.com"
   ],
-  "links": [],
+  "links": [
+    "https://www.wecankids.club/home",
+    "https://www.fsdcosmetic.com/home",
+    "https://green-da.co.kr/home",
+    "https://www.lg.co.kr/media/release/26532",
+    "https://samsungebiz.com/event/galaxycampus/"
+  ],
   "nav": [
     {
       "href": "#skills",
@@ -184,6 +190,188 @@
       "to": "2021-12",
       "summary": "교보생명 App",
       "description": null
+    }
+  ],
+  "statusLabels": {
+    "live": "운영 중",
+    "closed": "운영 종료",
+    "article": "관련 기사",
+    "apk": "APK 보유",
+    "intro": "소개서",
+    "private": "비공개",
+    "pending": null
+  },
+  "projects": [
+    {
+      "id": "gi-calculator",
+      "company": "gi-data",
+      "name": "보험상품산출기·상품소개페이지",
+      "platform": "web",
+      "description": "웹/앱 모두 화면 유지보수",
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "live",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "gi-event",
+      "company": "gi-data",
+      "name": "이벤트페이지등록",
+      "platform": "web",
+      "description": "관리자 페이지 연동으로 이벤트 관리",
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "live",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "gi-oneday",
+      "company": "gi-data",
+      "name": "원데이보험앱화면리뉴얼",
+      "platform": "app",
+      "description": "메인인트로, 상품소개페이지 리뉴얼 담당",
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "live",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "kn-puring",
+      "company": "kn-curation",
+      "name": "puring",
+      "platform": "app",
+      "description": "앱 제작 · APK 보유",
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "apk",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "kn-roadpill",
+      "company": "kn-curation",
+      "name": "로드필",
+      "platform": "web",
+      "description": "현재 운영 종료",
+      "contribution": 50,
+      "contributionContext": null,
+      "status": "closed",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "kn-wecankids",
+      "company": "kn-curation",
+      "name": "위캔키즈클럽",
+      "platform": "web",
+      "description": null,
+      "contribution": 50,
+      "contributionContext": null,
+      "status": "live",
+      "link": {
+        "href": "https://www.wecankids.club/home",
+        "label": "사이트 보기"
+      },
+      "point": null
+    },
+    {
+      "id": "kn-linkalba",
+      "company": "kn-curation",
+      "name": "링크알바",
+      "platform": "web",
+      "description": null,
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "pending",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "kn-fsd",
+      "company": "kn-curation",
+      "name": "FSD 코스메틱",
+      "platform": "web",
+      "description": null,
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "live",
+      "link": {
+        "href": "https://www.fsdcosmetic.com/home",
+        "label": "사이트 보기"
+      },
+      "point": null
+    },
+    {
+      "id": "kn-greenda",
+      "company": "kn-curation",
+      "name": "그린다",
+      "platform": "web",
+      "description": null,
+      "contribution": 80,
+      "contributionContext": null,
+      "status": "live",
+      "link": {
+        "href": "https://green-da.co.kr/home",
+        "label": "사이트 보기"
+      },
+      "point": null
+    },
+    {
+      "id": "kn-universe",
+      "company": "kn-curation",
+      "name": "universe",
+      "platform": "web",
+      "description": "LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 / 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능 · 디자인·기능은 ChatGPT와 거의 유사",
+      "contribution": 100,
+      "contributionContext": null,
+      "status": "article",
+      "link": {
+        "href": "https://www.lg.co.kr/media/release/26532",
+        "label": "관련 기사 보기"
+      },
+      "point": null
+    },
+    {
+      "id": "bs-addy",
+      "company": "bistones",
+      "name": "CJ종합광고운영플랫폼 ‘ADDY’",
+      "platform": "web",
+      "description": "웹사이트 반응형 구축 · 현재 운영 종료",
+      "contribution": 70,
+      "contributionContext": null,
+      "status": "closed",
+      "link": null,
+      "point": null
+    },
+    {
+      "id": "bs-samsung",
+      "company": "bistones",
+      "name": "삼성E스토어기획전프로모션",
+      "platform": "web",
+      "description": "기획전 프로모션 구축 / 유지보수",
+      "contribution": 50,
+      "contributionContext": "2인 1팀으로 50:50 분담",
+      "status": "live",
+      "link": {
+        "href": "https://samsungebiz.com/event/galaxycampus/",
+        "label": "기획전 보기"
+      },
+      "point": null
+    },
+    {
+      "id": "ab-peach",
+      "company": "abbey-road",
+      "name": "교보생명 금융 마이데이터 서비스 앱 ‘피치(Peach)’",
+      "platform": "app",
+      "description": "앱 구축 프로젝트에서 화면의 초기 설계 작업을 담당 · 현재 운영 종료",
+      "contribution": 30,
+      "contributionContext": null,
+      "status": "closed",
+      "link": null,
+      "point": null
     }
   ]
 }

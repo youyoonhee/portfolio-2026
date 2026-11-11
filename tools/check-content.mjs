@@ -255,6 +255,68 @@ function checkCompanies() {
 }
 register('companies', checkCompanies);
 
+function checkProjects() {
+  if (!manifest.projects) return skip('projects', 'not in manifest');
+  const arts = all.filter((e) => e.tag === 'article' && hasClass(e, 'project'));
+  if (arts.length !== manifest.projects.length) return fail('projects', `expected ${manifest.projects.length} articles, found ${arts.length}`);
+  const labels = manifest.statusLabels || {};
+  const companyName = (id) => manifest.companies.find((c) => c.id === id).name;
+  const seenPerCompany = {};
+  for (const pm of manifest.projects) {
+    const f = (msg) => fail('projects', `${pm.id}: ${msg}`);
+    const art = arts.find((a) => a.attrs.id === pm.id);
+    if (!art) return f('article missing');
+    let sec = art.parent;
+    while (sec && sec.tag !== 'section') sec = sec.parent;
+    if (!sec || sec.attrs.id !== pm.company) return f(`not inside section#${pm.company}`);
+    const order = (seenPerCompany[pm.company] ||= []);
+    order.push(pm.id);
+    const inSec = arts.filter((a) => { let n = a.parent; while (n && n.tag !== 'section') n = n.parent; return n === sec; }).map((a) => a.attrs.id);
+    if (JSON.stringify(inSec.slice(0, order.length)) !== JSON.stringify(order)) return f('order inside company differs from manifest');
+    if (art.attrs['data-platform'] !== pm.platform) return f('data-platform differs');
+    if (art.attrs['data-status'] !== pm.status || !(pm.status in labels)) return f('data-status differs or unknown');
+    if (art.attrs['aria-labelledby'] !== `${pm.id}-title`) return f('aria-labelledby differs');
+    const kids = art.kids.filter(isEl);
+    const wantTags = ['h3', 'dl', 'div', 'figure'].concat(pm.status === 'pending' ? [] : ['div']);
+    if (JSON.stringify(kids.map((k) => k.tag)) !== JSON.stringify(wantTags)) return f(`child order is ${kids.map((k) => k.tag).join(',')}`);
+    const [h3, dl, point, fig, status] = kids;
+    if (h3.attrs.id !== `${pm.id}-title` || normalize(textIn(h3)) !== normalize(pm.name)) return f('h3 differs');
+    if (!hasClass(dl, 'meta')) return f('dl.meta missing');
+    if (!hasClass(point, 'point')) return f('div.point missing');
+    if (!hasClass(fig, 'shot') || fig.attrs['data-frame'] !== pm.platform) return f('figure.shot or data-frame differs');
+    const rows = dl.kids.filter(isEl).filter((d) => d.tag === 'div');
+    const dts = rows.map((r) => textIn(elsIn(r, 'dt')[0]));
+    const want = ['소속', '플랫폼'].concat(pm.description ? ['담당 업무'] : [], ['퍼블 기여도']);
+    if (JSON.stringify(dts) !== JSON.stringify(want)) return f(`dt order is ${JSON.stringify(dts)}`);
+    const dd = (i) => elsIn(rows[i], 'dd')[0];
+    if (textIn(dd(0)) !== companyName(pm.company)) return f('affiliation differs');
+    if (textIn(dd(1)) !== (pm.platform === 'app' ? 'App' : 'Web')) return f('platform text differs');
+    if (pm.description && normalize(textIn(dd(2))) !== normalize(pm.description)) return f('description differs');
+    const cd = dd(rows.length - 1);
+    const data = elsIn(cd, 'data')[0];
+    if (!data || data.attrs.value !== String(pm.contribution) || textIn(data) !== `${pm.contribution}%`) return f('contribution differs');
+    const rest = collapse(textNodesIn(cd).join(' ')).replace(`${pm.contribution}%`, '').trim();
+    const wantRest = pm.contributionContext ? `· ${pm.contributionContext}` : '';
+    if (rest !== wantRest) return f(`contribution context differs: "${rest}"`);
+    if (pm.status === 'pending') {
+      if (elsIn(art, 'a').length) return f('pending project must have no link');
+      continue;
+    }
+    const badge = elsIn(status, 'p').find((q) => hasClass(q, 'status'));
+    if (!hasClass(status, 'status-links') || !badge || textIn(badge) !== labels[pm.status]) return f('status badge differs');
+    const links = elsIn(status, 'a');
+    if (!pm.link) {
+      if (links.length) return f('unexpected link');
+    } else {
+      if (links.length !== 1 || links[0].attrs.href !== pm.link.href) return f('link href differs');
+      const label = collapse(textNodesIn(links[0]).filter((t) => t !== '(새 탭)').join(' '));
+      if (label !== pm.link.label) return f('link text differs');
+    }
+  }
+  pass('projects');
+}
+register('projects', checkProjects);
+
 register('contact', () => {
   const m = manifest.contact;
   if (!m) return skip('contact', 'not in manifest');
@@ -329,6 +391,17 @@ register('slots', () => {
   if (phone.length !== 1) return fail('slots', `expected one data-slot="phone", found ${phone.length}`);
   if (!('hidden' in phone[0].attrs)) return fail('slots', 'phone slot must have hidden');
   if (textIn(phone[0]) !== '' || descendants(phone[0]).some(isEl)) return fail('slots', 'phone slot must be empty');
+  for (const pm of manifest.projects || []) {
+    const art = all.find((e) => e.tag === 'article' && e.attrs.id === pm.id);
+    if (!art) continue;
+    const pt = descendants(art).find((e) => isEl(e) && e.attrs['data-slot'] === 'point');
+    if (!pt) return fail('slots', `${pm.id}: point slot missing`);
+    if (pm.point === null && (!('hidden' in pt.attrs) || textIn(pt) !== '' || descendants(pt).some(isEl))) {
+      return fail('slots', `${pm.id}: empty point slot must be hidden and empty`);
+    }
+    const shot = descendants(art).find((e) => isEl(e) && e.attrs['data-slot'] === 'screenshot');
+    if (!shot || descendants(shot).length) return fail('slots', `${pm.id}: screenshot slot missing or not empty`);
+  }
   for (const el of all) {
     if ('hidden' in el.attrs && textIn(el) !== '') return fail('slots', `hidden <${el.tag}> contains text`);
   }
