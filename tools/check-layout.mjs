@@ -184,15 +184,23 @@ try {
   console.log(`FAIL check-layout crashed: ${e.message}`);
 } finally {
   try { ws?.close(); } catch {}
-  proc.kill();
   if (process.platform === 'win32') {
-    // the launcher may hand off to child processes: kill everything started with our temp profile
+    if (proc.pid) spawnSync('taskkill', ['/PID', String(proc.pid), '/T', '/F'], { stdio: 'ignore' });
+    // the launcher may hand off to child processes: kill browser processes started with our temp profile.
+    // Match by image name + profile tag and exclude this PowerShell itself ($PID), whose own command line contains the tag.
     const tag = prof.split(/[\\/]/).pop();
-    const ps = `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*${tag}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+    const ps = `Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.Name -match '^(msedge|chrome)\\.exe$' -and $_.CommandLine -like '*${tag}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
     spawnSync('powershell', ['-NoProfile', '-Command', ps], { stdio: 'ignore' });
+  } else {
+    proc.kill();
   }
   await sleep(500);
-  try { rmSync(prof, { recursive: true, force: true }); } catch {}
+  for (let i = 0; i < 5; i++) {
+    try { rmSync(prof, { recursive: true, force: true }); break; } catch (e) {
+      if (i === 4) console.warn(`warn: could not remove temp profile ${prof}: ${e.message}`);
+      else await sleep(500);
+    }
+  }
   await server?.close();
 }
 process.exit(failed ? 1 : 0);
