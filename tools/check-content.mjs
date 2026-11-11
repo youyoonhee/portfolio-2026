@@ -21,6 +21,11 @@ function finish() {
   for (const r of results) (r.ok ? console.log : console.error)(r.line);
   const failed = results.filter((r) => !r.ok).length;
   if (failed) { console.error(`check-content: ${failed} failed`); process.exit(1); }
+  const skipped = results.filter((r) => r.line.startsWith('SKIP')).length;
+  if (skipped) {
+    console.warn(`WARNING: ${skipped} source-dependent check(s) SKIPPED, so site text and numbers were NOT verified against the source.`);
+    console.warn('         Run `npm run check:source` on a machine that has .planning/source/portfolio-pdf.txt before publishing.');
+  }
   console.log('check-content: all passed');
   process.exit(0);
 }
@@ -452,10 +457,18 @@ register('source-reverse', () => {
   for (const s of manifest.sourceStrings || []) {
     if (!src.includes(normalize(s))) return fail('source-reverse', `sourceStrings entry not in source: "${s}"`);
   }
+  // segment level: a site text must sit inside one source line or a window of up to 3
+  // consecutive lines (wrapped paragraphs), not anywhere in the whole source
+  const lines = source.split(/\r?\n/).map(normalize);
+  const windows = new Set();
+  for (let i = 0; i < lines.length; i++) {
+    for (let w = 1; w <= 3 && i + w <= lines.length; w++) windows.add(lines.slice(i, i + w).join(''));
+  }
+  const inSource = (n) => [...windows].some((w) => w.includes(n));
   for (const t of visibleTexts) {
     const n = normalize(t);
     if (n === '' || /^[\d\W_]*$/u.test(n)) continue;
-    if (src.includes(n) || allow.has(n)) continue;
+    if (inSource(n) || allow.has(n)) continue;
     return fail('source-reverse', `text not in source or allowlist: "${t}"`);
   }
   pass('source-reverse');
@@ -464,7 +477,14 @@ register('source-reverse', () => {
 register('source-numbers', () => {
   if (!sourceGate('source-numbers')) return;
   const NUM = /\d+(?:\.\d+)*%?/g;
-  const srcNums = new Set(source.replace(/(\d)\.\s+(\d)/g, '$1.$2').match(NUM) || []);
+  const srcNums = new Set(
+    source
+      .split(/\r?\n/)
+      .filter((l) => !hasPhone(l)) // phone digit groups must not whitelist site numbers
+      .join('\n')
+      .replace(/(\d)\.\s+(\d)/g, '$1.$2')
+      .match(NUM) || []
+  );
   for (const t of visibleTexts) {
     for (const n of t.match(NUM) || []) {
       if (!srcNums.has(n)) return fail('source-numbers', `number "${n}" not in source`);
@@ -502,7 +522,10 @@ register('source-coverage', () => {
     t = normalize(t);
     for (const f of frags) t = t.split(f).join('');
     if (t.replace(/[\d\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e…]/g, '') !== '') {
-      unmapped.push(hasPhone(t) ? `line ${i + 1} (content hidden)` : `line ${i + 1}: "${t}"`);
+      // never echo digits from the source: hide phone-like lines, redact every digit elsewhere
+      unmapped.push(
+        hasPhone(t) || hasPhoneAnywhere(t) ? `line ${i + 1} (content hidden)` : `line ${i + 1}: "${t.replace(/\d/g, '#')}"`
+      );
     }
   });
   if (unmapped.length) return fail('source-coverage', `unmapped source text on ${unmapped.join('; ')}`);
