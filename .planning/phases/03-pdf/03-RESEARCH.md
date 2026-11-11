@@ -581,13 +581,15 @@ Observed in the verified suite (about 43s, 45 assertions): closed/open/Esc/overl
 | A4 | `puppeteer-core` is clean (slopcheck was not run; pip install was denied) | Package Legitimacy Audit | Low; same release as the stack document's package, 3250만 weekly downloads, no postinstall. Planner may add one human-verify step |
 | A5 | Page count stays 6-9 after Phase 4 screenshots | Pitfall 6 | Contact/footer page could split; the build assertions catch footer-only and blank pages |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does the user want one company per page once screenshots exist?**
    - What we know: with empty frames hidden, flow-after-forced-break gives 6 pages; forcing `break-before: page` on all four companies would give about 8 pages with the abbey-road page holding a single card.
    - What's unclear: whether the "회사별" look matters more than page economy.
    - Recommendation: keep the flow layout now; decide in Phase 4 with real screenshot heights (one-line CSS change).
+   - RESOLVED: 03-02-PLAN Task 2 implements the flow layout (`#skills` and `#gi-data` forced breaks only, no `.company { break-before: page }`). The one-company-per-page decision is deferred to Phase 4, when real screenshot heights are known.
 2. **Contact label text:** the original contact line may carry a label before the number (the executor sees the source; this research never read it). If it does, put it in `phone.label`; if it is part of the same string, leave `label` empty. Recommendation: executor decides when creating `private/contact.json`.
+   - RESOLVED: 03-01-PLAN Task 2 step E. The executor's no-echo extraction script splits the source contact line into `phone.label` (text before the number; empty if it holds `@` or digits) and `phone.display` (the number as shown). Only digit-masked shapes are printed.
 
 ## Environment Availability
 

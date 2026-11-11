@@ -108,7 +108,29 @@ Plans:
   4. PDF가 표지 / 스킬·경력 / 회사별 / 연락처 구성이고, 카드가 페이지 중간에서 잘리지 않으며 빈 페이지가 없다
   5. PDF 안의 링크가 클릭되고 한글이 복사·검색되며(`pdffonts`로 TrueType 확인), 머리글·바닥글에 파일 경로가 없다
 
-**Plans**: TBD
+**Plans**: 5 plans (5 waves, 순차 vertical slice. 모든 plan이 main 작업 트리의 gitignore 상태(node_modules, private/contact.json, .planning/source)를 쓰므로 병렬로 돌리지 않는다)
+
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — puppeteer-core 25.17.0(설치 전 사람 확인), Chrome 런처, contact 예시와 로컬 private/contact.json(번호 무출력), build-pdf와 pdf-report --expect-phone: `npm run pdf`로 번호가 든 PDF
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — 쪽 구성 assert(--min-page-chars 80, --page-plan) RED, A4 print 쪽 계획(빈 프레임 숨김, 스킬 3열, 연락처+푸터 한 쪽) GREEN: 약 6쪽
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 03-03-PLAN.md — check-ui(Puppeteer) RED, html.js와 main.js: 햄버거·오버레이·Esc, 헤더 숨김·표시(80px/8px, focusin), 본문 바로가기, 현재 섹션, check-layout 앵커 보정
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 03-04-PLAN.md — check-ui 시나리오 추가 RED, 표지 진입(cover-line), 키워드 sticky 스크롤 전환과 Tab 포커스 보정, reduced·no-JS·print 대체 상태
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 03-05-PLAN.md — 전체 검사와 03-CHECKS.md(숫자 없는 증거), 사용자 375/1440 브라우저·PDF 확인 체크포인트
+
 **UI hint**: yes
 
 ### Phase 4: 스크린샷 통합
@@ -154,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
-| 3. 인터랙션과 제출용 PDF | 0/TBD | Not started | - |
+| 3. 인터랙션과 제출용 PDF | 0/5 | Planned | - |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
