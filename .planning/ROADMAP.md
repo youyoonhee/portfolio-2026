@@ -68,7 +68,16 @@ Plans:
   4. 처음 보는 사람이 "10초 테스트"(특정 회사의 담당 업무와 기여도 찾기)를 통과한다
   5. PDF spike: 현재 페이지로 2~3쪽 PDF를 headless Chrome으로 뽑아 판형(원본 페이지 크기), 한글 폰트 임베딩(TrueType), lazy 이미지·모션 문제, Chrome CLI 유지 또는 Puppeteer 승격 여부가 결정·기록돼 있다
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Pretendard self-host, 토큰·@layer CSS, fixed 헤더(no-JS 메뉴)와 가운데 표지, 대비 검사
+- [ ] 02-02-PLAN.md — 키워드 강조 섹션(정적 3블록), 소속 행 삭제(D-12), gi-calculator 이름 변경(D-13), 섹션 번호 재배열, 검사 RED→GREEN
+- [ ] 02-03-PLAN.md — check-layout(375/768/1440) RED→GREEN, .project-grid container query 카드, 경력·스킬·연락처
+- [ ] 02-04-PLAN.md — A4 세로 print CSS, Edge CLI PDF spike와 PDF 검사기, 02-PDF-SPIKE.md
+- [ ] 02-05-PLAN.md — design-taste 체커 자문 실행, 분류별 판단표, skip-link·탭 크기·가장자리 수정
+- [ ] 02-06-PLAN.md — 최종 증거(02-CHECKS.md)와 사용자 확인 체크포인트(375/768/1440, 10초 테스트, spike PDF)
+
 **UI hint**: yes
 
 ### Phase 3: 인터랙션과 제출용 PDF

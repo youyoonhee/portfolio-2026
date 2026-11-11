@@ -568,16 +568,19 @@ node ~/.claude/skills/design-taste-frontend/scripts/consistency.mjs index.html \
 | A5 | `lazy` 이미지가 인쇄 시 로드되는 동작은 작은 로컬 PNG 1개로만 확인함. 큰 AVIF나 느린 네트워크에서는 미확인 | PDF spike | 중간. Phase 3/4에서 PDF 빌드 스크립트가 `loading="lazy"`를 제거하는 보험을 둔다 |
 | A6 | AVIF `<picture>`가 PDF에서 어떻게 임베딩되는지(재인코딩, 용량)는 이미지가 없어 이번에 측정 불가 | PDF spike | 중간. Phase 4 PDF-05에서 측정 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **"2~3쪽" 목표를 완료 기준으로 둘지?**
    - 알려진 것: 현재 콘텐츠와 간단한 print CSS로 6쪽(자리표시 숨김).
    - 불명확: 사용자가 A4 2~3쪽을 실제 요구로 보는지, 느슨한 예시인지.
    - 권고: spike 완료 기준을 "쪽수·분할·고아 쪽 측정 기록"으로 정하고 최종 쪽수는 Phase 3에서 결정. 사용자에게 spike 결과 확인 때 물어본다.
+   - **RESOLVED:** 02-04가 쪽수를 목표가 아닌 측정값으로 02-PDF-SPIKE.md에 기록하고, 02-06 체크포인트에서 사용자에게 쪽수를 받아들일지 묻는다. 답은 02-CHECKS.md에 Phase 3(PDF-03) 입력으로 남는다.
 2. **no-JS 모바일 헤더 높이**
    - `--header-h`를 어떻게 정할지 구현 때 실측 필요(권고는 Pattern 2).
+   - **RESOLVED:** 02-01이 `--header-h` 토큰을 정의한다(기본 64px, 900px 이상 72px, no-JS 모바일은 바 + nav 행으로 시작값 112px, 실측해 보정). 오프셋은 `html { scroll-padding-top: var(--header-h) }`와 대상의 `scroll-margin-top: var(--space-md)`로 준다(두 값은 더해진다). 02-03의 check-layout 앵커 검사(헤더 하단 <= 대상 top <= 헤더 하단 + 32px)가 375/768/1440에서 확인한다.
 3. **`uiAllowlist` 근거 표기 방식**
    - JSON에 주석 불가. `uiAllowlistReasons` 별도 객체 vs 검증 문서 기록. 권고: 검사는 기존 배열을 그대로 읽게 두고 근거 객체를 추가(check-content가 존재 여부만 확인하도록 한 줄).
+   - **RESOLVED:** 별도 객체 `uiAllowlistReasons`를 쓴다. 02-01이 이 객체와 `allowlist-reasons` 검사를 만든다. 02-02는 사용자 제공 문구(키워드 3개, gi-calculator의 새 이름)에 정확히 "user-provided 2026-11-11"을 넣고, keywords와 projects 검사가 그 값을 확인한다.
 
 ## Environment Availability
 
