@@ -2,7 +2,11 @@
   "version": 1,
   "hero": {
     "eyebrow": "PORTFOLIO.",
-    "lines": ["Publishing,", "beyond the", "expected."],
+    "lines": [
+      "Publishing,",
+      "beyond the",
+      "expected."
+    ],
     "subline": "Selected work / Career 2026",
     "intro": "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.",
     "email": "youyoonhee12@gmail.com"
@@ -19,7 +23,24 @@
     "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.",
     "더 궁금한 점이 있으시다면 편하게 연락 부탁 드립니다.",
     "© Publisher Youyoonhee ALL RIGHTS RESERVED",
-    "PORTFOLIO."
+    "PORTFOLIO.",
+    "하나손해보험 App",
+    "LG ChatEXAONE 초기모델",
+    "Angular 기반 앱, 반응형 웹 구축 및 유지 보수",
+    "CJ 광고 플랫폼/삼성닷컴 기획전",
+    "교보생명 App",
+    "HTML5",
+    "CSS3",
+    "SCSS",
+    "JAVASCRIPT (ES6+)",
+    "TYPESCRIPT (경험)",
+    "ANGULAR",
+    "VUE (경험)",
+    "JQUERY",
+    "BOOTSTRAP",
+    "GIT",
+    "VISUAL STUDIO CODE",
+    "ECLIPSE"
   ],
   "uiAllowlist": [
     "Publishing,",
@@ -57,6 +78,112 @@
     "linkalba.com"
   ],
   "links": [],
-  "nav": [{ "href": "#contact", "text": "Contact" }],
-  "sections": ["contact"]
+  "nav": [
+    {
+      "href": "#skills",
+      "text": "Skills"
+    },
+    {
+      "href": "#career",
+      "text": "Career"
+    },
+    {
+      "href": "#contact",
+      "text": "Contact"
+    }
+  ],
+  "sections": [
+    "skills",
+    "career",
+    "gi-data",
+    "kn-curation",
+    "bistones",
+    "abbey-road",
+    "contact"
+  ],
+  "skillsSection": {
+    "eyebrow": "01 / Skills",
+    "title": "Tech stack."
+  },
+  "careerSection": {
+    "eyebrow": "02 / Career",
+    "title": "Career & Work."
+  },
+  "skills": [
+    {
+      "category": "Markup & Style",
+      "items": [
+        "HTML5",
+        "CSS3",
+        "SCSS"
+      ]
+    },
+    {
+      "category": "Language",
+      "items": [
+        "JAVASCRIPT (ES6+)",
+        "TYPESCRIPT (경험)"
+      ]
+    },
+    {
+      "category": "Framework",
+      "items": [
+        "ANGULAR",
+        "VUE (경험)"
+      ]
+    },
+    {
+      "category": "Library",
+      "items": [
+        "JQUERY",
+        "BOOTSTRAP"
+      ]
+    },
+    {
+      "category": "Tools",
+      "items": [
+        "GIT",
+        "VISUAL STUDIO CODE",
+        "ECLIPSE"
+      ]
+    }
+  ],
+  "companies": [
+    {
+      "id": "gi-data",
+      "name": "지아이데이타",
+      "number": "03",
+      "from": "2024-09",
+      "to": "2026-09",
+      "summary": "하나손해보험 App",
+      "description": null
+    },
+    {
+      "id": "kn-curation",
+      "name": "케이엔큐레이션",
+      "number": "04",
+      "from": "2023-09",
+      "to": "2024-03",
+      "summary": "LG ChatEXAONE 초기모델",
+      "description": "Angular 기반 앱, 반응형 웹 구축 및 유지 보수"
+    },
+    {
+      "id": "bistones",
+      "name": "비스톤스",
+      "number": "05",
+      "from": "2022-01",
+      "to": "2023-07",
+      "summary": "CJ 광고 플랫폼/삼성닷컴 기획전",
+      "description": null
+    },
+    {
+      "id": "abbey-road",
+      "name": "애비로드",
+      "number": "06",
+      "from": "2021-08",
+      "to": "2021-12",
+      "summary": "교보생명 App",
+      "description": null
+    }
+  ]
 }

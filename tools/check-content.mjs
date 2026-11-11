@@ -171,6 +171,90 @@ register('sections', () => {
   pass('sections');
 });
 
+const elsIn = (el, tag) => descendants(el).filter((e) => isEl(e) && e.tag === tag);
+const sectionById = (id) => all.find((e) => e.tag === 'section' && e.attrs.id === id);
+const timesOf = (el) => elsIn(el, 'time').map((t) => t.attrs.datetime);
+
+function checkSkills() {
+  if (!manifest.skills) return skip('skills', 'not in manifest');
+  const sec = sectionById('skills');
+  if (!sec) return fail('skills', 'section#skills missing');
+  const sm = manifest.skillsSection;
+  if (sm) {
+    const own = textNodesIn(sec);
+    if (!own.includes(sm.eyebrow)) return fail('skills', 'eyebrow text missing');
+    const h2 = elsIn(sec, 'h2')[0];
+    if (!h2 || textIn(h2) !== sm.title) return fail('skills', 'h2 title mismatch');
+  }
+  const dl = elsIn(sec, 'dl')[0];
+  if (!dl) return fail('skills', 'dl missing');
+  const groups = dl.kids.filter(isEl).flatMap((k) => (k.tag === 'div' ? k.kids.filter(isEl) : [k]));
+  const dts = groups.filter((g) => g.tag === 'dt').map(textIn);
+  if (JSON.stringify(dts) !== JSON.stringify(manifest.skills.map((s) => s.category))) {
+    return fail('skills', `categories differ: ${JSON.stringify(dts)}`);
+  }
+  const dds = groups.filter((g) => g.tag === 'dd');
+  if (dds.length !== manifest.skills.length) return fail('skills', 'dd count differs');
+  for (let i = 0; i < dds.length; i++) {
+    const items = elsIn(dds[i], 'li').map(textIn);
+    if (JSON.stringify(items) !== JSON.stringify(manifest.skills[i].items)) {
+      return fail('skills', `items differ in ${manifest.skills[i].category}: ${JSON.stringify(items)}`);
+    }
+  }
+  if (textIn(sec).includes('%') || elsIn(sec, 'meter').length || elsIn(sec, 'progress').length) {
+    return fail('skills', 'percent or gauge element present');
+  }
+  pass('skills');
+}
+register('skills', checkSkills);
+
+function checkCareer() {
+  if (!manifest.companies) return skip('career', 'not in manifest');
+  const sec = sectionById('career');
+  if (!sec) return fail('career', 'section#career missing');
+  const cm = manifest.careerSection;
+  if (cm) {
+    if (!textNodesIn(sec).includes(cm.eyebrow)) return fail('career', 'eyebrow text missing');
+    const h2 = elsIn(sec, 'h2')[0];
+    if (!h2 || textIn(h2) !== cm.title) return fail('career', 'h2 title mismatch');
+  }
+  const ol = elsIn(sec, 'ol')[0];
+  const lis = ol ? ol.kids.filter((k) => isEl(k) && k.tag === 'li') : [];
+  if (lis.length !== manifest.companies.length) return fail('career', `expected ${manifest.companies.length} items, found ${lis.length}`);
+  for (let i = 0; i < lis.length; i++) {
+    const c = manifest.companies[i];
+    const a = elsIn(lis[i], 'a')[0];
+    if (!a || a.attrs.href !== `#${c.id}` || textIn(a) !== c.name) return fail('career', `link mismatch for ${c.id}`);
+    if (!textIn(lis[i]).includes(c.summary)) return fail('career', `summary missing for ${c.id}`);
+    if (JSON.stringify(timesOf(lis[i])) !== JSON.stringify([c.from, c.to])) return fail('career', `period mismatch for ${c.id}`);
+  }
+  pass('career');
+}
+register('career', checkCareer);
+
+function checkCompanies() {
+  if (!manifest.companies) return skip('companies', 'not in manifest');
+  for (const c of manifest.companies) {
+    const sec = sectionById(c.id);
+    if (!sec) return fail('companies', `section#${c.id} missing`);
+    const eyebrow = elsIn(sec, 'p').find((p) => hasClass(p, 'eyebrow'));
+    if (!eyebrow || textIn(eyebrow) !== c.number) return fail('companies', `eyebrow mismatch for ${c.id}`);
+    const h2 = elsIn(sec, 'h2')[0];
+    if (!h2 || textIn(h2) !== `${c.name}.`) return fail('companies', `h2 mismatch for ${c.id}`);
+    const period = elsIn(sec, 'p').find((p) => hasClass(p, 'period'));
+    if (!period || JSON.stringify(timesOf(period)) !== JSON.stringify([c.from, c.to])) return fail('companies', `period mismatch for ${c.id}`);
+    const own = textNodesIn(sec);
+    for (const other of manifest.companies) {
+      if (!other.description) continue;
+      const has = own.includes(other.description);
+      if (other.id === c.id && !has) return fail('companies', `description missing for ${c.id}`);
+      if (other.id !== c.id && has) return fail('companies', `description of ${other.id} appears in ${c.id}`);
+    }
+  }
+  pass('companies');
+}
+register('companies', checkCompanies);
+
 register('contact', () => {
   const m = manifest.contact;
   if (!m) return skip('contact', 'not in manifest');
