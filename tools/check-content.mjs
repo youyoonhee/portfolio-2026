@@ -205,6 +205,18 @@ register('sections', () => {
 
 const elsIn = (el, tag) => descendants(el).filter((e) => isEl(e) && e.tag === tag);
 const sectionById = (id) => all.find((e) => e.tag === 'section' && e.attrs.id === id);
+// Section eyebrow: first p.eyebrow must equal the manifest text; "NN / Label" needs span.eyebrow-num = NN.
+function eyebrowProblem(sec, want) {
+  const eb = elsIn(sec, 'p').find((p) => hasClass(p, 'eyebrow'));
+  if (!eb) return 'p.eyebrow missing';
+  if (textIn(eb) !== want) return `eyebrow is "${textIn(eb)}", expected "${want}"`;
+  const mm = /^(\d+) \/ /.exec(want);
+  if (mm) {
+    const num = elsIn(eb, 'span').find((e) => hasClass(e, 'eyebrow-num'));
+    if (!num || textIn(num) !== mm[1]) return 'span.eyebrow-num missing or differs';
+  }
+  return null;
+}
 const timesOf = (el) => elsIn(el, 'time').map((t) => t.attrs.datetime);
 
 function checkSkills() {
@@ -213,8 +225,8 @@ function checkSkills() {
   if (!sec) return fail('skills', 'section#skills missing');
   const sm = manifest.skillsSection;
   if (sm) {
-    const own = textNodesIn(sec);
-    if (!own.includes(sm.eyebrow)) return fail('skills', 'eyebrow text missing');
+    const ep = eyebrowProblem(sec, sm.eyebrow);
+    if (ep) return fail('skills', ep);
     const h2 = elsIn(sec, 'h2')[0];
     if (!h2 || textIn(h2) !== sm.title) return fail('skills', 'h2 title mismatch');
   }
@@ -246,7 +258,8 @@ function checkCareer() {
   if (!sec) return fail('career', 'section#career missing');
   const cm = manifest.careerSection;
   if (cm) {
-    if (!textNodesIn(sec).includes(cm.eyebrow)) return fail('career', 'eyebrow text missing');
+    const ep = eyebrowProblem(sec, cm.eyebrow);
+    if (ep) return fail('career', ep);
     const h2 = elsIn(sec, 'h2')[0];
     if (!h2 || textIn(h2) !== cm.title) return fail('career', 'h2 title mismatch');
   }
@@ -292,7 +305,6 @@ function checkProjects() {
   const arts = all.filter((e) => e.tag === 'article' && hasClass(e, 'project'));
   if (arts.length !== manifest.projects.length) return fail('projects', `expected ${manifest.projects.length} articles, found ${arts.length}`);
   const labels = manifest.statusLabels || {};
-  const companyName = (id) => manifest.companies.find((c) => c.id === id).name;
   const seenPerCompany = {};
   for (const pm of manifest.projects) {
     const f = (msg) => fail('projects', `${pm.id}: ${msg}`);
@@ -320,12 +332,16 @@ function checkProjects() {
     if (!hasClass(fig, 'shot') || fig.attrs['data-frame'] !== pm.platform) return f('figure.shot or data-frame differs');
     const rows = dl.kids.filter(isEl).filter((d) => d.tag === 'div');
     const dts = rows.map((r) => textIn(elsIn(r, 'dt')[0]));
-    const want = ['소속', '플랫폼'].concat(pm.description ? ['담당 업무'] : [], ['퍼블 기여도']);
+    const want = ['플랫폼'].concat(pm.description ? ['담당 업무'] : [], ['퍼블 기여도']);
     if (JSON.stringify(dts) !== JSON.stringify(want)) return f(`dt order is ${JSON.stringify(dts)}`);
     const dd = (i) => elsIn(rows[i], 'dd')[0];
-    if (textIn(dd(0)) !== companyName(pm.company)) return f('affiliation differs');
-    if (textIn(dd(1)) !== (pm.platform === 'app' ? 'App' : 'Web')) return f('platform text differs');
-    if (pm.description && normalize(textIn(dd(2))) !== normalize(pm.description)) return f('description differs');
+    if (textIn(dd(0)) !== (pm.platform === 'app' ? 'App' : 'Web')) return f('platform text differs');
+    if (pm.description && normalize(textIn(dd(1))) !== normalize(pm.description)) return f('description differs');
+    if (pm.nameNote) {
+      const reason = (manifest.uiAllowlistReasons || {})[pm.name];
+      const allowed = (manifest.uiAllowlist || []).includes(pm.name);
+      if (!allowed || reason !== 'user-provided 2026-11-11') return f('renamed title needs uiAllowlist entry with reason "user-provided 2026-11-11"');
+    }
     const cd = dd(rows.length - 1);
     const data = elsIn(cd, 'data')[0];
     if (!data || data.attrs.value !== String(pm.contribution) || textIn(data) !== `${pm.contribution}%`) return f('contribution differs');
@@ -357,13 +373,52 @@ function checkProjects() {
 }
 register('projects', checkProjects);
 
+function checkKeywords() {
+  if (!manifest.keywords) return skip('keywords', 'not in manifest');
+  const f = (msg) => fail('keywords', msg);
+  const sec = sectionById('keywords');
+  if (!sec) return f('section#keywords missing');
+  const km = manifest.keywordsSection;
+  const ep = eyebrowProblem(sec, km.eyebrow);
+  if (ep) return f(ep);
+  const h2 = elsIn(sec, 'h2')[0];
+  if (!h2 || !hasClass(h2, 'visually-hidden') || textIn(h2) !== km.title) return f('h2.visually-hidden title mismatch');
+  const blocks = elsIn(sec, 'div').filter((d) => hasClass(d, 'keyword-block'));
+  if (blocks.length !== manifest.keywords.length) return f(`expected ${manifest.keywords.length} blocks, found ${blocks.length}`);
+  if (descendants(sec).some((e) => isEl(e) && 'hidden' in e.attrs)) return f('hidden attribute inside section#keywords');
+  const allow = new Set(manifest.uiAllowlist || []);
+  const reasons = manifest.uiAllowlistReasons || {};
+  manifest.keywords.forEach((kw, i) => {
+    if (results.some((r) => !r.ok && r.line.startsWith('FAIL keywords'))) return;
+    const b = blocks[i];
+    const h3 = elsIn(b, 'h3').find((e) => hasClass(e, 'keyword-title'));
+    if (!h3 || textIn(h3) !== kw.title) return f(`block ${i + 1} title differs`);
+    if (!allow.has(kw.title) || reasons[kw.title] !== 'user-provided 2026-11-11') return f(`title "${kw.title}" lacks user-provided allowlist reason`);
+    const ul = elsIn(b, 'ul').find((e) => hasClass(e, 'keyword-list'));
+    if (!ul) return f(`block ${i + 1} ul.keyword-list missing`);
+    const links = elsIn(ul, 'li').map((li) => elsIn(li, 'a')[0]);
+    if (links.length !== kw.ids.length || links.some((a) => !a)) return f(`block ${i + 1} link count differs`);
+    kw.ids.forEach((id, j) => {
+      const pm = manifest.projects.find((p) => p.id === id);
+      if (!pm) return f(`id "${id}" not in manifest.projects`);
+      if (links[j].attrs.href !== `#${id}`) return f(`block ${i + 1} link ${j + 1} href is ${links[j].attrs.href}, expected #${id}`);
+      if (normalize(textIn(links[j])) !== normalize(pm.name)) return f(`block ${i + 1} link ${j + 1} text differs from project name`);
+    });
+  });
+  if (results.some((r) => !r.ok && r.line.startsWith('FAIL keywords'))) return;
+  pass('keywords');
+}
+register('keywords', checkKeywords);
+
 register('contact', () => {
   const m = manifest.contact;
   if (!m) return skip('contact', 'not in manifest');
   const sec = all.find((e) => e.tag === 'section' && e.attrs.id === 'contact');
   if (!sec) return fail('contact', 'section#contact missing');
+  const ep = eyebrowProblem(sec, m.eyebrow);
+  if (ep) return fail('contact', ep);
   const own = textNodesIn(sec);
-  for (const key of ['eyebrow', 'title', 'message', 'emailLabel']) {
+  for (const key of ['title', 'message', 'emailLabel']) {
     if (!own.includes(m[key])) return fail('contact', `${key} text missing`);
   }
   const h2 = descendants(sec).find((e) => isEl(e) && e.tag === 'h2');

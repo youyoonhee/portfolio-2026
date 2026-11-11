@@ -12,7 +12,7 @@
     "email": "youyoonhee12@gmail.com"
   },
   "contact": {
-    "eyebrow": "07 / Contact",
+    "eyebrow": "08 / Contact",
     "title": "Contact.",
     "message": "더 궁금한 점이 있으시다면 편하게 연락 부탁 드립니다.",
     "emailLabel": "Email",
@@ -53,16 +53,25 @@
     "운영 종료",
     "관련 기사",
     "운영 여부 확인 어려움",
-    "소속",
     "플랫폼",
     "담당 업무",
     "사이트 보기",
     "관련 기사 보기",
     "기획전 보기",
-    "메뉴"
+    "메뉴",
+    "Keywords",
+    "반응형 웹",
+    "인터랙션",
+    "AI 활용",
+    "하나손해보험 보험상품산출기, 상품소개페이지"
   ],
   "uiAllowlistReasons": {
-    "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)"
+    "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)",
+    "Keywords": "UI structural label: nav item and keyword section heading (02-UI-SPEC, 2026-11-11)",
+    "반응형 웹": "user-provided 2026-11-11",
+    "인터랙션": "user-provided 2026-11-11",
+    "AI 활용": "user-provided 2026-11-11",
+    "하나손해보험 보험상품산출기, 상품소개페이지": "user-provided 2026-11-11"
   },
   "forbiddenText": [
     "Phone",
@@ -89,6 +98,10 @@
   ],
   "nav": [
     {
+      "href": "#keywords",
+      "text": "Keywords"
+    },
+    {
       "href": "#skills",
       "text": "Skills"
     },
@@ -103,6 +116,7 @@
   ],
   "sections": [
     "cover",
+    "keywords",
     "skills",
     "career",
     "gi-data",
@@ -112,11 +126,11 @@
     "contact"
   ],
   "skillsSection": {
-    "eyebrow": "01 / Skills",
+    "eyebrow": "02 / Skills",
     "title": "Tech stack."
   },
   "careerSection": {
-    "eyebrow": "02 / Career",
+    "eyebrow": "03 / Career",
     "title": "Career & Work."
   },
   "skills": [
@@ -162,7 +176,7 @@
     {
       "id": "gi-data",
       "name": "지아이데이타",
-      "number": "03",
+      "number": "04",
       "from": "2024-09",
       "to": "2026-09",
       "summary": "하나손해보험 App",
@@ -171,7 +185,7 @@
     {
       "id": "kn-curation",
       "name": "케이엔큐레이션",
-      "number": "04",
+      "number": "05",
       "from": "2023-09",
       "to": "2024-03",
       "summary": "LG ChatEXAONE 초기모델",
@@ -180,7 +194,7 @@
     {
       "id": "bistones",
       "name": "비스톤스",
-      "number": "05",
+      "number": "06",
       "from": "2022-01",
       "to": "2023-07",
       "summary": "CJ 광고 플랫폼/삼성닷컴 기획전",
@@ -189,7 +203,7 @@
     {
       "id": "abbey-road",
       "name": "애비로드",
-      "number": "06",
+      "number": "07",
       "from": "2021-08",
       "to": "2021-12",
       "summary": "교보생명 App",
@@ -208,7 +222,8 @@
     {
       "id": "gi-calculator",
       "company": "gi-data",
-      "name": "보험상품산출기·상품소개페이지",
+      "name": "하나손해보험 보험상품산출기, 상품소개페이지",
+      "nameNote": "user-provided 2026-11-11 (D-13)",
       "platform": "web",
       "description": "웹/앱 모두 화면 유지보수",
       "contribution": 100,
@@ -396,7 +411,8 @@
     },
     {
       "text": "01 / Skills",
-      "status": "site"
+      "status": "excluded",
+      "reason": "renumbered for new section order (D-08)"
     },
     {
       "text": "Markup & Style",
@@ -468,7 +484,8 @@
     },
     {
       "text": "02 / Career",
-      "status": "site"
+      "status": "excluded",
+      "reason": "renumbered for new section order (D-08)"
     },
     {
       "text": "Career & Work.",
@@ -632,7 +649,8 @@
     },
     {
       "text": "07 / Contact",
-      "status": "site"
+      "status": "excluded",
+      "reason": "renumbered for new section order (D-08)"
     },
     {
       "text": "Contact.",
@@ -723,5 +741,35 @@
       "pattern": "(www\\.)?(wecankids\\.club|fsdcosmetic\\.com|green-da\\.co\\.kr|lg\\.co\\.kr|samsungebiz\\.com)/\\S*",
       "reason": "링크 텍스트는 href로 반영"
     }
-  ]
+  ],
+  "keywords": [
+    {
+      "title": "반응형 웹",
+      "ids": [
+        "kn-wecankids",
+        "kn-fsd",
+        "kn-greenda"
+      ]
+    },
+    {
+      "title": "인터랙션",
+      "ids": [
+        "gi-oneday",
+        "kn-universe",
+        "kn-fsd"
+      ]
+    },
+    {
+      "title": "AI 활용",
+      "ids": [
+        "gi-calculator",
+        "gi-oneday",
+        "kn-universe"
+      ]
+    }
+  ],
+  "keywordsSection": {
+    "eyebrow": "01 / Keywords",
+    "title": "Keywords"
+  }
 }
