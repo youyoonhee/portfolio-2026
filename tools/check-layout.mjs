@@ -2,7 +2,7 @@
 // Usage: node tools/check-layout.mjs [url] [--shots dist/shots]
 // Without a url it serves the repo root on 127.0.0.1 (ephemeral port).
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,17 +34,34 @@ if (!EXE) { console.error('No Edge/Chrome found. Set BROWSER.'); process.exit(2)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const server = urlArg ? null : await startStaticServer(ROOT);
 const url = urlArg ?? server.url;
-const PORT = 9400 + Math.floor(Math.random() * 100);
+// Expected counts come from the content manifest, not from hard-coded numbers.
+const manifest = JSON.parse(readFileSync(join(ROOT, 'tools', 'content-manifest.json'), 'utf8'));
+const EXPECT = {
+  companies: manifest.companies.length,
+  cards: manifest.projects.filter((p) => p.company === 'kn-curation').length,
+  keywordBlocks: manifest.keywords.length,
+};
 const prof = mkdtempSync(join(tmpdir(), 'layoutprof-'));
-const proc = spawn(EXE, ['--headless=new', '--disable-gpu', `--remote-debugging-port=${PORT}`, `--user-data-dir=${prof}`, 'about:blank'], { stdio: 'ignore' });
+// Port 0 = the browser picks a free port and reports it in <profile>/DevToolsActivePort,
+// so the port we talk to is guaranteed to belong to the browser we launched.
+const proc = spawn(EXE, ['--headless=new', '--disable-gpu', '--remote-debugging-port=0', `--user-data-dir=${prof}`, 'about:blank'], { stdio: 'ignore' });
 let failed = 0;
 const report = (ok, msg) => { if (!ok) failed++; console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}`); };
 let ws;
 
 try {
+  let PORT;
+  for (let i = 0; i < 100 && !PORT; i++) {
+    try {
+      const n = Number(readFileSync(join(prof, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0]);
+      if (n > 0) PORT = n;
+    } catch { /* not written yet */ }
+    if (!PORT) await sleep(100);
+  }
+  if (!PORT) throw new Error('browser did not report a debugging port');
   let list;
-  for (let i = 0; i < 60 && !list; i++) {
-    try { list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json(); } catch { await sleep(200); }
+  for (let i = 0; i < 60 && !list?.some((t) => t.type === 'page'); i++) {
+    try { list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json(); } catch { await sleep(100); }
   }
   if (!list) throw new Error('browser did not start');
   ws = new WebSocket(list.find((t) => t.type === 'page').webSocketDebuggerUrl);
@@ -70,11 +87,21 @@ try {
   const origin = new URL(url).origin;
   for (const [w, h] of [[375, 812], [768, 1024], [1440, 900]]) {
     await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 });
-    await send('Page.navigate', { url });
-    await sleep(800);
-    for (let i = 0; i < 20 && (await evalJs('document.readyState')) !== 'complete'; i++) await sleep(200);
+    await send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}w=${w}` });
+    // poll until the new document (not about:blank / the previous width's page) is complete
+    for (let i = 0; i < 100; i++) {
+      const st = await evalJs(`location.href.includes('w=${w}') && document.readyState === 'complete'`);
+      if (st) break;
+      await sleep(100);
+    }
     await evalJs('document.fonts.ready.then(() => 1)');
-    await sleep(300);
+    // layout settled: two identical document heights in a row
+    for (let i = 0, last = -1; i < 20; i++) {
+      const h = await evalJs('document.documentElement.scrollHeight');
+      if (h === last) break;
+      last = h;
+      await sleep(50);
+    }
     const p = `${w}px`;
 
     // (a) overflow
@@ -92,7 +119,7 @@ try {
     // (b) grid columns
     const want = w === 375 ? 1 : w === 768 ? 2 : 3;
     const g = await evalJs(`[...document.querySelectorAll('.project-grid')].map((e) => ({ id: e.parentElement.id, cols: getComputedStyle(e).gridTemplateColumns.split(' ').filter(Boolean).length }))`);
-    const gOk = g.length === 4 && g.every((x) => x.cols === want);
+    const gOk = g.length === EXPECT.companies && g.every((x) => x.cols === want);
     report(gOk, `${p} grid columns: want ${want}, got ${JSON.stringify(g.map((x) => x.id + ':' + x.cols))}`);
 
     // (c) equal heights per row
@@ -102,7 +129,7 @@ try {
       cards.forEach((c) => { const k = c.offsetTop; rows.set(k, (rows.get(k) || []).concat(c.getBoundingClientRect().height)); });
       return { cards: cards.length, bad: [...rows.values()].filter((hs) => Math.max(...hs) - Math.min(...hs) > 1).length };
     })()`);
-    report(eq.cards === 7 && eq.bad === 0, `${p} equal heights in kn-curation: ${eq.cards} cards, ${eq.bad} uneven rows`);
+    report(eq.cards === EXPECT.cards && eq.bad === 0, `${p} equal heights in kn-curation: ${eq.cards}/${EXPECT.cards} cards, ${eq.bad} uneven rows`);
 
     // keyword section shows all three blocks
     const kw = await evalJs(`(() => {
@@ -114,15 +141,26 @@ try {
         return r.height > 0 && tr.width > 0 && tr.height > 0 && l.length > 0 && lv && getComputedStyle(b).display !== 'none';
       });
     })()`);
-    report(kw.length === 3 && kw.every(Boolean), `${p} keyword section: ${kw.length} blocks, visible ${JSON.stringify(kw)}`);
+    report(kw.length === EXPECT.keywordBlocks && kw.every(Boolean), `${p} keyword section: ${kw.length} blocks, visible ${JSON.stringify(kw)}`);
 
     // anchors land below the fixed header; meta visible without hovering
+    // poll until scrollY stops changing (smooth scrolling finished)
+    const settleScroll = async () => {
+      let last = null;
+      let same = 0;
+      for (let i = 0; i < 40 && same < 3; i++) {
+        await sleep(50);
+        const y = await evalJs('Math.round(window.scrollY * 10)');
+        same = y === last ? same + 1 : 0;
+        last = y;
+      }
+    };
     const jump = async (hash, viaSel) => {
       await evalJs('window.scrollTo(0, 0)');
-      await sleep(100);
+      await settleScroll();
       if (viaSel) await evalJs(`document.querySelector(${JSON.stringify(viaSel)}).click()`);
       else await evalJs(`location.hash = ${JSON.stringify(hash)}`);
-      await sleep(400);
+      await settleScroll();
       return evalJs(`(() => {
         const hd = document.querySelector('.site-header').getBoundingClientRect().bottom;
         const t = document.querySelector(${JSON.stringify(hash)});
