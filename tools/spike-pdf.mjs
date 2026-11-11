@@ -64,7 +64,7 @@ let code = 0;
 try {
   let url = opt('--url');
   if (!url) {
-    server = await startStaticServer(root);
+    server = await startStaticServer(root, { allow: ['dist'] }); // dist is denied by default; fixtures live there
     const base = server.url.endsWith('/') ? server.url : server.url + '/';
     url = flag('--lazy-fixture') ? `${base}dist/lazy-fixture.html` : `${base}index.html`;
   }
