@@ -8,3 +8,8 @@ dist/
 *.pdf
 .print-tmp.html
 node_modules/
+
+# 전화번호 원본, 생성된 PDF(전화번호 포함), 스킬 크롬 프로필·스크린샷
+out/
+.private/
+.taste-skill/
