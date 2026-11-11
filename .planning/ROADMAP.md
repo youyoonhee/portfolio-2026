@@ -46,7 +46,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — 프로젝트 13개 article(같은 항목 순서, 상태 배지, 살아 있는 링크 5개, 빈 퍼블리싱 포인트 자리)
+- [x] 01-03-PLAN.md — 프로젝트 13개 article(같은 항목 순서, 상태 배지, 살아 있는 링크 5개, 빈 퍼블리싱 포인트 자리)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 기반과 실제 콘텐츠 페이지 | 2/4 | In Progress|  |
+| 1. 기반과 실제 콘텐츠 페이지 | 3/4 | In Progress|  |
 | 2. 디자인 시스템과 반응형 + PDF spike | 0/TBD | Not started | - |
 | 3. 인터랙션과 제출용 PDF | 0/TBD | Not started | - |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
