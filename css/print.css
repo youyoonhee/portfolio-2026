@@ -1,10 +1,26 @@
 @layer print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm 16mm;
+  }
+
   @media print {
+    /* the same four type roles, in pt */
+    :root {
+      --text-body: 10.5pt;
+      --text-label: 8.5pt;
+      --text-heading: 18pt;
+      --text-display: 36pt;
+      --header-h: 0px;
+      --gutter: 0px;
+    }
+
     *,
     *::before,
     *::after {
       animation: none !important;
       transition: none !important;
+      transform: none !important;
     }
 
     .site-header,
@@ -12,6 +28,112 @@
     .skip-link,
     .site-nav {
       display: none !important;
+    }
+
+    .links a::after,
+    .keyword-list a::after {
+      display: none;
+    }
+
+    html {
+      scroll-padding-top: 0;
+    }
+
+    body {
+      padding-block-start: 0;
+      font-family: "Pretendard Print", sans-serif;
+      font-size: var(--text-body);
+      background: var(--color-bg);
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    h3 {
+      font-weight: 600;
+    }
+
+    /* cover takes about 40% of page 1 so the keywords can start there */
+    .cover {
+      min-block-size: 0;
+      padding-block: 12mm;
+      gap: 4mm;
+    }
+
+    .cover h1,
+    .keyword-title {
+      font-size: var(--text-display);
+      font-weight: 600;
+    }
+
+    /* keywords: all blocks expanded, two columns kept, white ground */
+    .keywords,
+    #contact {
+      &::before {
+        display: none;
+      }
+    }
+
+    .keywords {
+      padding-block: 4mm;
+    }
+
+    .keyword-block {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      align-items: center;
+      padding-block: 6mm;
+      break-inside: avoid;
+    }
+
+    .keyword-block + .keyword-block {
+      border-block-start: 1px solid var(--color-line);
+    }
+
+    .keyword-list a {
+      min-block-size: 0;
+      padding: 2mm 0;
+    }
+
+    /* cards stay whole, two per row on A4 */
+    .company {
+      padding-block: 8mm;
+    }
+
+    .project-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5mm;
+    }
+
+    .project {
+      break-inside: avoid;
+      box-shadow: none;
+
+      &:has(a):hover,
+      &:has(a):focus-within {
+        box-shadow: none;
+      }
+
+      &:target {
+        outline: none;
+      }
+    }
+
+    h2,
+    h3,
+    .company > .period,
+    .company-desc {
+      break-after: avoid;
+    }
+
+    .eyebrow {
+      font-size: var(--text-label);
+    }
+
+    /* phone slot: styled so Phase 3 can fill it; stays hidden and empty here */
+    .contact-phone:not([hidden]) {
+      display: block;
+      color: var(--color-ink);
+      font-size: var(--text-body);
+      font-weight: 400;
     }
   }
 }
