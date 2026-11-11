@@ -415,15 +415,18 @@ npm run check
 | A4 | 배지 라벨(`운영 중` 등)은 CONTEXT/REQUIREMENTS 표기 기준이며 원본 문장이 아닌 UI 라벨 | Pattern 1 | 중간: 대조표 허용 목록에 명시해야 함 |
 | A5 | 회사 섹션에서 영문 눈썹 문구 제거(D-04 우선) 해석 | Pattern 2 | 중간: 사용자 의도와 다르면 `06 / GI Data` 등 복원 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **회사 섹션 영문 눈썹 문구.**
    - 아는 것: D-03은 원본 영문 번호·제목 유지, D-04는 영문 회사명 표시 금지.
    - 불명확: 회사 섹션에 `03 / GI Data` 형태를 쓸지.
    - 권고: 번호 + 한글 제목만(`03`, `지아이데이타.`). D-04가 더 구체적이다.
+   - RESOLVED: 01-02 Task 1에서 결정 — 회사 섹션 눈썹은 번호만(`03`~`06`), 제목은 한글 회사명 + 마침표, 영문 회사명 없음.
 2. **담당 업무가 없는 프로젝트(위캔키즈클럽, 링크알바, FSD 코스메틱, 그린다)의 카드 밀도.**
    - 권고: 해당 행을 생략하고 새 문장을 만들지 않는다. 시각 균형은 Phase 2 CSS 과제.
+   - RESOLVED: 01-03에서 결정 — description이 null인 4개 프로젝트는 담당 업무 dt/dd를 만들지 않고, checkProjects가 이를 강제한다.
 3. **`<title>` 문자열**(`퍼블리셔 유윤희 포트폴리오`)은 원본 PDF 파일명에서 온 것이다. 허용 목록에 둔다.
+   - RESOLVED: 01-01에서 결정 — Task 2가 `<title>` 문자열과 배지·dt·링크 라벨을 manifest.uiAllowlist에 등록한다.
 
 ## Environment Availability
 
