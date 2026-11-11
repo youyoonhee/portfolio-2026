@@ -15,11 +15,11 @@
 ### 콘텐츠 (CONT)
 
 - [x] **CONT-01**: 방문자는 첫 화면에서 이름, 직무(앱·반응형 웹 퍼블리셔), 원본 소개 문구("화면 너머의 경험까지 섬세하게."), 이메일을 볼 수 있다
-- [ ] **CONT-02**: 방문자는 스킬을 분야별(Markup & Style, Language, Framework, Library, Tools)로, 주력과 "경험" 구분이 원본 그대로인 텍스트로 볼 수 있다 (퍼센트 게이지 없음)
-- [ ] **CONT-03**: 방문자는 경력 4곳을 최신순(지아이데이타 → 케이엔큐레이션 → 비스톤스 → 애비로드)으로 회사명·재직 기간·대표 고객사와 함께 보고, 해당 회사의 프로젝트로 바로 이동할 수 있다
+- [x] **CONT-02**: 방문자는 스킬을 분야별(Markup & Style, Language, Framework, Library, Tools)로, 주력과 "경험" 구분이 원본 그대로인 텍스트로 볼 수 있다 (퍼센트 게이지 없음)
+- [x] **CONT-03**: 방문자는 경력 4곳을 최신순(지아이데이타 → 케이엔큐레이션 → 비스톤스 → 애비로드)으로 회사명·재직 기간·대표 고객사와 함께 보고, 해당 회사의 프로젝트로 바로 이동할 수 있다
 - [ ] **CONT-04**: 방문자는 프로젝트 13개를 모두, 같은 순서의 항목(프로젝트명 / 소속사·고객사 / 기간 / 플랫폼 App·Web / 담당 업무 / 퍼블 기여도와 맥락 한 줄 / 스크린샷 / 링크·운영 상태)으로 볼 수 있다. 핵심 정보는 hover나 클릭 없이 항상 보인다 (D-07: 프로젝트별 기간은 쓰지 않고, 경력 요약과 회사 섹션에 표시되는 회사 재직 기간으로 대신한다)
 - [ ] **CONT-05**: 방문자는 프로젝트마다 운영 상태 배지(운영 중 / 운영 종료 / 소개서 / 관련 기사 / APK 보유 / 비공개)를 보고, 링크는 실제로 열리는 것만 걸려 있다
-- [ ] **CONT-06**: 사이트의 모든 문장과 숫자는 원본 PDF에 근거가 있다 (원본 대조표: 누락 0건, 새로 생긴 수치 0건)
+- [x] **CONT-06**: 사이트의 모든 문장과 숫자는 원본 PDF에 근거가 있다 (원본 대조표: 누락 0건, 새로 생긴 수치 0건)
 - [x] **CONT-07**: 방문자는 연락처 섹션에서 이메일을 `mailto:` 링크로 열거나 텍스트로 복사할 수 있다 (웹에는 전화번호 없음)
 - [ ] **CONT-08**: 사용자가 내용을 제공한 프로젝트는 "퍼블리싱 포인트"(기술적으로 신경 쓴 점 한두 줄)를 보여준다. 내용이 없는 프로젝트는 비워 둔다
 
@@ -100,11 +100,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BASE-03 | Phase 1 | Complete |
 | BASE-04 | Phase 1 | Complete |
 | CONT-01 | Phase 1 | Complete |
-| CONT-02 | Phase 1 | Pending |
-| CONT-03 | Phase 1 | Pending |
+| CONT-02 | Phase 1 | Complete |
+| CONT-03 | Phase 1 | Complete |
 | CONT-04 | Phase 1 | Pending |
 | CONT-05 | Phase 1 | Pending |
-| CONT-06 | Phase 1 | Pending |
+| CONT-06 | Phase 1 | Complete |
 | CONT-07 | Phase 1 | Complete |
 | CONT-08 | Phase 1 | Pending |
 | SHOT-01 | Phase 4 | Pending |
