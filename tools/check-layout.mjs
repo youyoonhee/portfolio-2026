@@ -1,7 +1,7 @@
 // Zero-dependency CDP layout check at 375/768/1440.
 // Usage: node tools/check-layout.mjs [url] [--shots dist/shots]
 // Without a url it serves the repo root on 127.0.0.1 (ephemeral port).
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep, dirname } from 'node:path';
@@ -185,6 +185,12 @@ try {
 } finally {
   try { ws?.close(); } catch {}
   proc.kill();
+  if (process.platform === 'win32') {
+    // the launcher may hand off to child processes: kill everything started with our temp profile
+    const tag = prof.split(/[\\/]/).pop();
+    const ps = `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*${tag}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+    spawnSync('powershell', ['-NoProfile', '-Command', ps], { stdio: 'ignore' });
+  }
   await sleep(500);
   try { rmSync(prof, { recursive: true, force: true }); } catch {}
   await server?.close();
