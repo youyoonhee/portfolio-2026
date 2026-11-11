@@ -37,6 +37,7 @@
 - [ ] **DSGN-02**: 375px·768px·1440px 모두에서 레이아웃이 깨지지 않고 가로 스크롤이 생기지 않는다 (한글 `keep-all` + 긴 URL·이메일 줄바꿈 처리 포함)
 - [ ] **DSGN-03**: 모션은 히어로 진입과 hover 정도로 절제되고, `prefers-reduced-motion`을 켜면 꺼진다. JS가 꺼져 있어도 모든 내용이 보인다
 - [ ] **DSGN-04**: "10초 테스트"를 통과한다: 처음 보는 사람이 특정 회사의 담당 업무와 기여도를 10초 안에 찾는다
+- [ ] **DSGN-05**: 방문자는 표지 바로 다음 키워드 강조 섹션에서 "반응형 웹 / 인터랙션 / AI 활용" 키워드와 해당 프로젝트 목록을 보고, 목록에서 프로젝트 카드로 이동할 수 있다. 데스크톱에서는 스크롤하면 키워드가 하나씩 전환되고, JS 없음·reduced-motion·모바일·PDF에서는 세 덩어리가 모두 펼쳐진다 (2026-11-11 사용자 요청, 키워드 분류는 사용자 제공 사실)
 
 ### 접근성과 품질 (QUAL)
 
@@ -116,6 +117,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DSGN-02 | Phase 2 | Pending |
 | DSGN-03 | Phase 3 | Pending |
 | DSGN-04 | Phase 2 | Pending |
+| DSGN-05 | Phase 2 (레이아웃), Phase 3 (전환 동작) | Pending |
 | QUAL-01 | Phase 1 | Complete |
 | QUAL-02 | Phase 3 | Pending |
 | QUAL-03 | Phase 2 | Pending |
@@ -133,8 +135,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEPL-04 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 35 total
-- Mapped to phases: 35
+- v1 requirements: 36 total
+- Mapped to phases: 36
 - Unmapped: 0 ✓
 
 ---

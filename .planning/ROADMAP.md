@@ -59,7 +59,7 @@ Plans:
 **Goal**: 채용 담당자가 어떤 화면 폭에서든 단정한 미니멀 디자인의 페이지를 읽고, 특정 회사의 담당 업무와 기여도를 10초 안에 찾을 수 있다
 **Mode:** mvp
 **Depends on**: Phase 1
-**Requirements**: DSGN-01, DSGN-02, DSGN-04, QUAL-03
+**Requirements**: DSGN-01, DSGN-02, DSGN-04, DSGN-05, QUAL-03
 **Success Criteria** (what must be TRUE):
 
   1. 페이지가 Pretendard(self-host)·넓은 여백·포인트 컬러 하나로 보이고, CSS는 `@layer`로 직접 작성돼 있으며 design-taste-frontend 키트 CSS를 불러오지 않는다 (스킬 체커 스크립트 결과 기록, 충돌 규칙은 waiver로 남김)
@@ -76,7 +76,7 @@ Plans:
 **Goal**: 방문자는 키보드만으로, 모션이나 JS 없이도 모든 내용을 다룰 수 있고, 사용자는 명령 하나로 웹과 같은 디자인의 제출용 PDF(전화번호 포함)를 얻는다
 **Mode:** mvp
 **Depends on**: Phase 2
-**Requirements**: DSGN-03, QUAL-02, PDF-01, PDF-02, PDF-03, PDF-04
+**Requirements**: DSGN-03, DSGN-05 (전환 동작), QUAL-02, PDF-01, PDF-02, PDF-03, PDF-04
 **Success Criteria** (what must be TRUE):
 
   1. 본문 바로가기 링크가 있고, Tab만으로 모든 링크·버튼에 논리적 순서로 도달하며 포커스 표시가 항상 보인다
