@@ -12,17 +12,16 @@
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ 기존 PDF의 모든 내용(소개, 스킬, 경력 4곳, 프로젝트 13개, 연락처)을 원본 문장 그대로 웹으로 옮김 — Validated in Phase 1: 기반과 실제 콘텐츠 페이지
+- ✓ 프로젝트마다 소속·플랫폼·담당 업무·퍼블 기여도·링크/운영 상태 표시 — Validated in Phase 1
+- ✓ 웹에는 연락처로 이메일만 공개, 저장소·사이트 전화번호 0건(커밋 전 자동 검사) — Validated in Phase 1
 
 ### Active
 
-- [ ] 기존 PDF의 모든 내용(소개, 스킬, 경력 4곳, 프로젝트 13개, 연락처)을 빠짐없이 웹으로 옮긴다
-- [ ] 프로젝트마다 회사·기간·플랫폼(App/Web)·담당 업무·퍼블 기여도·링크/운영 상태를 보여준다
 - [ ] 프로젝트마다 사용자가 제공하는 스크린샷을 보여준다
 - [ ] 단정한 미니멀 디자인: 넓은 여백, 또렷한 타이포그래피, 절제된 포인트 컬러 하나 (design-taste-frontend 기준 적용)
 - [ ] 375px·768px·1440px 모두에서 깨지지 않는 반응형, 가로 스크롤 없음
 - [ ] 웹 접근성 기본기(시맨틱 마크업, 키보드 이동, 대체 텍스트, 충분한 대비)
-- [ ] 웹사이트에는 연락처로 이메일만 공개한다
 - [ ] 같은 디자인의 제출용 PDF를 만들 수 있다 (PDF에는 전화번호 포함)
 - [ ] GitHub 무료 플랜 공개 저장소에서 GitHub Pages로 배포하고, 검색엔진에는 노출하지 않는다
 
@@ -71,6 +70,8 @@
 | GitHub 무료 플랜 공개 저장소 + Pages, 검색엔진 비노출(noindex) | 무료 배포, 이름 검색에 사이트가 나오지 않게 | — Pending |
 | 로컬 도구는 Node 22 (nvm) | 검사 도구와 스킬 스크립트가 Node 22 이상 필요 | ✓ Good |
 | v1 범위는 결과물을 본 뒤 조정 | 사용자 요청 | — Pending |
+| 운영 상태 배지는 운영 종료·운영 여부 확인 어려움·관련 기사만 표시, 운영 중은 표시 안 함 | Phase 1 화면 검토 때 사용자 요청 (링크알바=운영 종료, puring=확인 어려움) | ✓ Good |
+| 프로젝트별 기간 대신 회사 재직 기간 | 원본에 프로젝트별 기간이 없어 지어내지 않으려고 (D-07) | ✓ Good |
 
 ## Evolution
 
@@ -90,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-11-11 after initialization*
+*Last updated: 2026-11-11 after Phase 1 completion*
