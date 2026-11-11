@@ -1,0 +1,72 @@
+# Project State
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-11-11)
+
+**Core value:** 채용 담당자가 짧은 시간 안에 "어떤 회사에서, 어떤 화면을, 얼마나 직접 퍼블리싱했는지"를 실제 화면과 함께 파악하고, 사이트 자체가 퍼블리셔 실력의 증거가 된다
+**Current focus:** Phase 1 - 기반과 실제 콘텐츠 페이지
+
+## Current Position
+
+Phase: 1 of 5 (기반과 실제 콘텐츠 페이지)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-11-11 — 로드맵 작성 (5단계, v1 요구사항 35개 매핑)
+
+Progress: [░░░░░░░░░░] 0%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 0
+- Average duration: -
+- Total execution time: 0 hours
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+**Recent Trend:**
+- Last 5 plans: -
+- Trend: -
+
+*Updated after each plan completion*
+
+## Accumulated Context
+
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- [Roadmap]: Vertical MVP — Phase 1이 끝나면 실제 내용이 모두 담긴 페이지를 브라우저에서 본다 (lorem 없음)
+- [Roadmap]: CSS는 직접 작성, design-taste 키트 `system.css`는 불러오지 않음. 규칙은 스킬 체커 스크립트로 검증
+- [Roadmap]: 경력·프로젝트는 최신순. PDF는 제출본만(전화번호는 `private/contact.json`에서 주입), 사이트 다운로드 없음
+- [Roadmap]: GitHub 무료 플랜 공개 저장소 + Pages, `noindex` + `robots.txt`
+- [Roadmap]: PDF spike는 Phase 2(레이아웃이 굳기 전)에 수행
+- [Setup]: 로컬 Node 22.23.4 사용 중
+
+### Pending Todos
+
+None yet.
+
+### Blockers/Concerns
+
+- 링크 생존 확인(ADDY 소개서, EXAONE 기사, 운영 중 서비스 URL)과 퍼블리싱 포인트 내용은 Phase 1에서 사용자 확인 필요
+- 스크린샷은 사용자가 `_screenshots/`에 넣어 줄 예정 — Phase 4만 이를 기다린다. 공개 범위(NDA, 하나손해보험·관리자 화면)도 그때 확인
+- 프로젝트별 기간이 따로 없으면 재직 기간으로 표기 (Q5)
+
+## Deferred Items
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| *(none)* | | | |
+
+## Session Continuity
+
+Last session: 2026-11-11
+Stopped at: 로드맵과 STATE 초기화 완료
+Resume file: None
