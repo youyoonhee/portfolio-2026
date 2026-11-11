@@ -38,7 +38,7 @@
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Walking skeleton: 전화번호 pre-commit 훅·금지 경로·파일명 검사, Node 22 도구, 콘텐츠 검사 엔진, 실제 표지·Contact가 담긴 index.html
+- [x] 01-01-PLAN.md — Walking skeleton: 전화번호 pre-commit 훅·금지 경로·파일명 검사, Node 22 도구, 콘텐츠 검사 엔진, 실제 표지·Contact가 담긴 index.html
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 기반과 실제 콘텐츠 페이지 | 0/4 | Not started | - |
+| 1. 기반과 실제 콘텐츠 페이지 | 1/4 | In Progress|  |
 | 2. 디자인 시스템과 반응형 + PDF spike | 0/TBD | Not started | - |
 | 3. 인터랙션과 제출용 PDF | 0/TBD | Not started | - |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
