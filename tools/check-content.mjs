@@ -551,7 +551,7 @@ register('source-reverse', () => {
   const inSource = (n) => [...windows].some((w) => w.includes(n));
   for (const t of visibleTexts) {
     const n = normalize(t);
-    if (n === '' || /^[\d\W_]*$/u.test(n)) continue;
+    if (n === '' || !/\p{L}/u.test(n)) continue; // digits/punctuation-only strings are covered by source-numbers
     if (inSource(n) || allow.has(n)) continue;
     return fail('source-reverse', `text not in source or allowlist: "${t}"`);
   }
