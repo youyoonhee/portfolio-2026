@@ -277,7 +277,9 @@ function checkProjects() {
     if (art.attrs['data-status'] !== pm.status || !(pm.status in labels)) return f('data-status differs or unknown');
     if (art.attrs['aria-labelledby'] !== `${pm.id}-title`) return f('aria-labelledby differs');
     const kids = art.kids.filter(isEl);
-    const wantTags = ['h3', 'dl', 'div', 'figure'].concat(pm.status === 'pending' ? [] : ['div']);
+    // live: no badge, status-links only when there is a link. Other statuses always have a badge.
+    const hasStatusBox = pm.status !== 'live' || Boolean(pm.link);
+    const wantTags = ['h3', 'dl', 'div', 'figure'].concat(hasStatusBox ? ['div'] : []);
     if (JSON.stringify(kids.map((k) => k.tag)) !== JSON.stringify(wantTags)) return f(`child order is ${kids.map((k) => k.tag).join(',')}`);
     const [h3, dl, point, fig, status] = kids;
     if (h3.attrs.id !== `${pm.id}-title` || normalize(textIn(h3)) !== normalize(pm.name)) return f('h3 differs');
@@ -298,12 +300,18 @@ function checkProjects() {
     const rest = collapse(textNodesIn(cd).join(' ')).replace(`${pm.contribution}%`, '').trim();
     const wantRest = pm.contributionContext ? `· ${pm.contributionContext}` : '';
     if (rest !== wantRest) return f(`contribution context differs: "${rest}"`);
-    if (pm.status === 'pending') {
-      if (elsIn(art, 'a').length) return f('pending project must have no link');
+    if (!hasStatusBox) {
+      if (elsIn(art, 'a').length) return f('project without status box must have no link');
+      if (elsIn(art, 'p').some((q) => hasClass(q, 'status'))) return f('live project must not show a status badge');
       continue;
     }
     const badge = elsIn(status, 'p').find((q) => hasClass(q, 'status'));
-    if (!hasClass(status, 'status-links') || !badge || textIn(badge) !== labels[pm.status]) return f('status badge differs');
+    if (!hasClass(status, 'status-links')) return f('status-links wrapper missing');
+    if (pm.status === 'live') {
+      if (badge) return f('live project must not show a status badge');
+    } else if (!badge || textIn(badge) !== labels[pm.status]) {
+      return f('status badge differs');
+    }
     const links = elsIn(status, 'a');
     if (!pm.link) {
       if (links.length) return f('unexpected link');

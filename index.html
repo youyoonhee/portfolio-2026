@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <!--
   프로젝트 article 템플릿 (프로젝트 13개 공통, 원본에 없는 문장은 쓰지 않는다)
-  - 프로젝트 클래스를 가진 article에 id, 플랫폼 data 속성(app 또는 web), 상태 data 속성(live, closed, article, apk, pending), 제목 연결 aria 속성을 둔다.
+  - 프로젝트 클래스를 가진 article에 id, 플랫폼 data 속성(app 또는 web), 상태 data 속성(live, closed, article, unknown), 제목 연결 aria 속성을 둔다.
   - 자식 순서는 고정: 3단계 제목, 메타 목록(dl), 포인트 슬롯, 스크린샷 슬롯, 상태·링크 묶음.
   - 메타 목록의 dt 순서: 소속, 플랫폼, 담당 업무(원본 설명이 있을 때만), 퍼블 기여도. 기간 행은 만들지 않는다(D-07, 회사 재직 기간이 대신함).
   - 퍼블 기여도는 data 요소(숫자 값)와 퍼센트 텍스트이고, 원본에 맥락이 있을 때만 가운뎃점 뒤에 덧붙인다.
   - 포인트 슬롯은 내용이 없는 동안 hidden 상태로 두고, 내용이 생기면 hidden을 지우고 문장 1~2개를 넣는다.
   - 스크린샷 슬롯은 Phase 4 전까지 비워 두고 보조기기에서 숨긴다.
-  - 상태가 pending이면 상태·링크 묶음 자체를 생략한다(배지와 링크 모두 없음).
+  - 상태가 live이면 운영 중 배지를 두지 않는다. 링크가 없으면 상태·링크 묶음 자체를 생략하고, 링크가 있으면 묶음에 링크만 둔다. closed, article, unknown은 배지를 항상 둔다.
   - 외부 링크는 새 탭 링크 속성을 모두 갖고, 목적지가 드러나는 텍스트를 쓴다.
 -->
 
@@ -134,9 +134,6 @@
         </dl>
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
-        <div class="status-links">
-          <p class="status">운영 중</p>
-        </div>
       </article>
 
       <article class="project" id="gi-event" data-platform="web" data-status="live" aria-labelledby="gi-event-title">
@@ -149,9 +146,6 @@
         </dl>
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
-        <div class="status-links">
-          <p class="status">운영 중</p>
-        </div>
       </article>
 
       <article class="project" id="gi-oneday" data-platform="app" data-status="live" aria-labelledby="gi-oneday-title">
@@ -164,9 +158,6 @@
         </dl>
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="app" aria-hidden="true"></figure>
-        <div class="status-links">
-          <p class="status">운영 중</p>
-        </div>
       </article>
     </section>
 
@@ -176,7 +167,7 @@
       <p class="period"><time datetime="2023-09">2023.09</time> ~ <time datetime="2024-03">2024.03</time></p>
       <p class="company-desc">Angular 기반 앱, 반응형 웹 구축 및 유지 보수</p>
 
-      <article class="project" id="kn-puring" data-platform="app" data-status="apk" aria-labelledby="kn-puring-title">
+      <article class="project" id="kn-puring" data-platform="app" data-status="unknown" aria-labelledby="kn-puring-title">
         <h3 id="kn-puring-title">puring</h3>
         <dl class="meta">
           <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
@@ -187,7 +178,7 @@
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="app" aria-hidden="true"></figure>
         <div class="status-links">
-          <p class="status">APK 보유</p>
+          <p class="status">운영 여부 확인 어려움</p>
         </div>
       </article>
 
@@ -216,12 +207,11 @@
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
         <div class="status-links">
-          <p class="status">운영 중</p>
           <p class="links"><a href="https://www.wecankids.club/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
         </div>
       </article>
 
-      <article class="project" id="kn-linkalba" data-platform="web" data-status="pending" aria-labelledby="kn-linkalba-title">
+      <article class="project" id="kn-linkalba" data-platform="web" data-status="closed" aria-labelledby="kn-linkalba-title">
         <h3 id="kn-linkalba-title">링크알바</h3>
         <dl class="meta">
           <div><dt>소속</dt><dd>케이엔큐레이션</dd></div>
@@ -230,6 +220,9 @@
         </dl>
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
+        <div class="status-links">
+          <p class="status">운영 종료</p>
+        </div>
       </article>
 
       <article class="project" id="kn-fsd" data-platform="web" data-status="live" aria-labelledby="kn-fsd-title">
@@ -242,7 +235,6 @@
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
         <div class="status-links">
-          <p class="status">운영 중</p>
           <p class="links"><a href="https://www.fsdcosmetic.com/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
         </div>
       </article>
@@ -257,7 +249,6 @@
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
         <div class="status-links">
-          <p class="status">운영 중</p>
           <p class="links"><a href="https://green-da.co.kr/home" target="_blank" rel="noopener">사이트 보기<span class="visually-hidden"> (새 탭)</span></a></p>
         </div>
       </article>
@@ -310,7 +301,6 @@
         <div class="point" data-slot="point" hidden></div>
         <figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true"></figure>
         <div class="status-links">
-          <p class="status">운영 중</p>
           <p class="links"><a href="https://samsungebiz.com/event/galaxycampus/" target="_blank" rel="noopener">기획전 보기<span class="visually-hidden"> (새 탭)</span></a></p>
         </div>
       </article>

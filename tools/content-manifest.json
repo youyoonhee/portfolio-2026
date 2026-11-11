@@ -50,10 +50,9 @@
     "퍼블리셔 유윤희 포트폴리오",
     "본문 바로가기",
     "(새 탭)",
-    "운영 중",
     "운영 종료",
     "관련 기사",
-    "APK 보유",
+    "운영 여부 확인 어려움",
     "소속",
     "플랫폼",
     "담당 업무",
@@ -193,13 +192,12 @@
     }
   ],
   "statusLabels": {
-    "live": "운영 중",
+    "live": null,
     "closed": "운영 종료",
     "article": "관련 기사",
-    "apk": "APK 보유",
+    "unknown": "운영 여부 확인 어려움",
     "intro": "소개서",
-    "private": "비공개",
-    "pending": null
+    "private": "비공개"
   },
   "projects": [
     {
@@ -246,7 +244,7 @@
       "description": "앱 제작 · APK 보유",
       "contribution": 100,
       "contributionContext": null,
-      "status": "apk",
+      "status": "unknown",
       "link": null,
       "point": null
     },
@@ -285,7 +283,7 @@
       "description": null,
       "contribution": 100,
       "contributionContext": null,
-      "status": "pending",
+      "status": "closed",
       "link": null,
       "point": null
     },
