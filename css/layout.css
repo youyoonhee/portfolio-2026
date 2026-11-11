@@ -45,4 +45,41 @@
     padding-block: var(--space-2xl);
     gap: var(--space-lg);
   }
+
+  /* keywords: surface panel, every block expanded (Phase 3 adds scroll switching) */
+  .keywords {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding-block: var(--space-xl);
+    padding-inline: var(--space-lg);
+
+    @media (min-width: 1024px) {
+      padding-inline: var(--space-3xl);
+    }
+  }
+
+  .keyword-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-lg);
+    padding-block: var(--space-2xl);
+
+    & > * {
+      min-inline-size: 0;
+    }
+
+    & + & {
+      border-block-start: 1px solid var(--color-line);
+    }
+
+    @media (min-width: 640px) {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+      padding-block: var(--space-3xl);
+    }
+  }
 }
