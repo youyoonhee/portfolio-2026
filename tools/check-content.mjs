@@ -4,7 +4,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PHONE_RE } from './check-repo.mjs';
+import { hasPhone, hasPhoneAnywhere } from './check-repo.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const HTML_PATH = resolve(ROOT, 'index.html');
@@ -418,7 +418,14 @@ register('slots', () => {
 
 register('phone', () => {
   if (byTag('a').some((a) => (a.attrs.href || '').toLowerCase().startsWith('tel:'))) return fail('phone', 'tel: link present');
-  if (visibleTexts.some((t) => PHONE_RE.test(t)) || html.split(/\r?\n/).some((l) => PHONE_RE.test(l))) {
+  // per text node, per raw line (attributes/comments), and on whole-document text so a number
+  // split across tags, lines or encoded as entities is still caught (hidden elements included)
+  if (
+    visibleTexts.some((t) => hasPhone(t)) ||
+    html.split(/\r?\n/).some((l) => hasPhone(l)) ||
+    hasPhone(textIn(root)) ||
+    hasPhoneAnywhere(html)
+  ) {
     return fail('phone', 'phone-like pattern in index.html');
   }
   pass('phone');
@@ -489,13 +496,13 @@ register('source-coverage', () => {
   const pats = (manifest.excludedPatterns || []).map((e) => new RegExp(e.pattern, 'g'));
   const unmapped = [];
   source.split(/\r?\n/).forEach((line, i) => {
-    if (PHONE_RE.test(line)) return; // never echoed
+    if (hasPhone(line)) return; // never echoed
     let t = line;
     for (const re of pats) t = t.replace(re, ' ');
     t = normalize(t);
     for (const f of frags) t = t.split(f).join('');
     if (t.replace(/[\d\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e…]/g, '') !== '') {
-      unmapped.push(PHONE_RE.test(t) ? `line ${i + 1} (content hidden)` : `line ${i + 1}: "${t}"`);
+      unmapped.push(hasPhone(t) ? `line ${i + 1} (content hidden)` : `line ${i + 1}: "${t}"`);
     }
   });
   if (unmapped.length) return fail('source-coverage', `unmapped source text on ${unmapped.join('; ')}`);
