@@ -1,11 +1,15 @@
 // Copies Pretendard 400/600 dynamic-subset woff2 + print TTFs from node_modules into fonts/ (lowercase names,
 // because tools/check-repo.mjs enforces lowercase kebab-case) and generates css/fonts.css + css/fonts-print.css.
-import { cpSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
-import { dirname, resolve, join } from 'node:path';
+import { cpSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, resolve, join, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = process.env.FONT_OUT ? resolve(process.env.FONT_OUT) : ROOT;   // 테스트용
+// FONT_OUT may only point inside the repo or the OS temp dir: this script deletes <OUT>/fonts/pretendard and <OUT>/fonts/print.
+const within = (parent, child) => { const r = relative(parent, child); return r === '' || (!r.startsWith('..') && !isAbsolute(r)); };
+if (!within(ROOT, OUT) && !within(resolve(tmpdir()), OUT)) throw new Error(`FONT_OUT must be inside the repo or the temp dir, got ${OUT}`);
 const PKG = join(ROOT, 'node_modules', 'pretendard');
 const WEIGHTS = { 400: 'Regular', 600: 'SemiBold' };
 const webDir = join(PKG, 'dist/web/static');
@@ -14,6 +18,18 @@ const dstPrint = join(OUT, 'fonts/print');
 
 const { version } = JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8'));
 if (version !== '1.3.9') throw new Error(`pretendard ${version} installed, expected exact 1.3.9`);
+
+// validate every source BEFORE deleting anything, so a partial node_modules cannot wipe the committed fonts
+const SUBSET_COUNT = 92;
+const subsetDir = join(webDir, 'woff2-dynamic-subset');
+const missing = [join(PKG, 'dist/LICENSE.txt')];
+for (const name of Object.values(WEIGHTS)) {
+  missing.push(join(webDir, `Pretendard-${name}.css`), join(PKG, 'dist/public/static/alternative', `Pretendard-${name}.ttf`));
+  const got = existsSync(subsetDir) ? readdirSync(subsetDir).filter((f) => f.startsWith(`Pretendard-${name}.subset.`)).length : 0;
+  if (got !== SUBSET_COUNT) throw new Error(`expected ${SUBSET_COUNT} ${name} subset files in ${subsetDir}, found ${got}`);
+}
+const absent = missing.filter((p) => !existsSync(p));
+if (absent.length) throw new Error(`missing pretendard source files: ${absent.join(', ')}`);
 
 rmSync(dst, { recursive: true, force: true });
 rmSync(dstPrint, { recursive: true, force: true });
