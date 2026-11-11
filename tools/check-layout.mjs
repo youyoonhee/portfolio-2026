@@ -1,0 +1,192 @@
+// Zero-dependency CDP layout check at 375/768/1440.
+// Usage: node tools/check-layout.mjs [url] [--shots dist/shots]
+// Without a url it serves the repo root on 127.0.0.1 (ephemeral port).
+import { spawn } from 'node:child_process';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve, sep, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startStaticServer } from './lib/static-server.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const args = process.argv.slice(2);
+let shots = null;
+let urlArg = null;
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--shots') { shots = args[i + 1]; i++; continue; }
+  if (args[i].startsWith('--')) continue;
+  urlArg ??= args[i];
+}
+if (shots) {
+  const dir = resolve(shots);
+  const dist = join(ROOT, 'dist');
+  if (dir !== dist && !dir.startsWith(dist + sep)) {
+    console.error(`--shots must be inside ${dist}`);
+    process.exit(2);
+  }
+  shots = dir;
+}
+
+const EXES = [process.env.BROWSER, 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe'].filter(Boolean);
+const EXE = EXES.find((p) => existsSync(p));
+if (!EXE) { console.error('No Edge/Chrome found. Set BROWSER.'); process.exit(2); }
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const server = urlArg ? null : await startStaticServer(ROOT);
+const url = urlArg ?? server.url;
+const PORT = 9400 + Math.floor(Math.random() * 100);
+const prof = mkdtempSync(join(tmpdir(), 'layoutprof-'));
+const proc = spawn(EXE, ['--headless=new', '--disable-gpu', `--remote-debugging-port=${PORT}`, `--user-data-dir=${prof}`, 'about:blank'], { stdio: 'ignore' });
+let failed = 0;
+const report = (ok, msg) => { if (!ok) failed++; console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}`); };
+let ws;
+
+try {
+  let list;
+  for (let i = 0; i < 60 && !list; i++) {
+    try { list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json(); } catch { await sleep(200); }
+  }
+  if (!list) throw new Error('browser did not start');
+  ws = new WebSocket(list.find((t) => t.type === 'page').webSocketDebuggerUrl);
+  await new Promise((r, j) => { ws.onopen = r; ws.onerror = j; });
+  let id = 0;
+  const pending = new Map();
+  ws.onmessage = (e) => { const m = JSON.parse(e.data); pending.get(m.id)?.(m); };
+  const send = (method, params = {}) => new Promise((res, rej) => {
+    const i = ++id;
+    pending.set(i, (m) => (m.error ? rej(new Error(m.error.message)) : res(m.result)));
+    ws.send(JSON.stringify({ id: i, method, params }));
+  });
+  const evalJs = async (expression) => {
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? 'eval failed');
+    return r.result.value;
+  };
+
+  await send('Page.enable');
+  await send('Emulation.setScrollbarsHidden', { hidden: true });
+  if (shots) mkdirSync(shots, { recursive: true });
+
+  const origin = new URL(url).origin;
+  for (const [w, h] of [[375, 812], [768, 1024], [1440, 900]]) {
+    await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 });
+    await send('Page.navigate', { url });
+    await sleep(800);
+    for (let i = 0; i < 20 && (await evalJs('document.readyState')) !== 'complete'; i++) await sleep(200);
+    await evalJs('document.fonts.ready.then(() => 1)');
+    await sleep(300);
+    const p = `${w}px`;
+
+    // (a) overflow
+    const o = await evalJs(`(() => {
+      const de = document.documentElement, vw = de.clientWidth;
+      const wide = [...document.querySelectorAll('body *')].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return r.width > 0 && (r.right > vw + 0.5 || r.left < -0.5) && getComputedStyle(e).position !== 'fixed';
+      }).slice(0, 5).map((e) => e.tagName.toLowerCase() + (e.className ? '.' + String(e.className).split(' ')[0] : '') + (e.id ? '#' + e.id : ''));
+      return { vw, scrollW: de.scrollWidth, bodyScrollW: document.body.scrollWidth, wide };
+    })()`);
+    const oOk = o.scrollW <= o.vw && o.bodyScrollW <= o.vw;
+    report(oOk, `${p} overflow: viewport ${o.vw}, scrollWidth ${o.scrollW}, body ${o.bodyScrollW}${oOk ? '' : ' offenders ' + JSON.stringify(o.wide)}`);
+
+    // (b) grid columns
+    const want = w === 375 ? 1 : w === 768 ? 2 : 3;
+    const g = await evalJs(`[...document.querySelectorAll('.project-grid')].map((e) => ({ id: e.parentElement.id, cols: getComputedStyle(e).gridTemplateColumns.split(' ').filter(Boolean).length }))`);
+    const gOk = g.length === 4 && g.every((x) => x.cols === want);
+    report(gOk, `${p} grid columns: want ${want}, got ${JSON.stringify(g.map((x) => x.id + ':' + x.cols))}`);
+
+    // (c) equal heights per row
+    const eq = await evalJs(`(() => {
+      const cards = [...document.querySelectorAll('#kn-curation .project-grid > .project')];
+      const rows = new Map();
+      cards.forEach((c) => { const k = c.offsetTop; rows.set(k, (rows.get(k) || []).concat(c.getBoundingClientRect().height)); });
+      return { cards: cards.length, bad: [...rows.values()].filter((hs) => Math.max(...hs) - Math.min(...hs) > 1).length };
+    })()`);
+    report(eq.cards === 7 && eq.bad === 0, `${p} equal heights in kn-curation: ${eq.cards} cards, ${eq.bad} uneven rows`);
+
+    // keyword section shows all three blocks
+    const kw = await evalJs(`(() => {
+      const blocks = [...document.querySelectorAll('#keywords .keyword-block')];
+      return blocks.map((b) => {
+        const r = b.getBoundingClientRect(), t = b.querySelector('.keyword-title'), l = b.querySelectorAll('.keyword-list a');
+        const tr = t ? t.getBoundingClientRect() : { width: 0, height: 0 };
+        const lv = [...l].every((a) => { const x = a.getBoundingClientRect(); return x.width > 0 && x.height > 0 && getComputedStyle(a).visibility === 'visible'; });
+        return r.height > 0 && tr.width > 0 && tr.height > 0 && l.length > 0 && lv && getComputedStyle(b).display !== 'none';
+      });
+    })()`);
+    report(kw.length === 3 && kw.every(Boolean), `${p} keyword section: ${kw.length} blocks, visible ${JSON.stringify(kw)}`);
+
+    // anchors land below the fixed header; meta visible without hovering
+    const jump = async (hash, viaSel) => {
+      await evalJs('window.scrollTo(0, 0)');
+      await sleep(100);
+      if (viaSel) await evalJs(`document.querySelector(${JSON.stringify(viaSel)}).click()`);
+      else await evalJs(`location.hash = ${JSON.stringify(hash)}`);
+      await sleep(400);
+      return evalJs(`(() => {
+        const hd = document.querySelector('.site-header').getBoundingClientRect().bottom;
+        const t = document.querySelector(${JSON.stringify(hash)});
+        const top = t.getBoundingClientRect().top;
+        const m = t.querySelector('.meta');
+        const mr = m ? m.getBoundingClientRect() : null;
+        return { hd, top, metaTop: mr && mr.top, metaBottom: mr && mr.bottom, ih: innerHeight };
+      })()`);
+    };
+    const visible = (sel) => evalJs(`(() => { const a = document.querySelector(${JSON.stringify(sel)}); if (!a) return false; const r = a.getBoundingClientRect(); return r.width > 0 && r.height > 0; })()`);
+    const cases = [
+      ['#career', '.site-nav a[href="#career"]'],
+      ['#keywords', null],
+      ['#abbey-road', '.career a[href="#abbey-road"]'],
+      ['#kn-fsd', '.keyword-list a[href="#kn-fsd"]'],
+      ['#gi-oneday', '.keyword-list a[href="#gi-oneday"]'],
+      ['#ab-peach', null],
+    ];
+    for (const [target, sel] of cases) {
+      const viaSel = sel && (await visible(sel)) ? sel : null;
+      const v = await jump(target, viaSel);
+      const delta = v.top - v.hd;
+      report(delta >= -0.5 && delta <= 32.5, `${p} anchor ${target}${viaSel ? ' (link click)' : ' (hash)'}: offset below header ${delta.toFixed(1)}px`);
+      if (v.metaTop != null) {
+        report(v.metaTop >= v.hd - 0.5 && v.metaBottom <= v.ih + 0.5, `${p} meta of ${target} visible: top ${v.metaTop.toFixed(1)}, bottom ${v.metaBottom.toFixed(1)}, header ${v.hd.toFixed(1)}, viewport ${v.ih}`);
+      }
+    }
+    await evalJs('window.scrollTo(0, 0)');
+
+    // tap targets
+    const tap = await evalJs(`(() => {
+      const bad = [];
+      document.querySelectorAll('.site-nav a, .career a, .keyword-list a, .links a, .cover-mail a, .contact-list a').forEach((a) => {
+        const r = a.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+        const min = a.closest('.keyword-list') ? 48 : 44;
+        if (r.height < min - 0.5) bad.push((a.getAttribute('href') || '').slice(0, 24) + ':' + r.height.toFixed(1));
+      });
+      return bad;
+    })()`);
+    report(tap.length === 0, `${p} tap targets: ${tap.length ? 'too small ' + JSON.stringify(tap.slice(0, 5)) : 'all >= 44px (keywords >= 48px)'}`);
+
+    // fonts, same-origin only
+    const f = await evalJs(`({
+      family: getComputedStyle(document.body).fontFamily,
+      check: document.fonts.check('16px Pretendard'),
+      foreign: performance.getEntriesByType('resource').map((e) => e.name).filter((n) => new URL(n).origin !== ${JSON.stringify(origin)}),
+      woff2: performance.getEntriesByType('resource').filter((e) => /\\.woff2/.test(e.name)).length,
+    })`);
+    report(/^"?Pretendard/.test(f.family) && f.check && f.foreign.length === 0, `${p} fonts: family ${f.family.split(',')[0]}, check ${f.check}, woff2 requests ${f.woff2}, third-party ${f.foreign.length}`);
+
+    if (shots) {
+      const s = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
+      writeFileSync(join(shots, `w${w}.png`), Buffer.from(s.data, 'base64'));
+    }
+  }
+} catch (e) {
+  failed++;
+  console.log(`FAIL check-layout crashed: ${e.message}`);
+} finally {
+  try { ws?.close(); } catch {}
+  proc.kill();
+  await sleep(500);
+  try { rmSync(prof, { recursive: true, force: true }); } catch {}
+  await server?.close();
+}
+process.exit(failed ? 1 : 0);
