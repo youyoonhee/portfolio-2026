@@ -1,2 +1,10 @@
 # 원본 PDF 추출본 (전화번호 포함, 공개 저장소에 올리지 않음)
 .planning/source/
+
+# 원본 스크린샷, 전화번호 등 개인정보, PDF 출력물
+_screenshots/
+private/
+dist/
+*.pdf
+.print-tmp.html
+node_modules/
