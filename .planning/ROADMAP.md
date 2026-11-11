@@ -71,11 +71,25 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 02-01-PLAN.md — Pretendard self-host, 토큰·@layer CSS, fixed 헤더(no-JS 메뉴)와 가운데 표지, 대비 검사
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 02-02-PLAN.md — 키워드 강조 섹션(정적 3블록), 소속 행 삭제(D-12), gi-calculator 이름 변경(D-13), 섹션 번호 재배열, 검사 RED→GREEN
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 02-03-PLAN.md — check-layout(375/768/1440) RED→GREEN, .project-grid container query 카드, 경력·스킬·연락처
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 02-04-PLAN.md — A4 세로 print CSS, Edge CLI PDF spike와 PDF 검사기, 02-PDF-SPIKE.md
 - [ ] 02-05-PLAN.md — design-taste 체커 자문 실행, 분류별 판단표, skip-link·탭 크기·가장자리 수정
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 02-06-PLAN.md — 최종 증거(02-CHECKS.md)와 사용자 확인 체크포인트(375/768/1440, 10초 테스트, spike PDF)
 
 **UI hint**: yes
