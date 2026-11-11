@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "hero": {
+    "eyebrow": "PORTFOLIO.",
+    "lines": ["Publishing,", "beyond the", "expected."],
+    "subline": "Selected work / Career 2026",
+    "intro": "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.",
+    "email": "youyoonhee12@gmail.com"
+  },
+  "contact": {
+    "eyebrow": "07 / Contact",
+    "title": "Contact.",
+    "message": "더 궁금한 점이 있으시다면 편하게 연락 부탁 드립니다.",
+    "emailLabel": "Email",
+    "email": "youyoonhee12@gmail.com"
+  },
+  "footer": "© Publisher Youyoonhee ALL RIGHTS RESERVED",
+  "sourceStrings": [
+    "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.",
+    "더 궁금한 점이 있으시다면 편하게 연락 부탁 드립니다.",
+    "© Publisher Youyoonhee ALL RIGHTS RESERVED",
+    "PORTFOLIO."
+  ],
+  "uiAllowlist": [
+    "Publishing,",
+    "beyond the",
+    "expected.",
+    "Tech stack.",
+    "퍼블리셔 유윤희 포트폴리오",
+    "본문 바로가기",
+    "(새 탭)",
+    "운영 중",
+    "운영 종료",
+    "관련 기사",
+    "APK 보유",
+    "소속",
+    "플랫폼",
+    "담당 업무",
+    "사이트 보기",
+    "관련 기사 보기",
+    "기획전 보기"
+  ],
+  "forbiddenText": [
+    "Phone",
+    "GI Data",
+    "KN Curation",
+    "Bistones",
+    "Abbey Road",
+    "소개서만 확인 가능",
+    "ePbxeupybeolicnsthdeidtnh.ge",
+    "sTteacchk."
+  ],
+  "forbiddenHrefs": [
+    "tel:",
+    "drive.google.com",
+    "samsung.com/sec",
+    "linkalba.com"
+  ],
+  "links": [],
+  "nav": [{ "href": "#contact", "text": "Contact" }],
+  "sections": ["contact"]
+}
