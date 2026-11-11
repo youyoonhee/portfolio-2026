@@ -1,7 +1,7 @@
 // PDF spike runner: prints index.html (or a fixture) to an A4 PDF with headless Edge/Chrome.
 // Output is restricted to <repo>/dist/ (gitignored). No dependencies beyond Node built-ins.
 // usage: node tools/spike-pdf.mjs <out.pdf> [--browser edge|chrome] [--url <url>] [--lazy-fixture]
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, existsSync, statSync, mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep, dirname } from 'node:path';
@@ -47,8 +47,9 @@ function solidPng(w, h, [r, g, b]) {
   ]);
 }
 
+if (opt('--url')?.startsWith('-')) { console.error('refusing: --url must not start with "-"'); process.exit(2); }
 mkdirSync(distDir, { recursive: true });
-if (flag('--lazy-fixture')) {
+if (flag('--lazy-fixture') && !opt('--url')) {
   writeFileSync(join(distDir, 'lazy-fixture.html'),
     '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>lazy fixture</title>' +
     '<style>body{margin:0}.spacer{height:3000px}img{display:block}</style></head><body>' +
@@ -57,6 +58,16 @@ if (flag('--lazy-fixture')) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function killTree(child) {
+  if (!child.pid) return;
+  if (process.platform === 'win32') {
+    // process.kill(-pid) is unsupported on Windows; taskkill /T takes down renderer/GPU children too
+    spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  } else {
+    try { process.kill(-child.pid); } catch { /* already gone */ }
+    try { process.kill(child.pid); } catch { /* already gone */ }
+  }
+}
 const t0 = Date.now();
 let server = null;
 let profile = null;
@@ -73,28 +84,36 @@ try {
   const child = spawn(browser, [
     '--headless=new', '--disable-gpu', `--user-data-dir=${profile}`,
     '--no-pdf-header-footer', `--print-to-pdf=${out.replaceAll('\\', '/')}`, url,
-  ], { detached: true, stdio: 'ignore' });
-  child.unref();
+  ], { detached: process.platform !== 'win32', stdio: 'ignore' });
+  let spawnError = null;
+  let failedExit = null; // the launcher may exit 0 after handing off to the real browser, so only a non-zero exit is conclusive
+  child.on('error', (e) => { spawnError = e; });
+  child.on('exit', (c, sig) => { if (c !== 0) failedExit = `code ${c ?? sig}`; });
 
   let last = -1; let stable = 0;
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
     await sleep(300);
-    if (!existsSync(out)) continue;
-    const size = statSync(out).size;
-    if (size > 0 && size === last) { if (++stable >= 2) break; } else stable = 0;
-    last = size;
+    if (spawnError) break;
+    if (existsSync(out)) {
+      const size = statSync(out).size;
+      if (size > 0 && size === last) { if (++stable >= 2) break; } else stable = 0;
+      last = size;
+    } else if (failedExit) break;
   }
-  if (stable < 2) { console.error('timeout: PDF not written within 30s'); code = 1; }
+  if (spawnError) { console.error(`browser failed to start: ${spawnError.message}`); code = 1; }
+  else if (stable < 2) { console.error(failedExit ? `browser exited (${failedExit}) without writing a PDF` : 'timeout: PDF not written within 30s'); code = 1; }
   else console.log(`ok ${statSync(out).size} bytes in ${Date.now() - t0} ms`);
-  try { process.kill(-child.pid); } catch { /* already gone */ }
-  try { if (child.pid) process.kill(child.pid); } catch { /* already gone */ }
+  killTree(child);
 } finally {
   if (server) await server.close();
   if (profile) {
-    await sleep(500);
-    for (let i = 0; i < 2; i++) {
-      try { rmSync(profile, { recursive: true, force: true }); break; } catch { await sleep(500); }
+    let removed = false;
+    for (let i = 0; i < 5 && !removed; i++) {
+      await sleep(500);
+      try { rmSync(profile, { recursive: true, force: true }); removed = true; } catch (e) {
+        if (i === 4) console.warn(`warn: could not remove temp profile ${profile}: ${e.message}`);
+      }
     }
   }
 }
