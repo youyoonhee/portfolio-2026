@@ -310,7 +310,9 @@ function checkProjects() {
     const f = (msg) => fail('projects', `${pm.id}: ${msg}`);
     const art = arts.find((a) => a.attrs.id === pm.id);
     if (!art) return f('article missing');
-    let sec = art.parent;
+    const grid = art.parent;
+    if (!grid || grid.tag !== 'div' || !hasClass(grid, 'project-grid')) return f('article must sit directly in div.project-grid');
+    let sec = grid.parent;
     while (sec && sec.tag !== 'section') sec = sec.parent;
     if (!sec || sec.attrs.id !== pm.company) return f(`not inside section#${pm.company}`);
     const order = (seenPerCompany[pm.company] ||= []);
