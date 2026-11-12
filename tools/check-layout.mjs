@@ -27,7 +27,8 @@ if (shots) {
   shots = dir;
 }
 
-const EXES = [process.env.BROWSER, 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe'].filter(Boolean);
+// Chrome first: Edge hangs on the dev machine. BROWSER still overrides.
+const EXES = [process.env.BROWSER, process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].filter(Boolean);
 const EXE = EXES.find((p) => existsSync(p));
 if (!EXE) { console.error('No Edge/Chrome found. Set BROWSER.'); process.exit(2); }
 
