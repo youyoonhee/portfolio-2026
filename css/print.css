@@ -55,7 +55,7 @@
     /* cover takes about 40% of page 1 so the keywords can start there */
     .cover {
       min-block-size: 0;
-      padding-block: 12mm;
+      padding-block: 10mm;
       gap: 4mm;
     }
 
@@ -80,7 +80,7 @@
     .keyword-block {
       grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
       align-items: center;
-      padding-block: 6mm;
+      padding-block: 4mm;
       break-inside: avoid;
     }
 
@@ -134,6 +134,113 @@
       color: var(--color-ink);
       font-size: var(--text-body);
       font-weight: 400;
+    }
+
+    /* empty screenshot frames stay out of the PDF; a picture makes the frame appear again */
+    .shot:not(:has(picture, img)) {
+      display: none;
+    }
+
+    /* page plan: cover + keywords | skills + career | companies | contact */
+    #skills {
+      break-before: page;
+    }
+
+    #gi-data {
+      break-before: page;
+    }
+
+    .company > .eyebrow,
+    .company > h2,
+    .company > .period,
+    .company > .company-desc {
+      break-after: avoid;
+    }
+
+    .company > .project-grid {
+      break-before: avoid;
+    }
+
+    #contact {
+      break-inside: avoid;
+      break-after: avoid;
+      margin-block: 8mm 0;
+      padding-block: 8mm;
+    }
+
+    body > footer {
+      break-before: avoid;
+      padding-block: 6mm 0;
+    }
+
+    main > section:not(.cover, .keywords, .company, #contact) {
+      padding-block: 8mm;
+    }
+
+    .skills {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4mm;
+      margin-block-start: 5mm;
+    }
+
+    .skills > div {
+      padding: 4mm;
+    }
+
+    .career {
+      margin-block-start: 4mm;
+    }
+
+    .career > li {
+      grid-template-columns: 1.2fr 2fr auto;
+      align-items: center;
+      gap: 4mm;
+      padding-block: 1mm;
+    }
+
+    .career a {
+      min-block-size: 0;
+    }
+
+    .career .career-period {
+      text-align: end;
+    }
+
+    /* injected phone: label + accent underlined link */
+    .contact-phone-label {
+      display: block;
+      font-size: var(--text-label);
+      font-weight: 600;
+      color: var(--color-ink-3);
+    }
+
+    .contact-phone a {
+      color: var(--color-accent);
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-phone:not([hidden]) {
+      margin-block-start: 2mm;
+    }
+
+    /* motion-state guards: nothing may be printed in its pre-entry state */
+    .nav-overlay {
+      display: none !important;
+    }
+
+    .keyword-block,
+    .keyword-title,
+    .keyword-list,
+    .cover-line,
+    .cover-intro,
+    .cover-mail {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .cover-line {
+      display: block;
     }
   }
 }
