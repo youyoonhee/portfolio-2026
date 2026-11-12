@@ -240,10 +240,13 @@ function initShots(mqReduce) {
   let opener = null;
 
   let cancelFade = null;
+  let scrollLabel = '';
+  let scrollObserver = null;
 
   function finish() {
     if (cancelFade) cancelFade();
     delete dlg.dataset.closing;
+    scrollObserver?.disconnect();
     if (dlg.open) dlg.close();
     opener?.focus({ preventScroll: true });
   }
@@ -282,10 +285,24 @@ function initShots(mqReduce) {
     dlg.dataset.frame = btn.closest('.shot').dataset.frame || 'web';
     scrollEl.replaceChildren(pic);
     if (!dlg.open) dlg.showModal();
+    scrollLabel = `${name} 스크롤 영역`;
+    syncScroll();
+    /* the layout is not final yet: the image may still be loading and the viewport can change while it is open */
+    pic.querySelector('img').addEventListener('load', syncScroll);
+    scrollObserver?.disconnect();
+    if ('ResizeObserver' in window) {
+      scrollObserver = new ResizeObserver(syncScroll);
+      scrollObserver.observe(scrollEl);
+      scrollObserver.observe(pic.querySelector('img'));
+    }
+  }
+
+  /* keyboard users can only scroll a region that is focusable, so decide it from the live layout */
+  function syncScroll() {
     if (scrollEl.scrollHeight > scrollEl.clientHeight) {
       scrollEl.tabIndex = 0;
       scrollEl.setAttribute('role', 'region');
-      scrollEl.setAttribute('aria-label', name);
+      scrollEl.setAttribute('aria-label', scrollLabel);
     } else {
       scrollEl.removeAttribute('tabindex');
       scrollEl.removeAttribute('role');

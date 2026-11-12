@@ -686,7 +686,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
           const cs = getComputedStyle(s);
           return { over: s.scrollHeight > s.clientHeight, ti: s.getAttribute('tabindex'), role: s.getAttribute('role'), lab: s.getAttribute('aria-label'), name: document.querySelector('#gi-calculator h3').textContent, ox: cs.overflowX, sw: s.scrollWidth, cw: s.clientWidth, dw: document.documentElement.scrollWidth, iw: innerWidth };
         });
-        report(`${P} 3 vertical scroll region, no horizontal`, sc.over && sc.ti === '0' && sc.role === 'region' && sc.lab === sc.name && sc.sw <= sc.cw + 1 && sc.dw <= sc.iw, JSON.stringify(sc));
+        report(`${P} 3 vertical scroll region, no horizontal`, sc.over && sc.ti === '0' && sc.role === 'region' && sc.lab === `${sc.name} 스크롤 영역` && sc.sw <= sc.cw + 1 && sc.dw <= sc.iw, JSON.stringify(sc));
 
         const bad = [];
         for (let i = 0; i < 6; i++) { await page.keyboard.press('Tab'); const s = await dlgState(page); if (!(s.inDlg || s.tag === 'BODY') || /shot-link/.test(s.cls)) bad.push(['tab', i, s.tag, s.cls]); }
