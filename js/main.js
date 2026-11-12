@@ -177,9 +177,11 @@ const onKwFocus = (e) => {
 
 let kwObserver = null;
 function enableSwitch() {
+  // the tall switch layout must exist before the first index is computed
+  kw.dataset.switch = 'on';
+  void kw.offsetHeight;
   kwIndex = -1;
   setActive(scrollIndex());
-  kw.dataset.switch = 'on';
   window.addEventListener('scroll', onKwScroll, { passive: true });
   kw.addEventListener('focusin', onKwFocus);
   kwObserver = new IntersectionObserver(() => setActive(scrollIndex()));
