@@ -107,6 +107,6 @@ if (!ok) {
   rmSync(OUT, { force: true });
   process.exitCode = 1;
 } else {
-  const r = spawnSync(process.execPath, ['tools/pdf-report.mjs', OUT, '--text', '--expect-phone'], { stdio: 'inherit', cwd: ROOT });
+  const r = spawnSync(process.execPath, ['tools/pdf-report.mjs', OUT, '--text', '--expect-phone', '--min-page-chars', '80', '--page-plan'], { stdio: 'inherit', cwd: ROOT });
   process.exitCode = r.status ?? 1;
 }

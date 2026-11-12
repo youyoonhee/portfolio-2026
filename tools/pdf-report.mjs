@@ -1,6 +1,6 @@
 // Zero-dependency PDF inspector for the Phase 2 spike. Reads a Skia/Chrome PDF as latin1,
 // reports fonts, pages, links and (with --text) extracts Korean text through ToUnicode CMaps.
-// usage: node tools/pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture] [--expect-phone]
+// usage: node tools/pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture] [--expect-phone] [--min-page-chars <n>] [--page-plan]
 // Extracted text is never printed. The phone guard prints only a generic message.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -12,7 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
-const file = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--json');
+const file = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--json' && args[i - 1] !== '--min-page-chars');
 if (!file) { console.error('usage: pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture]'); process.exit(2); }
 const jsonOut = opt('--json') ? resolve(opt('--json')) : null;
 if (jsonOut && !jsonOut.startsWith(join(root, 'dist') + sep)) { console.error('refusing: --json must be inside dist/'); process.exit(2); }
@@ -160,6 +160,29 @@ if (flag('--text') && !fixture) {
   const splitOk = perPage.every((p) => p.platform === p.contribution);
   console.log(`cards per page (platform/contribution): ${perPage.map((p) => `${p.platform}/${p.contribution}`).join(' ')}`);
   assert('no card split across pages', splitOk, `${perPage.reduce((a, p) => a + p.platform, 0)} cards`);
+  const minChars = Number(opt('--min-page-chars') || 0);
+  if (minChars > 0) {
+    const sFooter = strip(manifest.footer);
+    const lens = pageTexts.map((t) => strip(t).length);
+    const bad = lens.map((n, i) => (n < minChars || strip(pageTexts[i]) === sFooter ? i + 1 : 0)).filter(Boolean);
+    assert('no blank or footer-only page', bad.length === 0, bad.length ? `pages ${bad.join(',')}` : `min ${Math.min(...lens)} chars`);
+    const lastS = strip(pageTexts[pageTexts.length - 1] || '');
+    assert('last page holds contact and footer', lastS.includes(sFooter) && lastS.includes(strip(manifest.contact.title)),
+      `page ${pageTexts.length}`);
+  }
+  if (flag('--page-plan')) {
+    const sp = pageTexts.map(strip);
+    const first = (needle) => { const i = sp.findIndex((t) => t.includes(strip(needle))); return i < 0 ? 0 : i + 1; };
+    const kw = manifest.keywords.map((k) => first(k.title));
+    const hero = manifest.hero.lines.map((l) => first(l));
+    assert('page plan: cover and keywords on page 1', [...hero, ...kw].every((p) => p === 1), `pages ${[...hero, ...kw].join(',')}`);
+    const sk = first(manifest.skillsSection.title); const ca = first(manifest.careerSection.title);
+    assert('page plan: skills and career together', sk === 2 && ca === 2, `pages ${sk},${ca}`);
+    const co = manifest.companies.map((c) => first(c.name + '.'));
+    assert('page plan: companies in order from page 3', co[0] === 3 && co.every((p, i) => p >= 3 && (i === 0 || p >= co[i - 1])), `pages ${co.join(',')}`);
+    const ct = sp.map((t, i) => (t.includes(strip(manifest.contact.title)) ? i + 1 : 0)).filter(Boolean);
+    assert('page plan: contact last', ct.length === 1 && ct[0] === sp.length, `pages ${ct.join(',')}`);
+  }
   const phoneHere = hasPhone(full) || hasPhoneAnywhere(full);
   if (flag('--expect-phone')) {
     // submission mode: the phone must be present. Only yes/no and counts are printed, never digits.
