@@ -147,7 +147,37 @@ Plans:
   4. 스크린샷을 눌러 확대 창을 열고 Tab·Esc로 다룰 수 있으며, 닫으면 포커스가 원래 썸네일로 돌아온다
   5. 스크린샷이 들어간 제출용 PDF가 5MB 이하(최대 10MB 미만)다
 
-**Plans**: TBD
+**Plans**: 7 plans (7 waves, 순차 vertical slice)
+
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — sharp 승인 게이트 + 변환 도구(마스킹, 메타데이터 제거, WebP/JPEG 다중 폭, 승인 게이트, 멱등 재실행, 합성 자체 테스트)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — check-content shots 검사와 check-images 감사(메타데이터, 승인, 참조, 용량), npm check·pre-commit 연결
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04-03-PLAN.md — 앱·웹 프레임과 썸네일 hover/focus, 인쇄 프레임, 요청 가로채기 픽스처, sizes 실측 검사
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 04-04-PLAN.md — 키보드로 다루는 <dialog> 확대 창(페이드, reduced-motion, 포커스 복귀, no-JS 폴백)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 04-05-PLAN.md — PDF JPEG 처리와 품질·폭 사다리(5MB 목표, 10MB 실패), 합성 13장 종단 검사
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 04-06-PLAN.md — 사용자 스크린샷 투입, 가릴 곳·alt 초안, 마스킹 미리보기와 사용자 승인 (checkpoint)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 04-07-PLAN.md — 승인분 공개(미리보기와 바이트 동일), 전체 검사와 실제 PDF 측정, 사용자 최종 확인 (checkpoint)
+
 **UI hint**: yes
 
 ### Phase 5: 검증과 배포
@@ -177,7 +207,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
-| 4. 스크린샷 통합 | 0/TBD | Not started | - |
+| 4. 스크린샷 통합 | 0/7 | Not started | - |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
 ## Notes
