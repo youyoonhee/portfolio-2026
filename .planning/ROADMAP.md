@@ -172,7 +172,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 04-06-PLAN.md — 사용자 스크린샷 투입, 가릴 곳·alt 초안, 마스킹 미리보기와 사용자 승인 (checkpoint)
+- [x] 04-06-PLAN.md — 사용자 스크린샷 투입, 가릴 곳·alt 초안, 마스킹 미리보기와 사용자 승인 (checkpoint)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -207,7 +207,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
-| 4. 스크린샷 통합 | 5/7 | In Progress|  |
+| 4. 스크린샷 통합 | 6/7 | In Progress|  |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
 ## Notes
