@@ -152,7 +152,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — sharp 승인 게이트 + 변환 도구(마스킹, 메타데이터 제거, WebP/JPEG 다중 폭, 승인 게이트, 멱등 재실행, 합성 자체 테스트)
+- [x] 04-01-PLAN.md — sharp 승인 게이트 + 변환 도구(마스킹, 메타데이터 제거, WebP/JPEG 다중 폭, 승인 게이트, 멱등 재실행, 합성 자체 테스트)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -207,7 +207,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
-| 4. 스크린샷 통합 | 0/7 | Not started | - |
+| 4. 스크린샷 통합 | 1/7 | In Progress|  |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
 ## Notes
