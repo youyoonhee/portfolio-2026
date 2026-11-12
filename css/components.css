@@ -87,7 +87,7 @@
     }
   }
 
-  /* declared for Phase 3, unused until JS adds html.js */
+  /* hamburger (JS only), panel and overlay */
   @media (max-width: 899.98px) {
     html.js .nav-toggle {
       display: inline-flex;
@@ -104,34 +104,58 @@
       position: relative;
 
       &::before,
-      &::after {
+      &::after,
+      & .nav-bars {
         content: "";
         position: absolute;
-        inset-inline: 11px;
+        inset-inline-start: 11px;
+        inline-size: 22px;
         block-size: 2px;
         background: currentcolor;
+        transform-origin: center;
+        transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
       }
 
       &::before {
-        inset-block-start: 15px;
-        box-shadow: 0 7px 0 currentcolor;
+        inset-block-start: 14px;
+      }
+
+      & .nav-bars {
+        inset-block-start: 21px;
       }
 
       &::after {
-        inset-block-start: 29px;
+        inset-block-start: 28px;
+      }
+
+      &[aria-expanded="true"]::before {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      &[aria-expanded="true"]::after {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      &[aria-expanded="true"] .nav-bars {
+        opacity: 0;
+        transform: scaleX(0);
       }
     }
 
     html.js .site-nav {
-      display: none;
-    }
-
-    html.js .site-nav[data-open="true"] {
-      display: block;
-      flex-basis: 100%;
-      padding: var(--space-md);
-      border-block-start: 1px solid var(--color-line);
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: 100%;
+      padding-block: var(--space-md);
+      padding-inline: var(--gutter);
       background: var(--color-bg);
+      border-block-start: 1px solid var(--color-line);
+      box-shadow: var(--shadow-header);
+      opacity: 0;
+      transform: translateY(calc(-1 * var(--space-sm)));
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s linear var(--dur);
 
       & ul {
         flex-direction: column;
@@ -141,6 +165,39 @@
       & a {
         min-block-size: 48px;
       }
+
+      &[data-open="true"] {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+      }
+    }
+  }
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: var(--color-overlay);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    cursor: pointer;
+    transition: opacity var(--dur) var(--ease), visibility 0s linear var(--dur);
+
+    &[data-open="true"] {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity var(--dur) var(--ease);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .nav-overlay {
+      display: none;
     }
   }
 

@@ -18,6 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no">
   <meta name="robots" content="noindex, nofollow">
+  <script>document.documentElement.classList.add('js')</script>
   <title>퍼블리셔 유윤희 포트폴리오</title>
   <link rel="stylesheet" href="css/layers.css">
   <link rel="stylesheet" href="css/fonts.css">
@@ -29,6 +30,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/utilities.css">
   <link rel="stylesheet" href="css/print.css">
+  <script type="module" src="js/main.js" onerror="document.documentElement.classList.remove('js')"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -36,7 +38,7 @@
   <header class="site-header">
     <div class="header-bar">
       <p class="wordmark" lang="en">PORTFOLIO.</p>
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="visually-hidden">메뉴</span></button>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="visually-hidden">메뉴</span><span class="nav-bars" aria-hidden="true"></span></button>
       <nav id="site-nav" class="site-nav" aria-label="주요 섹션">
         <ul>
           <li><a href="#keywords">Keywords</a></li>
@@ -48,7 +50,7 @@
     </div>
   </header>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
     <section id="cover" class="cover" aria-labelledby="cover-title">
       <p class="cover-sub" lang="en">Selected work / Career 2026</p>
       <h1 id="cover-title" lang="en">Publishing,<br>beyond the<br>expected.</h1>

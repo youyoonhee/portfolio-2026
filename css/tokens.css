@@ -44,6 +44,12 @@
     /* motion */
     --ease: cubic-bezier(0.2, 0, 0, 1);
     --dur: 200ms;
+    --dur-header: 250ms;
+    --dur-switch: 500ms;
+    --dur-enter: 600ms;
+    --stagger-enter: 150ms;
+    --stagger-switch: 80ms;
+    --color-overlay: rgb(17 24 39 / 0.32);
 
     /* fixed header height: bar only */
     --header-h: 64px;

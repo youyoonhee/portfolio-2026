@@ -5,6 +5,17 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* the only allowed outline removal: main is a programmatic-only focus target (tabindex -1) */
+  main:focus {
+    outline: none;
+  }
+
   section[id],
   article[id] {
     scroll-margin-top: var(--space-md);
