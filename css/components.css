@@ -274,6 +274,48 @@
     }
   }
 
+  /* keyword switch states: written by main.js only inside this media query. The title and the list
+     move and fade (the list 80ms later); nothing is hidden by attribute, display or visibility. */
+  @media screen and (min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+    .keywords[data-switch="on"] .keyword-block {
+      :is(.keyword-title, .keyword-list) {
+        transition: opacity var(--dur-switch) var(--ease), transform var(--dur-switch) var(--ease);
+        will-change: transform, opacity;
+      }
+
+      &[data-state="next"] {
+        pointer-events: none;
+
+        :is(.keyword-title, .keyword-list) {
+          opacity: 0;
+          transform: translateY(var(--space-xl));
+        }
+      }
+
+      &[data-state="past"] {
+        pointer-events: none;
+
+        :is(.keyword-title, .keyword-list) {
+          opacity: 0;
+          transform: translateY(calc(-1 * var(--space-xl)));
+        }
+      }
+
+      &[data-state="active"] {
+        pointer-events: auto;
+
+        :is(.keyword-title, .keyword-list) {
+          opacity: 1;
+          transform: none;
+        }
+
+        .keyword-list {
+          transition-delay: var(--stagger-switch);
+        }
+      }
+    }
+  }
+
   .cover-mail a {
     display: inline-flex;
     align-items: center;

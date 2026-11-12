@@ -97,6 +97,35 @@
     }
   }
 
+  /* keyword switch: a tall track with a sticky one-screen stage; 0.5 screen per keyword, 1.5 screens in total.
+     No overflow on the stage or its ancestors, or sticky and focus rings break. */
+  @media screen and (min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+    .keywords[data-switch="on"] {
+      block-size: calc(100svh + 3 * 50svh);
+      padding-block: 0;
+
+      .keywords-stage {
+        position: sticky;
+        inset-block-start: 0;
+        block-size: 100svh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .eyebrow {
+        padding-block-start: calc(var(--header-h) + var(--space-md));
+      }
+
+      .keyword-block {
+        grid-area: 2 / 1;
+        align-self: center;
+        padding-block: 0;
+        border-block-start: 0;
+      }
+    }
+  }
+
   /* company sections: the section is the size container for its card grid */
   .company {
     container: company / inline-size;

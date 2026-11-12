@@ -131,3 +131,71 @@ const observer = new IntersectionObserver((entries) => {
 }, { rootMargin: '-40% 0px -55% 0px' });
 
 for (const s of document.querySelectorAll('main > section[id]')) observer.observe(s);
+
+/* keyword switch: sticky stage + scroll position drives data-state only (scroll is never intercepted) */
+const kw = document.querySelector('#keywords');
+const kwStage = kw.querySelector('.keywords-stage');
+const kwBlocks = [...kw.querySelectorAll('.keyword-block')];
+const mqSwitch = matchMedia('(min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)');
+
+const slotSize = () => (kw.offsetHeight - kwStage.offsetHeight) / kwBlocks.length;
+const scrollIndex = () => {
+  const i = Math.floor(-kw.getBoundingClientRect().top / slotSize());
+  return Math.min(Math.max(Number.isFinite(i) ? i : 0, 0), kwBlocks.length - 1);
+};
+
+let kwIndex = -1;
+function setActive(i) {
+  if (i === kwIndex) return;
+  kwIndex = i;
+  kw.dataset.active = String(i);
+  kwBlocks.forEach((b, n) => {
+    b.dataset.state = n < i ? 'past' : n > i ? 'next' : 'active';
+  });
+}
+
+let kwTicking = false;
+const onKwScroll = () => {
+  if (kwTicking) return;
+  kwTicking = true;
+  requestAnimationFrame(() => {
+    kwTicking = false;
+    setActive(scrollIndex());
+  });
+};
+
+/* a link in a hidden keyword gets Tab focus; bring that keyword in (instant, whatever scroll-behavior says) */
+const onKwFocus = (e) => {
+  const block = e.target.closest('.keyword-block');
+  if (!block) return;
+  const i = kwBlocks.indexOf(block);
+  if (i !== scrollIndex()) {
+    window.scrollTo({ top: window.scrollY + kw.getBoundingClientRect().top + (i + 0.5) * slotSize(), behavior: 'instant' });
+  }
+  setActive(i);
+};
+
+let kwObserver = null;
+function enableSwitch() {
+  kwIndex = -1;
+  setActive(scrollIndex());
+  kw.dataset.switch = 'on';
+  window.addEventListener('scroll', onKwScroll, { passive: true });
+  kw.addEventListener('focusin', onKwFocus);
+  kwObserver = new IntersectionObserver(() => setActive(scrollIndex()));
+  kwObserver.observe(kw);
+}
+
+function disableSwitch() {
+  window.removeEventListener('scroll', onKwScroll);
+  kw.removeEventListener('focusin', onKwFocus);
+  if (kwObserver) kwObserver.disconnect();
+  kwObserver = null;
+  kwIndex = -1;
+  delete kw.dataset.switch;
+  delete kw.dataset.active;
+  for (const b of kwBlocks) delete b.dataset.state;
+}
+
+mqSwitch.addEventListener('change', () => (mqSwitch.matches ? enableSwitch() : disableSwitch()));
+if (mqSwitch.matches) enableSwitch();
