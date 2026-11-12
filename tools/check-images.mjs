@@ -285,6 +285,23 @@ async function selfTest() {
       const r = run(dir, ['--fast']);
       t('phone-like manifest text', r.code === 1 && r.all.includes('phone-like-text') && !r.all.includes(phone));
     }
+    // check-content: a `..` path that still starts with img/projects/ID/ and points at an existing file must fail
+    {
+      const content = (htmlFile) => {
+        const r = spawnSync(process.execPath, [join(REPO, 'tools', 'check-content.mjs'), '--html', htmlFile, '--only', 'shots'], { encoding: 'utf8' });
+        return { code: r.status, all: `${r.stdout || ''}${r.stderr || ''}` };
+      };
+      t('check-content shots pass on the clean tree', content(join(good, 'index.html')).code === 0);
+      const dir = join(base, 'neg-traversal');
+      cpSync(good, dir, { recursive: true });
+      const h = readFileSync(join(dir, 'index.html'), 'utf8');
+      const ok = 'img/projects/gi-event/gi-event-480.jpg';
+      const evil = 'img/projects/gi-event/../gi-oneday/gi-oneday-360.jpg';
+      t('traversal target exists', existsSync(join(dir, evil)) && h.includes(ok));
+      writeFileSync(join(dir, 'index.html'), h.split(ok).join(evil));
+      const r = content(join(dir, 'index.html'));
+      t('check-content rejects ".." image path', r.code === 1 && r.all.includes('stay inside'));
+    }
     neg('dangling reference', (d) => rmSync(join(imgs(d), 'gi-event-960.webp')), { rule: 'dangling-reference' });
   } finally {
     rmSync(base, { recursive: true, force: true });

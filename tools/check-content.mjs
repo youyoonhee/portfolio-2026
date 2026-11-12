@@ -4,7 +4,7 @@
 //        --html <file>     check another html file (image paths resolve next to it).
 //        --only <a,b>      run only the named checks (load always runs).
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { WEB_SIZES, APP_SIZES } from './lib/shot-markup.mjs';
 import { fileURLToPath } from 'node:url';
 import { hasPhone, hasPhoneAnywhere } from './check-repo.mjs';
@@ -565,6 +565,9 @@ register('shots', () => {
     const urls = [...webp, ...jpg].map((x) => x[0]).concat(img.attrs.src, link.attrs.href);
     for (const u of urls) {
       if (!u.startsWith(prefix)) return f('image path must start with img/projects/ID/');
+      // a `..` segment can climb out of the project folder and still match the prefix and existsSync
+      const inside = relative(resolve(dir, prefix), resolve(dir, u));
+      if (u.split(/[\\/]/).includes('..') || inside.startsWith('..') || isAbsolute(inside)) return f('image path must stay inside img/projects/ID/');
       if (!existsSync(resolve(dir, u))) return f(`file missing: ${u}`);
     }
     const widths = (l) => l.map((x) => x[1]).join(',');
