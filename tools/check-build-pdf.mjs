@@ -15,7 +15,7 @@ function run(env, contact) {
   const file = join(dir, 'contact.json');
   if (contact) writeFileSync(file, JSON.stringify(contact));
   const e = { ...process.env, PDF_CONTACT_FILE: file, ...env };
-  if (!('DEBUG' in env)) delete e.DEBUG;
+  for (const k of ['DEBUG', 'NODE_DEBUG']) if (!(k in env)) delete e[k];
   return spawnSync(process.execPath, ['tools/build-pdf.mjs'], { cwd: ROOT, env: e, encoding: 'utf8' });
 }
 function expectRefusal(name, r, pattern) {
@@ -31,6 +31,9 @@ try {
   const good = { phone: { label: 'x', display: fake } };
 
   expectRefusal('DEBUG=puppeteer:* is refused', run({ DEBUG: 'puppeteer:*' }, good), /unset DEBUG/);
+  expectRefusal('DEBUG=* is refused', run({ DEBUG: '*' }, good), /unset DEBUG/);
+  expectRefusal('DEBUG=pptr* is refused', run({ DEBUG: 'pptr*' }, good), /unset DEBUG/);
+  expectRefusal('NODE_DEBUG=http is refused', run({ NODE_DEBUG: 'http' }, good), /unset DEBUG/);
   expectRefusal('placeholder phone.label is refused', run({}, { phone: { label: '<label>', display: fake } }), /phone.label/);
   expectRefusal('placeholder phone.display is refused', run({}, { phone: { display: '<number>' } }), /phone\.display/);
   const leak = join(ROOT, 'out-test.pdf');

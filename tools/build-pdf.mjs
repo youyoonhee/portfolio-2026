@@ -80,9 +80,10 @@ function loadPhone() {
   return { label: (p.label || '').trim(), display: display.trim(), dial: display.replace(/[^\d+]/g, '') };
 }
 
-// puppeteer's DEBUG protocol logging would echo the injected contact data to stderr
-if (/puppeteer/i.test(process.env.DEBUG || '')) {
-  die('unset DEBUG before building the PDF (protocol logging would print the contact data).');
+// DEBUG / NODE_DEBUG logging (puppeteer's `debug` namespaces, wildcards like DEBUG=*, node internals) could echo
+// the injected contact data to stderr, so any non-empty value is refused, not only ones that name puppeteer
+if (['DEBUG', 'NODE_DEBUG'].some((k) => (process.env[k] || '').trim() !== '')) {
+  die('unset DEBUG and NODE_DEBUG before building the PDF (protocol logging would print the contact data).');
 }
 // a PDF with a phone number must never land in the public tree (only gitignored dist/ is allowed there)
 if (inside(ROOT, OUT) && !inside(DIST, OUT)) die('PDF_OUT must be outside the repo or inside dist/.');
