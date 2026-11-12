@@ -16,13 +16,14 @@
 - ✓ 프로젝트마다 소속·플랫폼·담당 업무·퍼블 기여도·링크/운영 상태 표시 — Validated in Phase 1
 - ✓ 단정한 미니멀 디자인(흰 배경·그린 강조색·Pretendard self-host·직접 작성한 @layer CSS)과 키워드 강조 섹션 — Validated in Phase 2: 디자인 시스템과 반응형
 - ✓ 375px·768px·1440px 반응형, 가로 스크롤 없음, 텍스트 대비 WCAG AA — Validated in Phase 2
+- ✓ 키보드만으로 모든 링크·버튼 접근, 절제된 모션(표지 진입·키워드 전환·헤더), reduced-motion·JS 없음에서도 모든 내용 표시 — Validated in Phase 3: 인터랙션과 제출용 PDF
+- ✓ 명령 하나(npm run pdf)로 같은 디자인의 A4 제출용 PDF, 전화번호는 git 밖 private/contact.json에서 빌드 때만 주입 — Validated in Phase 3
 - ✓ 웹에는 연락처로 이메일만 공개, 저장소·사이트 전화번호 0건(커밋 전 자동 검사) — Validated in Phase 1
 
 ### Active
 
 - [ ] 프로젝트마다 사용자가 제공하는 스크린샷을 보여준다
-- [ ] 웹 접근성 기본기(시맨틱 마크업, 키보드 이동, 대체 텍스트, 충분한 대비)
-- [ ] 같은 디자인의 제출용 PDF를 만들 수 있다 (PDF에는 전화번호 포함)
+- [ ] 웹 접근성 기본기 중 대체 텍스트(스크린샷)는 Phase 4에서 확인
 - [ ] GitHub 무료 플랜 공개 저장소에서 GitHub Pages로 배포하고, 검색엔진에는 노출하지 않는다
 
 ### Out of Scope
@@ -73,6 +74,8 @@
 | 운영 상태 배지는 운영 종료·운영 여부 확인 어려움·관련 기사만 표시, 운영 중은 표시 안 함 | Phase 1 화면 검토 때 사용자 요청 (링크알바=운영 종료, puring=확인 어려움) | ✓ Good |
 | 제출용 PDF는 A4 세로(원본 16:9 슬라이드 대신), 9쪽 허용 | Phase 2 사용자 결정·검토 | ✓ Good |
 | 키워드 강조 섹션(반응형 웹/인터랙션/AI 활용) 추가, 분류는 사용자 제공 | Phase 2 사용자 요청 | ✓ Good |
+| PDF는 puppeteer-core 25.17.0 + 설치된 Chrome, 6쪽 A4 | Phase 3 조사·사용자 승인 | ✓ Good |
+| 로컬 미리보기 서버는 127.0.0.1 전용 | 같은 네트워크에서 비공개 원본 접근 위험 발견(Phase 3) | ✓ Good |
 | 프로젝트별 기간 대신 회사 재직 기간 | 원본에 프로젝트별 기간이 없어 지어내지 않으려고 (D-07) | ✓ Good |
 
 ## Evolution
@@ -93,4 +96,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-11-11 after Phase 2 completion*
+*Last updated: 2026-11-12 after Phase 3 completion*
