@@ -1,6 +1,6 @@
 // Zero-dependency PDF inspector for the Phase 2 spike. Reads a Skia/Chrome PDF as latin1,
 // reports fonts, pages, links and (with --text) extracts Korean text through ToUnicode CMaps.
-// usage: node tools/pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture]
+// usage: node tools/pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture] [--expect-phone]
 // Extracted text is never printed. The phone guard prints only a generic message.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -150,7 +150,7 @@ if (flag('--text') && !fixture) {
   const noFffd = !full.includes('�');
   assert('Korean extraction', missingNames.length === 0 && missingKw.length === 0 && sFull.includes('퍼블기여도') && noFffd,
     `projects ${projectNames.length - missingNames.length}/${projectNames.length}, keywords ${kwTitles.length - missingKw.length}/${kwTitles.length}, U+FFFD ${noFffd ? 0 : 'present'}`);
-  const leaks = ['PORTFOLIO.', '메뉴', 'localhost', '127.0.0.1', 'file:'].filter((s) => sFull.includes(strip(s)));
+  const leaks = ['PORTFOLIO.', '메뉴', 'localhost', '127.0.0.1', 'file:', 'index.html', '://'].filter((s) => sFull.includes(strip(s)));
   assert('chrome hidden (no header, nav, browser footer)', leaks.length === 0, leaks.length ? `found ${leaks.length}` : 'none found');
   const perPage = pageTexts.map((t) => {
     // count dt labels only: a whole text run equal to the label (the word also occurs inside titles)
@@ -160,9 +160,20 @@ if (flag('--text') && !fixture) {
   const splitOk = perPage.every((p) => p.platform === p.contribution);
   console.log(`cards per page (platform/contribution): ${perPage.map((p) => `${p.platform}/${p.contribution}`).join(' ')}`);
   assert('no card split across pages', splitOk, `${perPage.reduce((a, p) => a + p.platform, 0)} cards`);
-  const phoneBad = hasPhone(full) || hasPhoneAnywhere(full);
-  if (phoneBad) console.log('phone-like pattern found');
-  assert('phone guard', !phoneBad);
+  const phoneHere = hasPhone(full) || hasPhoneAnywhere(full);
+  if (flag('--expect-phone')) {
+    // submission mode: the phone must be present. Only yes/no and counts are printed, never digits.
+    assert('submission: phone text present', phoneHere, `phone present: ${phoneHere ? 'yes' : 'no'}`);
+    const tels = uris.filter((u) => u.startsWith('tel:')).map((u) => u.slice(4).replace(/\D/g, ''));
+    const fullDigits = full.replace(/\D/g, '');
+    const telOk = tels.length === 1 && tels[0].length >= 9
+      && fullDigits.includes(tels[0].startsWith('82') ? '0' + tels[0].slice(2) : tels[0]);
+    assert('submission: tel link matches text', telOk, `tel links ${tels.length}`);
+    assert('submission: outline and tags', Boolean(m.outlines && m.structTreeRoot));
+  } else {
+    if (phoneHere) console.log('phone-like pattern found');
+    assert('phone guard', !phoneHere);
+  }
   m.cardsPerPage = perPage;
   m.textPages = pageTexts.map((t) => strip(t).length);
 }
