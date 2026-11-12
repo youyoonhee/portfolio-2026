@@ -36,8 +36,8 @@ function loadPhone() {
   if (typeof display !== 'string' || display.trim().startsWith('<') || digits < 9 || digits > 13) {
     die('phone.display is empty, still a placeholder, or not phone-like (value not shown).');
   }
-  if (p.label !== undefined && typeof p.label !== 'string') {
-    die('phone.label must be a string (value not shown).');
+  if (p.label !== undefined && (typeof p.label !== 'string' || p.label.trim().startsWith('<'))) {
+    die('phone.label must be a string and not a placeholder (value not shown).');
   }
   return { label: (p.label || '').trim(), display: display.trim(), dial: display.replace(/[^\d+]/g, '') };
 }

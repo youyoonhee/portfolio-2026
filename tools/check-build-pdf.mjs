@@ -31,6 +31,7 @@ try {
   const good = { phone: { label: 'x', display: fake } };
 
   expectRefusal('DEBUG=puppeteer:* is refused', run({ DEBUG: 'puppeteer:*' }, good), /unset DEBUG/);
+  expectRefusal('placeholder phone.label is refused', run({}, { phone: { label: '<label>', display: fake } }), /phone.label/);
   expectRefusal('placeholder phone.display is refused', run({}, { phone: { display: '<number>' } }), /phone\.display/);
 } finally {
   rmSync(dir, { recursive: true, force: true });
