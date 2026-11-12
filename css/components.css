@@ -228,6 +228,52 @@
     margin-inline: auto;
   }
 
+  .cover-line {
+    display: block;
+  }
+
+  .cover-line:nth-child(2) {
+    --i: 1;
+  }
+
+  .cover-line:nth-child(3) {
+    --i: 2;
+  }
+
+  /* entrance: once on load, only with JS, on screen, and when motion is allowed (fill-mode both keeps the end state) */
+  @keyframes cover-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--rise, var(--space-lg)));
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    html.js .cover-line {
+      animation: cover-rise var(--dur-enter) var(--ease) both;
+      animation-delay: calc(var(--i, 0) * var(--stagger-enter));
+    }
+
+    html.js .cover-intro,
+    html.js .cover-mail {
+      --rise: var(--space-md);
+      animation: cover-rise var(--dur-switch) var(--ease) both;
+    }
+
+    html.js .cover-intro {
+      animation-delay: 450ms;
+    }
+
+    html.js .cover-mail {
+      animation-delay: 600ms;
+    }
+  }
+
   .cover-mail a {
     display: inline-flex;
     align-items: center;

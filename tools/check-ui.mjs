@@ -302,7 +302,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         const c = getComputedStyle(e);
         return [c.opacity, c.transform];
       }));
-      report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && t === 'none'), JSON.stringify(end));
+      report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
       report('cover 3 stagger 0, 150, 300ms', delays.join() === '0s,0.15s,0.3s', delays.join());
       report('cover 4 sub has no animation', (await cs(page, '.cover-sub', 'animationName')) === 'none');
