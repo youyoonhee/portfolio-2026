@@ -268,34 +268,46 @@ async function runAll(o, only) {
   const ids = Object.keys(manifest.projects);
   if (only && !ids.includes(only)) fail('', 'unknown-project', 'the id given to --only is not in the manifest');
   const todo = only ? [only] : ids;
-  let count = 0;
+  // Phase 1: render and validate every project in memory. Nothing is written until all of them succeeded,
+  // so an error in project N can never leave projects 1..N-1 half published.
+  const jobs = [];
   for (const id of todo) {
     const entry = manifest.projects[id];
     const srcPath = resolveSource(o, id, entry);
     if (srcPath === null) {
       if (entry.status === 'approved') {
-        console.log(`${id}: source missing, keeping committed output`);
-        count++;
+        jobs.push({ id, keep: true });
         continue;
       }
       fail(id, 'source-missing', 'no folder for this project in the source directory');
     }
     const art = readArticle(html, id);
     const files = await render(id, srcPath, entry, art.frame);
-    const widths = files.map((f) => f.w).join(',');
+    jobs.push({ id, entry, art, files });
     if (entry.status === 'approved') {
-      writeFiles(path.join(o.out, id), id, files);
       html = replaceFigure(
         html,
         id,
         figureMarkup({ id, frame: art.frame, title: art.title, alt: entry.alt.trim(), files: files.map(({ w, h }) => ({ w, h })) })
       );
-      console.log(`${id}: approved, widths ${widths}`);
-    } else {
-      writeFiles(path.join(o.preview, id), id, files);
-      console.log(`${id}: draft -> preview`);
     }
+  }
+  // Phase 2: write the image files, then index.html last.
+  let count = 0;
+  for (const job of jobs) {
     count++;
+    if (job.keep) {
+      console.log(`${job.id}: source missing, keeping committed output`);
+      continue;
+    }
+    const widths = job.files.map((f) => f.w).join(',');
+    if (job.entry.status === 'approved') {
+      writeFiles(path.join(o.out, job.id), job.id, job.files);
+      console.log(`${job.id}: approved, widths ${widths}`);
+    } else {
+      writeFiles(path.join(o.preview, job.id), job.id, job.files);
+      console.log(`${job.id}: draft -> preview`);
+    }
   }
   if (!only && fs.existsSync(o.src)) {
     for (const d of fs.readdirSync(o.src, { withFileTypes: true })) {
@@ -676,6 +688,22 @@ async function groupValidation(origHtml) {
     // explicit acknowledgement lets an approved project without masks through
     writeManifest(p, { [id]: { ...good, masks: [], noSensitive: true, status: 'approved' } });
     check('noSensitive acknowledgement accepted', cli(flags(p)).code === 0);
+    // all-or-nothing: project 2 fails while rendering, project 1 (alt changed) must not be published
+    {
+      const html0 = fs.readFileSync(p.html, 'utf8');
+      const outBefore = fs.existsSync(p.out) ? JSON.stringify(fs.readdirSync(p.out, { recursive: true }).sort()) : '';
+      fs.mkdirSync(path.join(p.src, 'gi-oneday'), { recursive: true });
+      fs.writeFileSync(path.join(p.src, 'gi-oneday', 'main.png'), await makeUiImage({ width: 1000, height: 500, format: 'png' }));
+      writeManifest(p, {
+        [id]: { ...good, masks: [], noSensitive: true, status: 'approved', alt: '다른 설명 문구' },
+        'gi-oneday': { ...good, masks: [{ x: 900, y: 10, w: 200, h: 40, kind: 'other' }], status: 'approved' },
+      });
+      const ra = cli(flags(p));
+      const outAfter = fs.existsSync(p.out) ? JSON.stringify(fs.readdirSync(p.out, { recursive: true }).sort()) : '';
+      check('atomic run: fails', ra.code !== 0 && ra.all.includes('rule:mask-outside-image'));
+      check('atomic run: html unchanged', fs.readFileSync(p.html, 'utf8') === html0);
+      check('atomic run: no files written', outAfter === outBefore);
+    }
     // top-level unknown key
     fs.writeFileSync(p.manifest, `${JSON.stringify({ version: 1, projects: {}, zzkey: 1 })}\n`);
     let r = cli(flags(p));
