@@ -1,6 +1,6 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state|shot-frame|shot-nojs]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -618,6 +618,181 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         report(`${P} opacity 1, 11 empty frames aria-hidden`, r.dim === 0 && r.hidden === 11, `${r.dim} ${r.hidden}`);
       });
     }
+  });
+
+  const dlgState = (page) => page.evaluate(() => {
+    const d = document.querySelector('dialog.shot-dialog');
+    const a = document.activeElement;
+    return { open: !!d && d.open, closing: !!d && d.hasAttribute('data-closing'), inDlg: !!d && d.contains(a), tag: a.tagName, cls: String(a.className), op: d ? parseFloat(getComputedStyle(d).opacity) : NaN };
+  });
+  const sy = (page) => page.evaluate(() => window.scrollY);
+  const waitOpen = async (page, want, ms = 400) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) {
+      if ((await dlgState(page)).open === want) return true;
+      await sleep(20);
+    }
+    return (await dlgState(page)).open === want;
+  };
+  const focusBtn = async (page, id) => {
+    await page.evaluate((i) => { const b = document.querySelector(`#${i} button.shot-link`); b.scrollIntoView({ block: 'center', behavior: 'instant' }); b.focus(); }, id);
+    await sleep(100);
+  };
+  const isBtn = (page, id) => page.evaluate((i) => document.activeElement === document.querySelector(`#${i} button.shot-link`), id);
+
+  await scenario('shot-dialog', browser, url, async () => {
+    for (const [vw, vh] of [[375, 812], [768, 1024], [1440, 900]]) {
+      await withPage(browser, url, vw, vh, { shots: true }, async (page) => {
+        const P = `shot-dialog ${vw}`;
+        await loaded(page);
+        const init = await page.evaluate(() => {
+          const bs = [...document.querySelectorAll('button.shot-link')];
+          const d = document.querySelectorAll('body > dialog.shot-dialog');
+          return {
+            n: bs.length,
+            ok: bs.every((b) => b.type === 'button' && b.getAttribute('aria-haspopup') === 'dialog' && b.getAttribute('aria-label') === b.closest('article').querySelector('h3').textContent + ' 화면 크게 보기'),
+            links: document.querySelectorAll('a.shot-link').length,
+            d: d.length, lab: d[0]?.getAttribute('aria-labelledby'), disp: d[0] ? getComputedStyle(d[0]).display : '',
+          };
+        });
+        report(`${P} 1 two buttons, one closed dialog`, init.n === 2 && init.ok && init.links === 0 && init.d === 1 && init.lab === 'shot-dialog-title' && init.disp === 'none', JSON.stringify(init));
+
+        await focusBtn(page, 'gi-calculator');
+        const y0 = await sy(page);
+        await page.keyboard.press('Enter');
+        report(`${P} 2 Enter opens`, await waitOpen(page, true));
+        await sleep(350);
+        const o = await page.evaluate(() => {
+          const d = document.querySelector('dialog.shot-dialog');
+          const c = d.querySelector('.shot-dialog-close');
+          const title = d.querySelector('.shot-dialog-title').textContent;
+          const rest = d.innerText.replace(title, '').replace('닫기', '').trim();
+          const r = d.getBoundingClientRect();
+          const img = d.querySelector('img');
+          const thumb = document.querySelector('#gi-calculator .shot-link img');
+          return {
+            act: document.activeElement === c, txt: c.textContent.trim(), h: c.getBoundingClientRect().height,
+            title, h3: document.querySelector('#gi-calculator h3').textContent, rest,
+            alt: img.alt === thumb.alt && img.alt !== '', sizes: img.getAttribute('sizes') === '100vw',
+            bd: getComputedStyle(d, '::backdrop').backgroundColor, l: r.left, t: r.top,
+          };
+        });
+        const inset = vw === 375 ? 16 : 24;
+        report(`${P} 2 focus on close, title only`, o.act && o.txt === '닫기' && o.h >= 44 && o.title === o.h3 && o.rest === '', JSON.stringify([o.act, o.txt, o.h, o.title, o.rest]));
+        report(`${P} 2 alt, sizes, backdrop, inset`, o.alt && o.sizes && o.bd === 'rgba(17, 24, 39, 0.88)' && Math.abs(o.l - inset) <= 1 && Math.abs(o.t - inset) <= 1, JSON.stringify([o.alt, o.sizes, o.bd, o.l, o.t]));
+
+        const sc = await page.evaluate(() => {
+          const s = document.querySelector('.shot-dialog-scroll');
+          const cs = getComputedStyle(s);
+          return { over: s.scrollHeight > s.clientHeight, ti: s.getAttribute('tabindex'), role: s.getAttribute('role'), lab: s.getAttribute('aria-label'), name: document.querySelector('#gi-calculator h3').textContent, ox: cs.overflowX, sw: s.scrollWidth, cw: s.clientWidth, dw: document.documentElement.scrollWidth, iw: innerWidth };
+        });
+        report(`${P} 3 vertical scroll region, no horizontal`, sc.over && sc.ti === '0' && sc.role === 'region' && sc.lab === sc.name && sc.sw <= sc.cw + 1 && sc.dw <= sc.iw, JSON.stringify(sc));
+
+        const bad = [];
+        for (let i = 0; i < 6; i++) { await page.keyboard.press('Tab'); const s = await dlgState(page); if (!(s.inDlg || s.tag === 'BODY') || /shot-link/.test(s.cls)) bad.push(['tab', i, s.tag, s.cls]); }
+        for (let i = 0; i < 3; i++) { await shiftTab(page); const s = await dlgState(page); if (!(s.inDlg || s.tag === 'BODY') || /shot-link/.test(s.cls)) bad.push(['stab', i, s.tag, s.cls]); }
+        report(`${P} 4 Tab never leaves dialog`, bad.length === 0, JSON.stringify(bad));
+
+        await page.evaluate(() => { window.__closeN = 0; document.querySelector('dialog.shot-dialog').addEventListener('close', () => { window.__closeN++; }); });
+        await page.keyboard.press('Escape');
+        report(`${P} 5 Esc closes`, await waitOpen(page, false));
+        await sleep(100);
+        report(`${P} 5 focus back, scroll kept`, (await isBtn(page, 'gi-calculator')) && Math.abs((await sy(page)) - y0) <= 1, `${await sy(page)} vs ${y0}`);
+        await page.keyboard.press('Enter');
+        await waitOpen(page, true);
+        await sleep(300);
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Escape');
+        await waitOpen(page, false);
+        await sleep(300);
+        const cn = await page.evaluate(() => window.__closeN);
+        report(`${P} 5 double Esc fires close once`, cn === 2, `total ${cn}`);
+
+        await focusBtn(page, 'gi-oneday');
+        await page.keyboard.press('Space');
+        report(`${P} 6 Space opens app card`, await waitOpen(page, true));
+        await sleep(300);
+        await page.mouse.click(5, 5);
+        report(`${P} 6 corner click closes`, await waitOpen(page, false));
+        await sleep(100);
+        report(`${P} 6 focus back to app button`, await isBtn(page, 'gi-oneday'));
+        await page.keyboard.press('Enter');
+        await waitOpen(page, true);
+        await sleep(300);
+        const ib = await page.evaluate(() => { const r = document.querySelector('dialog.shot-dialog img').getBoundingClientRect(); return [r.x + r.width / 2, r.y + Math.min(r.height, 200) / 2]; });
+        await page.mouse.click(ib[0], ib[1]);
+        await sleep(350);
+        report(`${P} 6 image click keeps open`, (await dlgState(page)).open);
+        await page.click('.shot-dialog-close');
+        report(`${P} 6 close button closes`, await waitOpen(page, false));
+        await sleep(100);
+
+        await focusBtn(page, 'gi-calculator');
+        const y1 = await sy(page);
+        await page.keyboard.press('Enter');
+        await waitOpen(page, true);
+        await sleep(300);
+        await page.mouse.move(vw - 3, vh / 2);
+        await page.mouse.wheel({ deltaY: 600 });
+        await sleep(200);
+        report(`${P} 7 page scroll locked`, Math.abs((await sy(page)) - y1) <= 1, `${await sy(page)} vs ${y1}`);
+        await page.keyboard.press('Escape');
+        await waitOpen(page, false);
+        await sleep(100);
+
+        await page.keyboard.press('Enter');
+        await sleep(30);
+        const op30 = (await dlgState(page)).op;
+        await sleep(300);
+        const op300 = (await dlgState(page)).op;
+        report(`${P} 8 fade-in`, op30 < 1 && op300 === 1, `${op30} -> ${op300}`);
+      });
+    }
+  });
+
+  await scenario('shot-reduced', browser, url, () => withPage(browser, url, 1440, 900, { shots: true, reduce: true }, async (page) => {
+    const P = 'shot-reduced';
+    await loaded(page);
+    await focusBtn(page, 'gi-calculator');
+    await page.evaluate(() => {
+      window.__sawClosing = false;
+      new MutationObserver(() => { if (document.querySelector('dialog.shot-dialog[data-closing]')) window.__sawClosing = true; }).observe(document.querySelector('dialog.shot-dialog'), { attributes: true });
+    });
+    await page.keyboard.press('Enter');
+    const s = await dlgState(page);
+    report(`${P} opens instantly at opacity 1`, s.open && s.op === 1, JSON.stringify(s));
+    await page.keyboard.press('Escape');
+    const c = await dlgState(page);
+    report(`${P} closes instantly`, !c.open, JSON.stringify(c));
+    await sleep(300);
+    const saw = await page.evaluate(() => window.__sawClosing);
+    report(`${P} no data-closing, focus back`, !saw && (await isBtn(page, 'gi-calculator')), `closing=${saw}`);
+  }));
+
+  await scenario('shot-fallback', browser, url, async () => {
+    const ctx = await browser.createBrowserContext();
+    try {
+      const page = await ctx.newPage();
+      const fx = await buildShotFixture();
+      await page.setRequestInterception(true);
+      page.on('request', (req) => {
+        const path = new URL(req.url()).pathname;
+        if (req.resourceType() === 'document' && (path === '/' || path === '/index.html')) req.respond({ status: 200, contentType: 'text/html; charset=utf-8', body: fx.html });
+        else if (fx.assets.has(path)) req.respond({ status: 200, ...fx.assets.get(path) });
+        else req.continue();
+      });
+      await page.evaluateOnNewDocument(() => { delete HTMLDialogElement.prototype.showModal; });
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.goto(url, { waitUntil: 'load' });
+      await sleep(150);
+      const r = await page.evaluate(() => ({
+        a: [...document.querySelectorAll('a.shot-link')].filter((x) => x.getAttribute('href')).length,
+        b: document.querySelectorAll('button.shot-link').length,
+        d: document.querySelectorAll('dialog.shot-dialog').length,
+        js: document.documentElement.classList.contains('js'),
+      }));
+      report('shot-fallback links stay, no dialog, html.js kept', r.a === 2 && r.b === 0 && r.d === 0 && r.js, JSON.stringify(r));
+    } finally { await ctx.close().catch(() => {}); }
   });
 } finally {
   await closeBrowser(browser);
