@@ -4,7 +4,7 @@
 // usage: npm run pdf
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startStaticServer } from './lib/static-server.mjs';
 import { launchChrome, closeBrowser } from './lib/browser.mjs';
@@ -14,21 +14,34 @@ const DIST = join(ROOT, 'dist');
 const OUT = join(DIST, '퍼블리셔 유윤희-포트폴리오.pdf');
 const CONTACT = process.env.PDF_CONTACT_FILE ? resolve(process.env.PDF_CONTACT_FILE) : join(ROOT, 'private', 'contact.json');
 
+const CONTACT_NAME = process.env.PDF_CONTACT_FILE ? `${basename(CONTACT)} (PDF_CONTACT_FILE)` : 'private/contact.json';
 const redact = (s) => String(s).replace(/[0-9]/g, '#');
 function die(msg) {
   console.error(`build-pdf: ${redact(msg)}`);
   process.exit(1);
 }
 
+// a contact override inside the repo must be gitignored, or the number could be committed by accident
+function warnIfTrackable() {
+  if (!process.env.PDF_CONTACT_FILE) return;
+  const rel = relative(ROOT, CONTACT);
+  if (rel.startsWith('..') || isAbsolute(rel)) return; // outside the repo
+  const r = spawnSync('git', ['check-ignore', '-q', rel], { cwd: ROOT });
+  if (r.status !== 0) {
+    console.error(`build-pdf: warning: ${basename(CONTACT)} is inside the repo and not gitignored. Keep it outside the repo or in private/.`);
+  }
+}
+
 function loadPhone() {
+  warnIfTrackable();
   if (!existsSync(CONTACT)) {
-    die('private/contact.json is missing. Copy tools/contact.example.json to private/contact.json and fill it in.');
+    die(`${CONTACT_NAME} is missing. Copy tools/contact.example.json there and fill it in.`);
   }
   let data;
   try {
     data = JSON.parse(readFileSync(CONTACT, 'utf8'));
   } catch {
-    die('private/contact.json is not valid JSON (content not shown).');
+    die(`${CONTACT_NAME} is not valid JSON (content not shown).`);
   }
   const p = data && data.phone;
   const display = p && p.display;
