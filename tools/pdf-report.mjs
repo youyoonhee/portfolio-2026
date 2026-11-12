@@ -66,6 +66,7 @@ const m = {
   fontFile2: count(/\/FontFile2/g),
   toUnicode: count(/\/ToUnicode/g),
   images: count(/\/Subtype \/Image/g),
+  dct: count(/\/DCTDecode/g),
   uriCount: uris.length,
   mailtoCount: uris.filter((u) => u.startsWith('mailto:')).length,
   outlines: /\/Outlines/.test(raw),

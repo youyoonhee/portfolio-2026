@@ -8,11 +8,13 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 import { articleIds } from './lib/shot-markup.mjs';
 import { makeUiImage } from './lib/shot-fixtures.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MEASURE = process.argv.includes('--measure');
+const KEEP = process.argv.includes('--keep'); // keep the temp folder for debugging (prints its path)
 const SOFT_TARGET = 5000000;
 const MEASURE_CAP = '1000';
 const LADDER_SOFT = '1000';
@@ -49,12 +51,15 @@ try {
   const html0 = readFileSync(join(site, 'index.html'), 'utf8');
   const ids = articleIds(html0);
   const projects = {};
-  for (const id of ids) {
+  for (const [n, id] of ids.entries()) {
     const frame = new RegExp(`id="${id}"[\\s\\S]*?data-frame="(web|app)"`).exec(html0)[1];
     const dir = join(tmp, 'src', id);
     mkdirSync(dir, { recursive: true });
     const size = frame === 'app' ? APP_SIZE : WEB_SIZE;
-    writeFileSync(join(dir, 'main.png'), await makeUiImage({ ...size, label: 'Synthetic', format: 'png' }));
+    // a distinct block near the top so every image differs even where the frame crops a long screen (PDF dedupes equal images)
+    const base = await makeUiImage({ ...size, label: 'Synthetic', format: 'png' });
+    const marker = { create: { width: 60, height: 60, channels: 3, background: { r: 20 + n * 18, g: 200 - n * 10, b: 40 + n * 15 } } };
+    writeFileSync(join(dir, 'main.png'), await sharp(base).composite([{ input: marker, left: 300 + n * 40, top: 200 }]).png().toBuffer());
     projects[id] = {
       source: 'main.png',
       crop: null,
@@ -72,7 +77,7 @@ try {
   const filled = (readFileSync(join(site, 'index.html'), 'utf8').match(/<picture>/g) || []).length;
   if (!(opt.status === 0 && ids.length === 13 && filled === 13)) {
     say(false, `setup (exit ${opt.status}, articles ${ids.length}, filled ${filled})`);
-    process.exit(1);
+    throw new Error('setup failed');
   }
   say(true, 'setup');
 
@@ -87,7 +92,12 @@ try {
     const env = { ...process.env, PDF_SITE_ROOT: site, PDF_OUT: out, PDF_CONTACT_FILE: contact, ...extra };
     delete env.DEBUG;
     const r = spawnSync(process.execPath, [join(ROOT, 'tools', 'build-pdf.mjs')], { cwd: ROOT, env, encoding: 'utf8', timeout: 600000 });
-    return { code: r.status, stdout: r.stdout || '' };
+    const stdout = r.stdout || '';
+    // only status lines are echoed, never extracted text
+    for (const l of `${stdout}\n${r.stderr || ''}`.split(/\r?\n/)) {
+      if (/^(FAIL|WARN|pdf step|build-pdf)/.test(l)) console.log(`  | ${l}`);
+    }
+    return { code: r.status, stdout };
   };
   const pagesOf = (s) => Number((/^pages (\d+)$/m.exec(s) || [])[1] || 0);
 
@@ -103,18 +113,20 @@ try {
   console.log(`normal: pages ${pagesOf(normal.stdout)}`);
   if (MEASURE) {
     console.log(`measured pages ${pagesOf(normal.stdout)}`);
-    process.exit(failed ? 1 : 0);
+  } else {
+    const ladder = build({ PDF_SOFT_BYTES: LADDER_SOFT });
+    say(ladder.code === 0, 'ladder: builder exit 0');
+    say(/pdf step 3/.test(ladder.stdout), 'ladder: all steps used');
+    say(/WARN size over target/.test(ladder.stdout), 'ladder: size warning shown');
+
+    const hard = build({ PDF_HARD_BYTES: HARD_TINY });
+    say(hard.code === 1, 'hard: builder exit 1');
+    say(!existsSync(out), 'hard: PDF removed');
   }
-
-  const ladder = build({ PDF_SOFT_BYTES: LADDER_SOFT });
-  say(ladder.code === 0, 'ladder: builder exit 0');
-  say(/pdf step 3/.test(ladder.stdout), 'ladder: all steps used');
-  say(/WARN size over target/.test(ladder.stdout), 'ladder: size warning shown');
-
-  const hard = build({ PDF_HARD_BYTES: HARD_TINY });
-  say(hard.code === 1, 'hard: builder exit 1');
-  say(!existsSync(out), 'hard: PDF removed');
+} catch (err) {
+  say(false, `unexpected error (${String(err && err.message).slice(0, 80)})`);
 } finally {
-  rmSync(tmp, { recursive: true, force: true });
+  if (KEEP) console.log(`kept ${tmp}`);
+  else rmSync(tmp, { recursive: true, force: true });
 }
 process.exit(failed ? 1 : 0);
