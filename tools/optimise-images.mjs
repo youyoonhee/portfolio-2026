@@ -19,6 +19,7 @@ import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { hasPhone } from './check-repo.mjs';
 import {
   APP_WIDTHS, ladder, emptyFigure, figureMarkup, readArticle, articleIds, replaceFigure,
 } from './lib/shot-markup.mjs';
@@ -56,11 +57,330 @@ export function parseArgs(argv) {
   return { opts };
 }
 
-async function render() { throw new Error('not implemented'); }
-async function runAll() { throw new Error('not implemented'); }
-async function clear() { throw new Error('not implemented'); }
-async function info() { throw new Error('not implemented'); }
-async function annotate() { throw new Error('not implemented'); }
+// ---------------------------------------------------------------------------------------------
+// Pipeline
+// ---------------------------------------------------------------------------------------------
+
+const MASK_COLOR = '#111827'; // opaque solid box; never blur or pixelate (D-10)
+const FORMATS = ['webp', 'jpg']; // AVIF can be added here later (RESEARCH AVIF decision)
+const KINDS = ['person-name', 'phone', 'email', 'internal-url', 'account', 'id-number', 'status-bar', 'other'];
+const ENTRY_KEYS = ['source', 'crop', 'masks', 'alt', 'status'];
+const SOURCE_RE = /^[a-z0-9][a-z0-9._-]*\.(png|jpe?g|webp)$/;
+const IMAGE_EXT = /\.(png|jpe?g|webp)$/i;
+const HEIC_EXT = /\.hei[cf]$/i;
+const ALT_MAX = 40;
+const WEBP_MAX_SIDE = 16383;
+const BIG_BYTES = 1500000;
+const OTHER_BYTES = 600000;
+const APP_ASPECT = 9 / 16;
+const ASPECT_TOLERANCE = 0.15;
+const GRID_STEP = 100;
+
+// Errors name the project id and the rule token, never the field value (manifest content may be sensitive).
+function fail(id, rule, text) {
+  throw new Error(`${id ? `${id}: ` : ''}rule:${rule} (${text})`);
+}
+
+const isInt = (v) => Number.isInteger(v);
+const onlyKeys = (obj, keys) => Object.keys(obj).every((k) => keys.includes(k));
+const isRect = (r) => r && typeof r === 'object' && isInt(r.x) && isInt(r.y) && isInt(r.w) && isInt(r.h);
+
+function loadManifest(file, html) {
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    fail('', 'manifest-unreadable', 'manifest is missing or not valid JSON');
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) fail('', 'unknown-key', 'manifest must be an object');
+  if (!onlyKeys(data, ['version', 'projects'])) fail('', 'unknown-key', 'unknown top-level key');
+  if (data.version !== 1) fail('', 'bad-version', 'version must be 1');
+  if (!data.projects || typeof data.projects !== 'object' || Array.isArray(data.projects)) {
+    fail('', 'bad-projects', 'projects must be an object');
+  }
+  const ids = articleIds(html);
+  for (const [id, e] of Object.entries(data.projects)) {
+    if (!ids.includes(id)) fail('', 'unknown-project', 'a manifest project id is not an article id in the html');
+    if (hasPhone(id)) fail('', 'phone-like', 'a project id looks like a phone number');
+    validateEntry(id, e);
+  }
+  return data;
+}
+
+function validateEntry(id, e) {
+  if (!e || typeof e !== 'object' || Array.isArray(e)) fail(id, 'unknown-key', 'entry must be an object');
+  if (!onlyKeys(e, ENTRY_KEYS)) fail(id, 'unknown-key', 'unknown entry key');
+  if (e.source !== undefined) {
+    const s = typeof e.source === 'string' ? e.source.normalize('NFC') : '';
+    if (HEIC_EXT.test(s)) fail(id, 'heic-source', 'export the image as PNG or JPEG');
+    if (!SOURCE_RE.test(s)) fail(id, 'bad-source-name', 'source must be an ASCII kebab file name without a folder');
+    if (hasPhone(s)) fail(id, 'phone-like', 'source looks like a phone number');
+  }
+  if (e.crop !== null && e.crop !== undefined) {
+    if (!isRect(e.crop) || !onlyKeys(e.crop, ['x', 'y', 'w', 'h']) || e.crop.w <= 0 || e.crop.h <= 0 || e.crop.x < 0 || e.crop.y < 0) {
+      fail(id, 'bad-crop', 'crop must be integer x,y,w,h inside the image');
+    }
+  }
+  if (!Array.isArray(e.masks)) fail(id, 'bad-mask', 'masks must be a list');
+  for (const m of e.masks) {
+    if (!isRect(m) || !onlyKeys(m, ['x', 'y', 'w', 'h', 'kind']) || m.w <= 0 || m.h <= 0) {
+      fail(id, 'bad-mask', 'a mask needs integer x,y,w,h (w,h > 0) and kind');
+    }
+    if (!KINDS.includes(m.kind)) fail(id, 'unknown-kind', 'mask kind is not in the allowed list');
+  }
+  const alt = typeof e.alt === 'string' ? e.alt.trim() : '';
+  if (!alt) fail(id, 'empty-alt', 'alt text is required');
+  if (/^(스크린샷|이미지)/.test(alt)) fail(id, 'alt-prefix', 'alt must not start with a filler word');
+  if ([...alt].length > ALT_MAX) fail(id, 'alt-too-long', `alt is longer than ${ALT_MAX} characters`);
+  if (hasPhone(alt)) fail(id, 'alt-phone', 'alt looks like a phone number');
+  if (e.status !== 'draft' && e.status !== 'approved') fail(id, 'bad-status', 'status must be draft or approved');
+}
+
+function listImages(dir) {
+  return fs.readdirSync(dir).filter((n) => IMAGE_EXT.test(n)).sort();
+}
+
+// returns the absolute path of the one source image, or null when the folder does not exist
+function resolveSource(o, id, entry) {
+  const dir = path.join(o.src, id);
+  if (!fs.existsSync(dir)) return null;
+  const names = fs.readdirSync(dir);
+  if (entry.source === undefined && names.some((n) => HEIC_EXT.test(n))) {
+    fail(id, 'heic-source', 'HEIC/HEIF cannot be read: export the image as PNG or JPEG');
+  }
+  const images = listImages(dir);
+  if (entry.source !== undefined) {
+    const want = entry.source.normalize('NFC');
+    const hit = images.find((n) => n.normalize('NFC') === want);
+    if (!hit) fail(id, 'source-missing', 'the source file named in the manifest is not in the folder');
+    return path.join(dir, hit);
+  }
+  if (images.length === 0) fail(id, 'source-missing', 'no image in the folder');
+  if (images.length > 1) fail(id, 'multiple-images', `${images.length} images found, set "source" in the manifest (one image per project)`);
+  return path.join(dir, images[0]);
+}
+
+const rectInside = (r, w, h) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
+const rectsIntersect = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+async function flattenRotated(srcPath) {
+  return sharp(srcPath)
+    .rotate() // apply EXIF orientation; coordinates in the manifest are in this rotated space
+    .flatten({ background: '#ffffff' })
+    .toColourspace('srgb')
+    .png()
+    .toBuffer({ resolveWithObject: true });
+}
+
+function warnAspect(id, frame, w, h) {
+  if (frame === 'app' && Math.abs(w / h - APP_ASPECT) / APP_ASPECT > ASPECT_TOLERANCE) {
+    console.warn(`${id}: warning: app image is not close to 9:16 (${w}x${h}), the card frame will crop it`);
+  }
+}
+
+async function render(id, srcPath, entry, frame) {
+  const { data: flat, info } = await flattenRotated(srcPath);
+  const W = info.width;
+  const H = info.height;
+  warnAspect(id, frame, W, H);
+  const crop = entry.crop || null;
+  if (crop && !rectInside(crop, W, H)) fail(id, 'crop-outside-image', 'crop is not inside the image');
+  for (const m of entry.masks) {
+    if (!rectInside(m, W, H)) fail(id, 'mask-outside-image', 'a mask is not inside the image');
+    if (crop && rectsIntersect(m, crop) && !rectInside(m, crop.x + crop.w, crop.y + crop.h)) {
+      fail(id, 'mask-crop-partial', 'a mask is only partly inside the crop');
+    }
+    if (crop && rectsIntersect(m, crop) && (m.x < crop.x || m.y < crop.y)) {
+      fail(id, 'mask-crop-partial', 'a mask is only partly inside the crop');
+    }
+  }
+  let base = flat;
+  if (entry.masks.length) {
+    base = await sharp(flat)
+      .composite(
+        entry.masks.map((m) => ({
+          input: { create: { width: m.w, height: m.h, channels: 3, background: MASK_COLOR } },
+          left: m.x,
+          top: m.y,
+        }))
+      )
+      .png()
+      .toBuffer();
+  }
+  if (crop) {
+    base = await sharp(base).extract({ left: crop.x, top: crop.y, width: crop.w, height: crop.h }).png().toBuffer();
+  }
+  const srcW = crop ? crop.w : W;
+  const srcH = crop ? crop.h : H;
+  const widths = ladder(frame, srcW);
+  const biggest = widths[widths.length - 1];
+  if (Math.round((biggest * srcH) / srcW) > WEBP_MAX_SIDE) {
+    fail(id, 'crop-needed', `output would be taller than ${WEBP_MAX_SIDE}px, set a crop`);
+  }
+  const files = [];
+  for (const w of widths) {
+    const r = sharp(base).resize({ width: w, withoutEnlargement: true, kernel: 'lanczos3' });
+    const webp = await r.clone().webp({ quality: 80, effort: 5, smartSubsample: true }).toBuffer();
+    const jpg = await r.clone().jpeg({ quality: 82, mozjpeg: true, chromaSubsampling: '4:4:4' }).toBuffer();
+    const h = (await sharp(jpg).metadata()).height;
+    files.push({ w, h, bufs: { webp, jpg } });
+  }
+  for (const f of files) {
+    for (const ext of FORMATS) {
+      const limit = f.w === biggest ? BIG_BYTES : OTHER_BYTES;
+      if (f.bufs[ext].length > limit) {
+        console.warn(`${id}: warning: ${id}-${f.w}.${ext} is ${f.bufs[ext].length} bytes (limit ${limit}), consider a crop`);
+      }
+    }
+  }
+  return files;
+}
+
+function writeFiles(dir, id, files) {
+  fs.mkdirSync(dir, { recursive: true });
+  const keep = new Set();
+  for (const f of files) {
+    for (const ext of FORMATS) {
+      const name = `${id}-${f.w}.${ext}`;
+      keep.add(name);
+      fs.writeFileSync(path.join(dir, name), f.bufs[ext]);
+    }
+  }
+  removeStale(dir, id, keep);
+}
+
+function removeStale(dir, id, keep) {
+  const re = new RegExp(`^${id}-\\d+\\.(webp|jpg)$`);
+  for (const n of fs.readdirSync(dir)) if (re.test(n) && !keep.has(n)) fs.rmSync(path.join(dir, n));
+}
+
+async function runAll(o, only) {
+  let html = fs.readFileSync(o.html, 'utf8');
+  const original = html;
+  const manifest = loadManifest(o.manifest, html);
+  const ids = Object.keys(manifest.projects);
+  if (only && !ids.includes(only)) fail('', 'unknown-project', 'the id given to --only is not in the manifest');
+  const todo = only ? [only] : ids;
+  let count = 0;
+  for (const id of todo) {
+    const entry = manifest.projects[id];
+    const srcPath = resolveSource(o, id, entry);
+    if (srcPath === null) {
+      if (entry.status === 'approved') {
+        console.log(`${id}: source missing, keeping committed output`);
+        count++;
+        continue;
+      }
+      fail(id, 'source-missing', 'no folder for this project in the source directory');
+    }
+    const art = readArticle(html, id);
+    const files = await render(id, srcPath, entry, art.frame);
+    const widths = files.map((f) => f.w).join(',');
+    if (entry.status === 'approved') {
+      writeFiles(path.join(o.out, id), id, files);
+      html = replaceFigure(
+        html,
+        id,
+        figureMarkup({ id, frame: art.frame, title: art.title, alt: entry.alt.trim(), files: files.map(({ w, h }) => ({ w, h })) })
+      );
+      console.log(`${id}: approved, widths ${widths}`);
+    } else {
+      writeFiles(path.join(o.preview, id), id, files);
+      console.log(`${id}: draft -> preview`);
+    }
+    count++;
+  }
+  if (!only && fs.existsSync(o.src)) {
+    for (const d of fs.readdirSync(o.src, { withFileTypes: true })) {
+      if (d.isDirectory() && !ids.includes(d.name)) {
+        console.log(`${d.name}: ${listImages(path.join(o.src, d.name)).length} image(s), not in manifest, skipped`);
+      }
+    }
+  }
+  if (html !== original) fs.writeFileSync(o.html, html);
+  console.log(`${count} projects`);
+  return 0;
+}
+
+async function clear(o, id) {
+  let html = fs.readFileSync(o.html, 'utf8');
+  if (!articleIds(html).includes(id)) fail('', 'unknown-project', 'the id given to --clear is not an article id');
+  const art = readArticle(html, id);
+  const next = replaceFigure(html, id, emptyFigure(art.frame));
+  if (next !== html) fs.writeFileSync(o.html, next);
+  const dir = path.join(o.out, id);
+  if (fs.existsSync(dir)) {
+    removeStale(dir, id, new Set());
+    if (fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+  }
+  console.log(`${id}: cleared, empty frame restored`);
+  try {
+    const m = JSON.parse(fs.readFileSync(o.manifest, 'utf8'));
+    if (m.projects?.[id]?.status === 'approved') {
+      console.log('note: the manifest entry is still approved, the next run regenerates it (set draft or remove it to keep it empty)');
+    }
+  } catch {
+    // no manifest, nothing to remind about
+  }
+  return 0;
+}
+
+async function info(o) {
+  const html = fs.readFileSync(o.html, 'utf8');
+  const ids = articleIds(html);
+  if (!fs.existsSync(o.src)) {
+    console.log('no source folder');
+    return 0;
+  }
+  for (const d of fs.readdirSync(o.src, { withFileTypes: true })) {
+    if (!d.isDirectory()) continue;
+    const known = ids.includes(d.name);
+    const frame = known ? readArticle(html, d.name).frame : '-';
+    const dir = path.join(o.src, d.name);
+    const images = listImages(dir);
+    console.log(`${d.name}: article=${known ? 'yes' : 'no'} frame=${frame} images=${images.length}`);
+    for (const n of images) {
+      const { info: i } = await flattenRotated(path.join(dir, n));
+      const fmt = (await sharp(path.join(dir, n)).metadata()).format;
+      console.log(`  ${n.normalize('NFC')}: ${i.width}x${i.height} ${fmt}`);
+      if (known) warnAspect(d.name, frame, i.width, i.height);
+    }
+  }
+  return 0;
+}
+
+async function annotate(o, id) {
+  const html = fs.readFileSync(o.html, 'utf8');
+  if (!articleIds(html).includes(id)) fail('', 'unknown-project', 'the id given to --annotate is not an article id');
+  let entry = { masks: [] };
+  try {
+    entry = JSON.parse(fs.readFileSync(o.manifest, 'utf8')).projects?.[id] || entry;
+  } catch {
+    // no manifest yet: grid only
+  }
+  const srcPath = resolveSource(o, id, entry);
+  if (srcPath === null) fail(id, 'source-missing', 'no folder for this project in the source directory');
+  const { data, info: i } = await flattenRotated(srcPath);
+  const parts = [];
+  for (let x = 0; x < i.width; x += GRID_STEP) {
+    parts.push(`<line x1="${x}" y1="0" x2="${x}" y2="${i.height}" stroke="#0ea5e9" stroke-opacity="0.45"/>`);
+    parts.push(`<text x="${x + 2}" y="12" font-size="12" font-family="sans-serif" fill="#0369a1">${x}</text>`);
+  }
+  for (let y = 0; y < i.height; y += GRID_STEP) {
+    parts.push(`<line x1="0" y1="${y}" x2="${i.width}" y2="${y}" stroke="#0ea5e9" stroke-opacity="0.45"/>`);
+    parts.push(`<text x="2" y="${y + 12}" font-size="12" font-family="sans-serif" fill="#0369a1">${y}</text>`);
+  }
+  (entry.masks || []).forEach((m, n) => {
+    parts.push(`<rect x="${m.x}" y="${m.y}" width="${m.w}" height="${m.h}" fill="none" stroke="#dc2626" stroke-width="3"/>`);
+    parts.push(`<text x="${m.x + 4}" y="${m.y + 18}" font-size="18" font-family="sans-serif" fill="#dc2626">${n + 1}</text>`);
+  });
+  const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${i.width}" height="${i.height}">${parts.join('')}</svg>`);
+  fs.mkdirSync(o.preview, { recursive: true });
+  const outFile = path.join(o.preview, `${id}-grid.png`);
+  await sharp(data).composite([{ input: svg, left: 0, top: 0 }]).png().toFile(outFile);
+  console.log(outFile);
+  return 0;
+}
 // ---------------------------------------------------------------------------------------------
 // Self-test: synthetic images in the OS temp folder, the repo's own files are never touched.
 // ---------------------------------------------------------------------------------------------
@@ -364,5 +684,4 @@ async function main() {
   }
 }
 
-void render;
 process.exitCode = await main();
