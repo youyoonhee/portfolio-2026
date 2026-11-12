@@ -1,8 +1,12 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state|shot-frame|shot-nojs]
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import sharp from 'sharp';
+import { ladder, figureMarkup, readArticle, replaceFigure } from './lib/shot-markup.mjs';
+import { makeUiImage } from './lib/shot-fixtures.mjs';
 import { startStaticServer } from './lib/static-server.mjs';
 import { launchChrome, closeBrowser } from './lib/browser.mjs';
 
@@ -39,9 +43,48 @@ const headerH = (page) => page.evaluate(() => parseFloat(getComputedStyle(docume
 const attr = (page, sel, name) => page.evaluate((s, n) => document.querySelector(s)?.getAttribute(n) ?? null, sel, name);
 const css = (page, sel, prop, pseudo) => page.evaluate((s, p, ps) => getComputedStyle(document.querySelector(s), ps || null)[p], sel, prop, pseudo);
 
+// Screenshot fixture: synthetic figures for one web and one app card, served by request
+// interception only. Nothing is written to the repo (index.html and img/ stay untouched).
+let shotFixture = null;
+async function buildShotFixture() {
+  if (shotFixture) return shotFixture;
+  const specs = [['gi-calculator', 'web', 1920, 4800], ['gi-oneday', 'app', 1080, 1920]];
+  let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  const assets = new Map();
+  for (const [id, frame, width, height] of specs) {
+    const src = await makeUiImage({ width, height, label: id, format: 'png' });
+    const files = [];
+    for (const w of ladder(frame, width)) {
+      const h = Math.round((w * height) / width);
+      const base = sharp(src).resize(w, h);
+      assets.set(`/img/projects/__fixture__/${id}/${id}-${w}.jpg`, { body: await base.clone().jpeg({ quality: 70 }).toBuffer(), contentType: 'image/jpeg' });
+      assets.set(`/img/projects/__fixture__/${id}/${id}-${w}.webp`, { body: await base.clone().webp({ quality: 70 }).toBuffer(), contentType: 'image/webp' });
+      files.push({ w, h });
+    }
+    const { title } = readArticle(html, id);
+    html = replaceFigure(html, id, figureMarkup({ id, frame, title, alt: '합성 테스트 화면', files, base: `img/projects/__fixture__/${id}/` }));
+  }
+  shotFixture = { html, assets };
+  return shotFixture;
+}
+
 async function newPage(browser, url, vw, vh, opts = {}) {
   const ctx = await browser.createBrowserContext();
   const page = await ctx.newPage();
+  if (opts.shots) {
+    const fx = await buildShotFixture();
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      const path = new URL(req.url()).pathname;
+      if (req.resourceType() === 'document' && (path === '/' || path === '/index.html')) {
+        req.respond({ status: 200, contentType: 'text/html; charset=utf-8', body: fx.html });
+      } else if (fx.assets.has(path)) {
+        req.respond({ status: 200, ...fx.assets.get(path) });
+      } else {
+        req.continue();
+      }
+    });
+  }
   if (opts.noJs) await page.setJavaScriptEnabled(false);
   if (opts.reduce) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await page.setViewport({ width: vw, height: vh });
@@ -456,6 +499,126 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const pos = await page.evaluate(() => { const e = document.querySelector('.keywords-stage'); return e ? getComputedStyle(e).position : 'static'; });
     report('print-state 3 stage not sticky', pos !== 'sticky', pos);
   }));
+
+  /* ---- Plan 04-03: screenshot frames (fixture figures, repo untouched) ---- */
+  const loaded = (page) => page.evaluate(async () => {
+    const imgs = [...document.querySelectorAll('.shot img')];
+    imgs.forEach((i) => { i.loading = 'eager'; });
+    await Promise.all(imgs.map((i) => (i.complete ? 0 : new Promise((r) => { i.onload = r; i.onerror = r; }))));
+    return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0);
+  });
+  const matrixScale = (t) => { const m = /^matrix\(([^,]+),/.exec(t); return m ? parseFloat(m[1]) : NaN; };
+  const near = (a, b) => Math.abs(a - b) <= 1;
+
+  await scenario('shot-frame', browser, url, async () => {
+    for (const [vw, vh] of [[1440, 900], [375, 812]]) {
+      await withPage(browser, url, vw, vh, { shots: true }, async (page) => {
+        const P = `shot-frame ${vw}`;
+        report(`${P} images loaded`, await loaded(page));
+        const g = await page.evaluate(() => {
+          const rect = (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; };
+          const box = (f) => { const r = f.getBoundingClientRect(); const cs = getComputedStyle(f); return { x: r.x + parseFloat(cs.borderLeftWidth), y: r.y + parseFloat(cs.borderTopWidth), w: f.clientWidth, h: f.clientHeight }; };
+          const web = document.querySelector('#gi-calculator .shot');
+          const app = document.querySelector('#gi-oneday .shot');
+          const wi = web.querySelector('img');
+          const al = app.querySelector('.shot-link');
+          const wc = getComputedStyle(wi);
+          const ac = getComputedStyle(al);
+          return {
+            pic: getComputedStyle(web.querySelector('picture')).display,
+            wb: box(web), wr: rect(wi), fit: wc.objectFit, pos: wc.objectPosition,
+            ab: box(app), ar: rect(al), rad: ac.borderTopLeftRadius, bw: ac.borderTopWidth,
+            filledBefore: getComputedStyle(app, '::before').content,
+            emptyBefore: getComputedStyle(document.querySelector('#kn-puring .shot'), '::before').content,
+            linkCursor: ac.cursor,
+          };
+        });
+        report(`${P} picture is block`, g.pic === 'block', g.pic);
+        report(`${P} web img fills frame`, near(g.wr.x, g.wb.x) && near(g.wr.y, g.wb.y) && near(g.wr.w, g.wb.w) && near(g.wr.h, g.wb.h), JSON.stringify([g.wr, g.wb]));
+        report(`${P} web img cover, top`, g.fit === 'cover' && g.pos === '50% 0%', `${g.fit} ${g.pos}`);
+        report(`${P} app box <=200 and 9/16`, g.ar.w <= 200.5 && near(g.ar.w, (g.ar.h * 9) / 16), JSON.stringify(g.ar));
+        report(`${P} app box centred`, near(g.ar.x + g.ar.w / 2, g.ab.x + g.ab.w / 2), JSON.stringify([g.ar.x, g.ar.w, g.ab.x, g.ab.w]));
+        report(`${P} app radius 16px, border 1px`, g.rad === '16px' && g.bw === '1px', `${g.rad} ${g.bw}`);
+        report(`${P} filled app has no placeholder, empty keeps it`, g.filledBefore === 'none' && g.emptyBefore !== 'none', `${g.filledBefore} | ${g.emptyBefore}`);
+        report(`${P} link cursor zoom-in`, g.linkCursor === 'zoom-in', g.linkCursor);
+        const empty = await page.evaluate(() => {
+          const e = [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img'));
+          return { n: e.length, bad: e.filter((f) => f.getAttribute('aria-hidden') !== 'true' || f.querySelector('a, button, [tabindex]') || getComputedStyle(f).cursor !== 'auto').length };
+        });
+        report(`${P} empty frames aria-hidden, unfocusable, cursor auto`, empty.n === 11 && empty.bad === 0, JSON.stringify(empty));
+
+        if (vw === 1440) {
+          await page.hover('#gi-calculator .shot-link');
+          await sleep(400);
+          const hv = await page.evaluate(() => ({
+            t: getComputedStyle(document.querySelector('#gi-calculator .shot-link img')).transform,
+            card: getComputedStyle(document.querySelector('#gi-calculator')).transform,
+          }));
+          report(`${P} hover scale 1.02`, Math.abs(matrixScale(hv.t) - 1.02) < 0.005, hv.t);
+          report(`${P} hover lifts card -2px`, /^matrix\(1, 0, 0, 1, 0, -2\)$/.test(hv.card), hv.card);
+          await page.mouse.move(0, 0);
+          await page.focus('#gi-calculator .shot-link');
+          await page.keyboard.press('Shift');
+          await sleep(400);
+          const fo = await page.evaluate(() => {
+            const l = document.querySelector('#gi-calculator .shot-link');
+            const f = getComputedStyle(l.closest('.shot'));
+            return { focused: document.activeElement === l, st: f.outlineStyle, w: f.outlineWidth, c: f.outlineColor, own: getComputedStyle(l).outlineStyle, t: getComputedStyle(l.querySelector('img')).transform };
+          });
+          report(`${P} focus ring on frame, accent 2px, none on link`, fo.focused && fo.st === 'solid' && fo.w === '2px' && fo.c === ACCENT && fo.own === 'none', JSON.stringify(fo));
+          report(`${P} focus scale 1.02`, Math.abs(matrixScale(fo.t) - 1.02) < 0.005, fo.t);
+          await page.emulateMediaType('print');
+          await sleep(200);
+          const pr = await page.evaluate(() => {
+            const fr = [...document.querySelectorAll('.shot')];
+            const filled = fr.filter((f) => f.querySelector('picture, img'));
+            const emptyF = fr.filter((f) => !f.querySelector('picture, img'));
+            return {
+              filled: filled.map((f) => getComputedStyle(f).display),
+              empty: emptyF.every((f) => getComputedStyle(f).display === 'none'),
+              cursor: getComputedStyle(document.querySelector('.shot-link')).cursor,
+              tf: getComputedStyle(document.querySelector('#gi-calculator .shot-link img')).transform,
+            };
+          });
+          report(`${P} print: filled shown, empty hidden, no cursor, no transform`, pr.filled.length === 2 && pr.filled.every((d) => d !== 'none') && pr.empty && pr.cursor === 'auto' && pr.tf === 'none', JSON.stringify(pr));
+        }
+      });
+    }
+    await withPage(browser, url, 1440, 900, { shots: true, reduce: true }, async (page) => {
+      await loaded(page);
+      await page.hover('#gi-calculator .shot-link');
+      await sleep(400);
+      const t = await css(page, '#gi-calculator .shot-link img', 'transform');
+      report('shot-frame reduced-motion: no scale', t === 'none', t);
+    });
+  });
+
+  await scenario('shot-nojs', browser, url, async () => {
+    for (const [vw, vh] of [[1440, 900], [375, 812]]) {
+      await withPage(browser, url, vw, vh, { noJs: true, shots: true }, async (page) => {
+        const P = `shot-nojs ${vw}`;
+        const r = await page.evaluate(async () => {
+          const links = [...document.querySelectorAll('a.shot-link')];
+          const res = [];
+          for (const a of links) {
+            const x = await fetch(a.getAttribute('href'));
+            res.push({ href: a.getAttribute('href'), status: x.status, type: x.headers.get('content-type') });
+          }
+          return {
+            a: links.length,
+            b: document.querySelectorAll('button.shot-link').length,
+            res,
+            dim: [...document.querySelectorAll('body *')].filter((e) => getComputedStyle(e).opacity !== '1').length,
+            hidden: [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img') && f.getAttribute('aria-hidden') === 'true').length,
+          };
+        });
+        report(`${P} two links, no buttons`, r.a === 2 && r.b === 0, `${r.a} ${r.b}`);
+        const okHref = r.res.length === 2 && r.res[0].href.endsWith('-1920.jpg') && r.res[1].href.endsWith('-1080.jpg') && r.res.every((x) => x.status === 200 && x.type === 'image/jpeg');
+        report(`${P} big JPEG targets`, okHref, JSON.stringify(r.res));
+        report(`${P} opacity 1, 11 empty frames aria-hidden`, r.dim === 0 && r.hidden === 11, `${r.dim} ${r.hidden}`);
+      });
+    }
+  });
 } finally {
   await closeBrowser(browser);
   await server.close();

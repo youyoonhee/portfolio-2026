@@ -7,8 +7,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve, sep, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startStaticServer } from './lib/static-server.mjs';
+import { WEB_SIZES, APP_SIZES } from './lib/shot-markup.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+// Breakpoint edges of the WEB_SIZES formula (664, 984, 1264) and neighbours.
+const SHOT_VIEWPORTS = [[320, 812], [360, 800], [375, 812], [414, 896], [640, 900], [700, 900], [768, 1024], [983, 900], [984, 900], [1024, 768], [1264, 900], [1440, 900]];
 const args = process.argv.slice(2);
 let shots = null;
 let urlArg = null;
@@ -217,6 +220,43 @@ try {
       const s = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
       writeFileSync(join(shots, `w${w}.png`), Buffer.from(s.data, 'base64'));
     }
+  }
+
+  // Plan 04-03: the `sizes` formula is measured at the breakpoint edges. Only shot-sizes runs here;
+  // the Phase 1-3 checks above stay at their original four viewports.
+  for (const [w, h] of SHOT_VIEWPORTS) {
+    await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 });
+    await send('Page.navigate', { url: `${url}${url.includes('?') ? '&' : '?'}s=${w}` });
+    for (let i = 0; i < 100; i++) {
+      if (await evalJs(`location.href.includes('s=${w}') && document.readyState === 'complete'`)) break;
+      await sleep(100);
+    }
+    await evalJs('document.fonts.ready.then(() => 1)');
+    for (let i = 0, last = -1; i < 20; i++) {
+      const sh = await evalJs('document.documentElement.scrollHeight');
+      if (sh === last) break;
+      last = sh;
+      await sleep(50);
+    }
+    const r = await evalJs(`((webSizes, appSizes) => {
+      const parts = (str) => { const out = []; let d = 0, cur = ''; for (const ch of str) { if (ch === '(') d++; if (ch === ')') d--; if (ch === ',' && d === 0) { out.push(cur.trim()); cur = ''; } else cur += ch; } out.push(cur.trim()); return out; };
+      const pick = (str) => {
+        const list = parts(str);
+        for (const e of list) {
+          const m = /^(\\([^)]*\\))\\s+(.+)$/.exec(e);
+          if (!m) return e;
+          if (matchMedia(m[1]).matches) return m[2];
+        }
+        return list[list.length - 1];
+      };
+      const probe = (len) => { const p = document.createElement('div'); p.style.cssText = 'position:absolute;visibility:hidden;block-size:1px;inline-size:' + len; document.body.appendChild(p); const v = p.offsetWidth; p.remove(); return v; };
+      const webLen = pick(webSizes), appLen = pick(appSizes);
+      const wp = probe(webLen), ap = probe(appLen);
+      const webs = [...document.querySelectorAll('.shot[data-frame="web"]')].map((f) => f.clientWidth);
+      const apps = [...document.querySelectorAll('.shot[data-frame="app"]')].map((f) => parseFloat(getComputedStyle(f, '::before').width));
+      return { webLen, wp, ap, webMax: Math.max(...webs), webOk: webs.every((cw) => wp >= cw - 1), appMax: Math.max(...apps), appOk: apps.every((aw) => aw <= 200.5 && aw <= ap + 1) };
+    })(${JSON.stringify(WEB_SIZES)}, ${JSON.stringify(APP_SIZES)})`);
+    report(r.webOk && r.appOk, `${w}px shot-sizes (web max ${r.webMax}, sizes ${r.wp}px; app max ${r.appMax}, sizes ${r.ap}px)`);
   }
 } catch (e) {
   failed++;
