@@ -1,13 +1,21 @@
 // Content check engine: compares index.html with tools/content-manifest.json
 // and (when present, local only) the extracted source text.
 // Flags: --require-source  fail instead of skipping when the source text is missing.
+//        --html <file>     check another html file (image paths resolve next to it).
+//        --only <a,b>      run only the named checks (load always runs).
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { WEB_SIZES, APP_SIZES } from './lib/shot-markup.mjs';
 import { fileURLToPath } from 'node:url';
 import { hasPhone, hasPhoneAnywhere } from './check-repo.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const HTML_PATH = resolve(ROOT, 'index.html');
+const argValue = (flag) => {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 ? process.argv[i + 1] : undefined;
+};
+const HTML_PATH = argValue('--html') ? resolve(argValue('--html')) : resolve(ROOT, 'index.html');
+const ONLY = argValue('--only') ? new Set(argValue('--only').split(',').map((x) => x.trim())) : null;
 const MANIFEST_PATH = resolve(ROOT, 'tools', 'content-manifest.json');
 const SOURCE_PATH = resolve(ROOT, '.planning', 'source', 'portfolio-pdf.txt');
 const REQUIRE_SOURCE = process.argv.includes('--require-source');
@@ -497,12 +505,76 @@ register('slots', () => {
       return fail('slots', `${pm.id}: empty point slot must be hidden and empty`);
     }
     const shot = descendants(art).find((e) => isEl(e) && e.attrs['data-slot'] === 'screenshot');
-    if (!shot || descendants(shot).length) return fail('slots', `${pm.id}: screenshot slot missing or not empty`);
+    const bad = `${pm.id}: screenshot slot must be empty+aria-hidden or a.shot-link`;
+    if (!shot) return fail('slots', bad);
+    const kids = shot.kids.filter((k) => isEl(k) || collapse(k.text) !== '');
+    if (!kids.length) {
+      if (shot.attrs['aria-hidden'] !== 'true') return fail('slots', bad);
+    } else if (kids.length !== 1 || !isEl(kids[0]) || kids[0].tag !== 'a' || !hasClass(kids[0], 'shot-link') || 'aria-hidden' in shot.attrs) {
+      return fail('slots', bad);
+    }
   }
   for (const el of all) {
     if ('hidden' in el.attrs && textIn(el) !== '') return fail('slots', `hidden <${el.tag}> contains text`);
   }
   pass('slots');
+});
+
+register('shots', () => {
+  const dir = dirname(HTML_PATH);
+  let filled = 0;
+  let empty = 0;
+  for (const pm of manifest.projects || []) {
+    const art = all.find((e) => e.tag === 'article' && e.attrs.id === pm.id);
+    if (!art) continue;
+    const f = (msg) => fail('shots', `${pm.id}: ${msg}`);
+    const shot = descendants(art).find((e) => isEl(e) && e.attrs['data-slot'] === 'screenshot');
+    if (!shot) return f('screenshot slot missing');
+    if (!shot.kids.some((k) => isEl(k) || collapse(k.text) !== '')) { empty++; continue; }
+    filled++;
+    const link = shot.kids.filter(isEl)[0];
+    if (!link || link.tag !== 'a' || !hasClass(link, 'shot-link')) return f('a.shot-link missing');
+    const h3 = elsIn(art, 'h3')[0];
+    const label = link.attrs['aria-label'];
+    if (!link.attrs.href) return f('a.shot-link href missing');
+    if (!label || label !== `${textIn(h3)} 화면 크게 보기`) return f('aria-label must be h3 + " 화면 크게 보기"');
+    const pics = elsIn(link, 'picture');
+    if (pics.length !== 1) return f('exactly one picture required');
+    const kids = pics[0].kids.filter(isEl);
+    if (kids.length !== 2 || kids[0].tag !== 'source' || kids[1].tag !== 'img') return f('picture must be source then img');
+    const [srcEl, img] = kids;
+    if (srcEl.attrs.type !== 'image/webp' || !srcEl.attrs.srcset || !srcEl.attrs.sizes) return f('source needs type=image/webp, srcset, sizes');
+    for (const k of ['src', 'srcset', 'sizes', 'alt', 'width', 'height']) {
+      if (img.attrs[k] === undefined) return f(`img ${k} missing`);
+    }
+    if (img.attrs.loading !== 'lazy' || img.attrs.decoding !== 'async') return f('img needs loading=lazy decoding=async');
+    const alt = img.attrs.alt.trim();
+    if (!alt) return f('alt is empty');
+    if ([...alt].length > 40) return f('alt longer than 40 characters');
+    if (/^(스크린샷|이미지)/.test(alt)) return f('alt must not start with 스크린샷/이미지');
+    if (alt === label) return f('alt must differ from aria-label');
+    for (const k of ['width', 'height']) {
+      if (!/^[1-9]\d*$/.test(img.attrs[k])) return f(`img ${k} must be a positive integer`);
+    }
+    const want = pm.platform === 'app' ? APP_SIZES : WEB_SIZES;
+    if (img.attrs.sizes !== want || srcEl.attrs.sizes !== want) return f('sizes differs from the frame default');
+    const parse = (v) => v.split(',').map((x) => x.trim().split(/\s+/));
+    const webp = parse(srcEl.attrs.srcset);
+    const jpg = parse(img.attrs.srcset);
+    const prefix = `img/projects/${pm.id}/`;
+    const urls = [...webp, ...jpg].map((x) => x[0]).concat(img.attrs.src, link.attrs.href);
+    for (const u of urls) {
+      if (!u.startsWith(prefix)) return f('image path must start with img/projects/ID/');
+      if (!existsSync(resolve(dir, u))) return f(`file missing: ${u}`);
+    }
+    const widths = (l) => l.map((x) => x[1]).join(',');
+    if (webp.some((x) => !/^\d+w$/.test(x[1] || '')) || widths(webp) !== widths(jpg)) return f('webp and jpeg srcset widths differ');
+    const num = (x) => parseInt(x[1], 10);
+    const biggest = jpg.reduce((a, b) => (num(b) > num(a) ? b : a));
+    if (link.attrs.href !== biggest[0]) return f('href must be the largest jpeg');
+  }
+  if (results.some((r) => !r.ok && r.line.startsWith('FAIL shots'))) return;
+  pass(`shots (${filled} filled, ${empty} empty)`);
 });
 
 register('phone', () => {
@@ -617,6 +689,7 @@ register('source-coverage', () => {
 });
 
 for (const [name, fn] of checks) {
+  if (ONLY && name !== 'load' && !ONLY.has(name)) continue;
   try { fn(); } catch (e) { fail(name, `exception: ${e.message}`); }
 }
 finish();

@@ -588,6 +588,44 @@ async function groupPipeline(origHtml) {
   }
 }
 
+async function groupContent(origHtml) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'shots-content-'));
+  try {
+    const p = paths(root);
+    p.out = path.join(root, 'img', 'projects');
+    fs.writeFileSync(p.html, origHtml);
+    await seedSources(p);
+    writeManifest(p, pipelineManifest());
+    const r = cli(flags(p));
+    check(`content run exit (${r.err.trim().slice(0, 80)})`, r.code === 0);
+    const run = (file) =>
+      spawnSync(process.execPath, [path.join(path.dirname(SELF), 'check-content.mjs'), '--html', file, '--only', 'shots,slots'], { encoding: 'utf8' });
+    const good = run(p.html);
+    check(`filled html passes (${(good.stderr || '').trim().slice(0, 100)})`, good.status === 0 && /PASS shots \(2 filled, 11 empty\)/.test(good.stdout));
+    const filled = fs.readFileSync(p.html, 'utf8');
+    const id = PH.web.id;
+    const broken = {
+      'empty alt': () => filled.replace(`alt="${ALT[id]}"`, 'alt=""'),
+      'aria-hidden kept': () => filled.replace(`<figure class="shot" data-slot="screenshot" data-frame="web">`, `<figure class="shot" data-slot="screenshot" data-frame="web" aria-hidden="true">`),
+      'wrong aria-label': () => filled.replace(/(<a class="shot-link"[^>]*aria-label=")([^"]*)"/, '$1다른 이름"'),
+      'deleted file': () => {
+        fs.rmSync(path.join(p.out, id, `${id}-960.webp`));
+        return filled;
+      },
+    };
+    for (const [name, make] of Object.entries(broken)) {
+      const html = make();
+      check(`${name}: mutation applied`, name === 'deleted file' || html !== filled);
+      const file = path.join(root, `broken-${name.replace(/ /g, '-')}.html`);
+      fs.writeFileSync(file, html);
+      const res = run(file);
+      check(`${name}: exits 1`, res.status === 1);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
 async function groupValidation(origHtml) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'shots-val-'));
   try {
@@ -651,6 +689,7 @@ async function selfTest() {
     ['parsers', () => groupParsers()],
     ['pipeline', () => groupPipeline(origHtml)],
     ['validation', () => groupValidation(origHtml)],
+    ['content', () => groupContent(origHtml)],
   ];
   let failed = 0;
   for (const [name, fn] of groups) {
