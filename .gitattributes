@@ -4,3 +4,4 @@
 *.sh text eol=lf
 *.html text eol=lf
 *.css text eol=lf
+img/** binary
