@@ -19,9 +19,13 @@
     box-shadow: var(--shadow-header);
   }
 
-  /* inert until Phase 3 sets the attribute */
-  .site-header[data-hidden="true"] {
-    transform: translateY(-100%);
+  /* the extra 2px keeps the shadow line from showing at the top edge; focus inside always reveals */
+  .site-header[data-hidden="true"]:not(:focus-within) {
+    transform: translateY(calc(-100% - 2px));
+  }
+
+  html.js .site-header {
+    transition: transform var(--dur-header) var(--ease);
   }
 
   .header-bar {

@@ -162,7 +162,7 @@ try {
       else await evalJs(`location.hash = ${JSON.stringify(hash)}`);
       await settleScroll();
       return evalJs(`(() => {
-        const hd = document.querySelector('.site-header').getBoundingClientRect().bottom;
+        const hd = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
         const t = document.querySelector(${JSON.stringify(hash)});
         const top = t.getBoundingClientRect().top;
         const m = t.querySelector('.meta');
@@ -183,7 +183,7 @@ try {
       const viaSel = sel && (await visible(sel)) ? sel : null;
       const v = await jump(target, viaSel);
       const delta = v.top - v.hd;
-      report(delta >= -0.5 && delta <= 32.5, `${p} anchor ${target}${viaSel ? ' (link click)' : ' (hash)'}: offset below header ${delta.toFixed(1)}px`);
+      report(delta >= -0.5 && delta <= 32.5, `${p} anchor ${target}${viaSel ? ' (link click)' : ' (hash)'}: offset below header (nominal --header-h) ${delta.toFixed(1)}px`);
       if (v.metaTop != null) {
         report(v.metaTop >= v.hd - 0.5 && v.metaBottom <= v.ih + 0.5, `${p} meta of ${target} visible: top ${v.metaTop.toFixed(1)}, bottom ${v.metaBottom.toFixed(1)}, header ${v.hd.toFixed(1)}, viewport ${v.ih}`);
       }
