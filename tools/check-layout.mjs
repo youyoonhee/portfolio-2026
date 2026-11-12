@@ -225,11 +225,6 @@ try {
   try { ws?.close(); } catch {}
   if (process.platform === 'win32') {
     if (proc.pid) spawnSync('taskkill', ['/PID', String(proc.pid), '/T', '/F'], { stdio: 'ignore' });
-    // the launcher may hand off to child processes: kill browser processes started with our temp profile.
-    // Match by image name + profile tag and exclude this PowerShell itself ($PID), whose own command line contains the tag.
-    const tag = prof.split(/[\\/]/).pop();
-    const ps = `Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.Name -match '^(msedge|chrome)\\.exe$' -and $_.CommandLine -like '*${tag}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
-    spawnSync('powershell', ['-NoProfile', '-Command', ps], { stdio: 'ignore' });
   } else {
     proc.kill();
   }
