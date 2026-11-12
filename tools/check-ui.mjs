@@ -1,6 +1,6 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { startStaticServer } from './lib/static-server.mjs';
@@ -265,6 +265,197 @@ try {
       });
     }
   });
+
+  /* ---- Plan 03-04: cover entrance, keyword switch, fallback states ---- */
+  const cs = (page, sel, prop) => page.evaluate((s, p) => getComputedStyle(document.querySelector(s))[p], sel, prop);
+  // the JS-created .nav-overlay is a closed dim layer, not content
+const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('body *:not(.nav-overlay)')].filter((e) => getComputedStyle(e).opacity !== '1').length);
+  const kwState = (page) => page.evaluate(() => {
+    const kw = document.querySelector('#keywords');
+    return {
+      sw: kw.dataset.switch || '',
+      act: kw.dataset.active ?? '',
+      st: [...kw.querySelectorAll('.keyword-block')].map((b) => b.dataset.state || ''),
+      op: [...kw.querySelectorAll('.keyword-block')].map((b) => [getComputedStyle(b.querySelector('.keyword-title')).opacity, getComputedStyle(b.querySelector('.keyword-list')).opacity]),
+    };
+  });
+  const trackInfo = (page) => page.evaluate(() => {
+    const kw = document.querySelector('#keywords');
+    const stage = kw.querySelector('.keywords-stage');
+    const top = kw.getBoundingClientRect().top + scrollY;
+    return { top, h: kw.offsetHeight, stageH: stage ? stage.offsetHeight : 0, vh: innerHeight };
+  });
+
+  await scenario('cover', browser, url, async () => {
+    const ctx = await browser.createBrowserContext();
+    const page = await ctx.newPage();
+    try {
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      const first = await page.evaluate(() => {
+        const l = document.querySelectorAll('.cover-line');
+        return { n: l.length, op3: l.length === 3 ? parseFloat(getComputedStyle(l[2]).opacity) : 1 };
+      });
+      report('cover 1 three lines, entrance started', first.n === 3 && first.op3 < 1, `${first.n} ${first.op3}`);
+      await sleep(1500);
+      const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')].map((e) => {
+        const c = getComputedStyle(e);
+        return [c.opacity, c.transform];
+      }));
+      report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && t === 'none'), JSON.stringify(end));
+      const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
+      report('cover 3 stagger 0, 150, 300ms', delays.join() === '0s,0.15s,0.3s', delays.join());
+      report('cover 4 sub has no animation', (await cs(page, '.cover-sub', 'animationName')) === 'none');
+    } finally { await ctx.close().catch(() => {}); }
+    const ctx2 = await browser.createBrowserContext();
+    const page2 = await ctx2.newPage();
+    try {
+      await page2.setViewport({ width: 1440, height: 900 });
+      await page2.goto(url, { waitUntil: 'domcontentloaded' });
+      const vis = await cs(page2, '.cover-mail a', 'visibility');
+      report('cover 5 mail link visible during entrance', vis === 'visible', vis);
+    } finally { await ctx2.close().catch(() => {}); }
+  });
+
+  await scenario('keywords', browser, url, () => withPage(browser, url, 1440, 900, {}, async (page) => {
+    const P = 'keywords';
+    const t = await trackInfo(page);
+    const s0 = await kwState(page);
+    report(`${P} 1 switch on, blocks have state`, s0.sw === 'on' && s0.st.length === 3 && s0.st.every(Boolean), JSON.stringify(s0.st));
+    report(`${P} 2 track height 2.5 viewports`, Math.abs(t.h - t.vh * 2.5) <= 2, `${t.h} vs ${t.vh * 2.5}`);
+    report(`${P} 3 stage sticky`, (await cs(page, '.keywords-stage', 'position').catch(() => '')) === 'sticky');
+    const ov = await page.evaluate(() => {
+      const bad = [];
+      for (let e = document.querySelector('.keywords-stage'); e; e = e.parentElement) {
+        const c = getComputedStyle(e);
+        if (c.overflowX !== 'visible' || c.overflowY !== 'visible') bad.push(e.tagName);
+      }
+      return bad;
+    });
+    report(`${P} 4 ancestors overflow visible`, ov.length === 0, ov.join());
+    const slot = (t.h - t.stageH) / 3;
+    const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + t.h + 50, 2]];
+    for (const [y, exp] of marks) {
+      await scrollToY(page, Math.max(0, y));
+      await sleep(700);
+      const s = await kwState(page);
+      const okAct = s.act === String(exp);
+      const okOp = s.op.every((pair, i) => pair.every((o) => o === (i === exp ? '1' : '0')));
+      report(`${P} 5 y ${Math.round(y)} -> ${exp}`, okAct && okOp, `${s.act} ${JSON.stringify(s.op)}`);
+    }
+    await scrollToY(page, t.top + slot + 10);
+    await sleep(700);
+    const mid = await kwState(page);
+    report(`${P} 6 past, active, next`, mid.st.join() === 'past,active,next', mid.st.join());
+    const dom = await page.evaluate(() => {
+      const kw = document.querySelector('#keywords');
+      const bad = [...kw.querySelectorAll('*')].filter((e) => e.hasAttribute('aria-hidden') || e.hasAttribute('inert') || e.hasAttribute('hidden') || getComputedStyle(e).visibility === 'hidden');
+      const stage = kw.querySelector(':scope > .keywords-stage');
+      return {
+        bad: bad.length,
+        direct: kw.children.length,
+        kids: stage ? [...stage.children].map((c) => c.tagName + '.' + c.className).join() : '',
+      };
+    });
+    report(`${P} 7 nothing hidden by attribute or visibility`, dom.bad === 0, String(dom.bad));
+    report(`${P} 8 structure unchanged`, dom.direct === 1 && dom.kids === 'P.eyebrow,H2.visually-hidden,DIV.keyword-block,DIV.keyword-block,DIV.keyword-block', `${dom.direct} ${dom.kids}`);
+  }));
+
+  await scenario('keyword-focus', browser, url, () => withPage(browser, url, 1440, 900, {}, async (page) => {
+    const P = 'keyword-focus';
+    const hh = await headerH(page);
+    const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-list a')].map((a) => a.getAttribute('href')));
+    await page.focus('.cover-mail a');
+    for (let i = 0; i < 9; i++) {
+      await tab(page);
+      await sleep(150);
+      const r = await page.evaluate(() => {
+        const a = document.activeElement;
+        const b = a.closest('.keyword-block');
+        const blocks = [...document.querySelectorAll('#keywords .keyword-block')];
+        const rc = a.getBoundingClientRect();
+        return { href: a.getAttribute('href'), idx: blocks.indexOf(b), st: b ? b.dataset.state : '', act: document.querySelector('#keywords').dataset.active, top: rc.top, bottom: rc.bottom, vh: innerHeight };
+      });
+      await sleep(700);
+      const op = await page.evaluate(() => getComputedStyle(document.activeElement.closest('.keyword-list') || document.body).opacity);
+      const ok = r.href === hrefs[i] && r.idx === Math.floor(i / 3) && r.st === 'active' && r.act === String(r.idx) && op === '1' && r.top >= hh && r.bottom <= r.vh;
+      report(`${P} tab ${i + 1}`, ok, `${r.href} idx ${r.idx} ${r.st} act ${r.act} op ${op} top ${Math.round(r.top)}`);
+    }
+    await tab(page);
+    await sleep(300);
+    const out = await page.evaluate(() => !document.activeElement.closest('#keywords'));
+    report(`${P} 10th tab leaves keywords`, out);
+    await shiftTab(page);
+    await sleep(800);
+    report(`${P} shift+tab back to block 3`, (await kwState(page)).act === '2');
+    for (let i = 0; i < 3; i++) { await shiftTab(page); await sleep(300); }
+    await sleep(800);
+    report(`${P} shift+tab x3 more to block 2`, (await kwState(page)).act === '1');
+  }));
+
+  await scenario('keyword-media', browser, url, async () => {
+    for (const [vw, vh, on] of [[1023, 768, false], [1440, 500, false], [375, 812, false], [1024, 768, true], [1440, 900, true]]) {
+      await withPage(browser, url, vw, vh, {}, async (page) => {
+        const s = await kwState(page);
+        const lists = s.op.map((p) => p[1]);
+        const ok = on
+          ? s.sw === 'on'
+          : s.sw === '' && s.st.every((x) => x === '') && lists.every((o) => o === '1');
+        report(`keyword-media ${vw}x${vh} ${on ? 'on' : 'off'}`, ok, JSON.stringify({ sw: s.sw, st: s.st, lists }));
+      });
+    }
+    await withPage(browser, url, 1440, 900, {}, async (page) => {
+      const seq = [];
+      for (const [w, h] of [[1440, 900], [1023, 768], [1440, 900]]) {
+        await page.setViewport({ width: w, height: h });
+        await sleep(300);
+        seq.push((await kwState(page)).sw || 'off');
+      }
+      report('keyword-media live toggle on, off, on', seq.join() === 'on,off,on', seq.join());
+    });
+  });
+
+  await scenario('reduced', browser, url, () => withPage(browser, url, 1440, 900, { reduce: true }, async (page) => {
+    const s = await kwState(page);
+    report('reduced 1 no data-switch', s.sw === '');
+    report('reduced 2 cover-line has no animation', (await cs(page, '.cover-line', 'animationName').catch(() => 'none')) === 'none');
+    report('reduced 3 no element below full opacity', (await dimCount(page)) === 0);
+    report('reduced 4 scroll-behavior auto', (await cs(page, 'html', 'scrollBehavior')) === 'auto');
+    await scrollToY(page, 300);
+    await sleep(300);
+    report('reduced 5 header never hides', (await attr(page, '.site-header', 'data-hidden')) === null);
+  }));
+
+  await scenario('nojs-all', browser, url, async () => {
+    for (const [vw, vh] of [[1440, 900], [375, 812]]) {
+      await withPage(browser, url, vw, vh, { noJs: true }, async (page) => {
+        const P = `nojs-all ${vw}`;
+        const read = () => page.evaluate(() => ({
+          js: document.documentElement.classList.contains('js'),
+          sw: document.querySelector('#keywords').dataset.switch || '',
+          h: [...document.querySelectorAll('#keywords .keyword-block')].map((b) => b.offsetHeight),
+        }));
+        const dim = await dimCount(page);
+        const a = await read();
+        await sleep(1500);
+        const b = await read();
+        report(`${P} no js class, no switch`, !a.js && a.sw === '');
+        report(`${P} dim 0, blocks have height`, dim === 0 && a.h.length === 3 && a.h.every((x) => x > 0) && (await dimCount(page)) === 0 && b.h.every((x) => x > 0));
+      });
+    }
+  });
+
+  await scenario('print-state', browser, url, () => withPage(browser, url, 1440, 900, {}, async (page) => {
+    await page.emulateMediaType('print');
+    await sleep(300);
+    const hd = await cs(page, '.site-header', 'display');
+    const ov = await page.evaluate(() => { const o = document.querySelector('.nav-overlay'); return o ? getComputedStyle(o).display : 'none'; });
+    report('print-state 1 header and overlay hidden', hd === 'none' && ov === 'none', `${hd} ${ov}`);
+    const ops = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .keyword-block, .keyword-title, .keyword-list')].map((e) => getComputedStyle(e).opacity));
+    report('print-state 2 all opacity 1', ops.length > 0 && ops.every((o) => o === '1'), ops.join());
+    const pos = await page.evaluate(() => { const e = document.querySelector('.keywords-stage'); return e ? getComputedStyle(e).position : 'static'; });
+    report('print-state 3 stage not sticky', pos !== 'sticky', pos);
+  }));
 } finally {
   await closeBrowser(browser);
   await server.close();
