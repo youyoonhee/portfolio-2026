@@ -64,7 +64,7 @@ export function parseArgs(argv) {
 const MASK_COLOR = '#111827'; // opaque solid box; never blur or pixelate (D-10)
 const FORMATS = ['webp', 'jpg']; // AVIF can be added here later (RESEARCH AVIF decision)
 const KINDS = ['person-name', 'phone', 'email', 'internal-url', 'account', 'id-number', 'status-bar', 'other'];
-const ENTRY_KEYS = ['source', 'crop', 'masks', 'alt', 'status'];
+const ENTRY_KEYS = ['source', 'crop', 'masks', 'alt', 'status', 'noSensitive'];
 const SOURCE_RE = /^[a-z0-9][a-z0-9._-]*\.(png|jpe?g|webp)$/;
 const IMAGE_EXT = /\.(png|jpe?g|webp)$/i;
 const HEIC_EXT = /\.hei[cf]$/i;
@@ -134,6 +134,13 @@ function validateEntry(id, e) {
   if ([...alt].length > ALT_MAX) fail(id, 'alt-too-long', `alt is longer than ${ALT_MAX} characters`);
   if (hasPhone(alt)) fail(id, 'alt-phone', 'alt looks like a phone number');
   if (e.status !== 'draft' && e.status !== 'approved') fail(id, 'bad-status', 'status must be draft or approved');
+  // noSensitive is the explicit "I checked, nothing to mask" acknowledgement; it only makes sense with no masks
+  if (e.noSensitive !== undefined && (e.noSensitive !== true || e.masks.length > 0)) {
+    fail(id, 'bad-mask', 'noSensitive must be true and only used together with an empty masks list');
+  }
+  if (e.status === 'approved' && e.masks.length === 0 && e.noSensitive !== true) {
+    fail(id, 'no-masks', 'an approved project needs at least one mask, or "noSensitive": true after checking the image');
+  }
 }
 
 function listImages(dir) {
@@ -655,6 +662,9 @@ async function groupValidation(origHtml) {
       ['alt-prefix', { ...good, alt: `이미지 ${SENT}` }],
       ['alt-too-long', { ...good, alt: `${SENT}${'가'.repeat(40)}` }],
       ['alt-phone', { ...good, alt: `연락처 ${phone}` }],
+      ['no-masks', { ...good, masks: [], status: 'approved' }],
+      ['bad-mask', { ...good, masks: [], noSensitive: false }],
+      ['bad-mask', { ...good, noSensitive: true }],
     ];
     for (const [rule, entry] of cases) {
       writeManifest(p, entry === null ? { 'zz-unknown-id': good } : { [id]: entry });
@@ -663,6 +673,9 @@ async function groupValidation(origHtml) {
       check(`${rule}: names the rule`, r.all.includes(`rule:${rule}`));
       check(`${rule}: no field echo`, !r.all.includes(SENT) && !r.all.includes(phone) && !r.all.includes('zzkind') && !r.all.includes('zz-unknown-id'));
     }
+    // explicit acknowledgement lets an approved project without masks through
+    writeManifest(p, { [id]: { ...good, masks: [], noSensitive: true, status: 'approved' } });
+    check('noSensitive acknowledgement accepted', cli(flags(p)).code === 0);
     // top-level unknown key
     fs.writeFileSync(p.manifest, `${JSON.stringify({ version: 1, projects: {}, zzkey: 1 })}\n`);
     let r = cli(flags(p));
