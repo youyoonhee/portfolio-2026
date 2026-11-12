@@ -107,8 +107,8 @@
       break-inside: avoid;
       box-shadow: none;
 
-      &:has(a):hover,
-      &:has(a):focus-within {
+      &:has(a, .shot-link):hover,
+      &:has(a, .shot-link):focus-within {
         box-shadow: none;
       }
 
@@ -139,6 +139,15 @@
     /* empty screenshot frames stay out of the PDF; a picture makes the frame appear again */
     .shot:not(:has(picture, img)) {
       display: none;
+    }
+
+    .shot-link {
+      cursor: auto;
+    }
+
+    .shot img {
+      transform: none !important;
+      transition: none !important;
     }
 
     /* page plan: cover + keywords | skills + career | companies | contact */

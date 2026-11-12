@@ -423,8 +423,8 @@
       line-height: 1.4;
     }
 
-    &:has(a):hover,
-    &:has(a):focus-within {
+    &:has(a, .shot-link):hover,
+    &:has(a, .shot-link):focus-within {
       transform: translateY(-2px);
       box-shadow: var(--shadow-card-hover);
     }
@@ -435,8 +435,8 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      &:has(a):hover,
-      &:has(a):focus-within {
+      &:has(a, .shot-link):hover,
+      &:has(a, .shot-link):focus-within {
         transform: none;
       }
     }
@@ -464,12 +464,71 @@
       border-radius: var(--radius-md);
     }
 
+    picture {
+      display: block;
+    }
+
     picture,
     img {
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
       object-position: top;
+    }
+
+    /* the control around the image: <a> without JS, <button> with it */
+    .shot-link {
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      cursor: zoom-in;
+      overflow: hidden;
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    /* filled app frame: a quiet 9:16 box, no device mockup */
+    &[data-frame="app"]:has(.shot-link)::before {
+      content: none;
+    }
+
+    &[data-frame="app"] .shot-link {
+      inline-size: auto;
+      block-size: 100%;
+      aspect-ratio: 9 / 16;
+      max-inline-size: 200px;
+      margin-inline: auto;
+      border: 1px solid var(--color-line-strong);
+      border-radius: var(--radius-md);
+    }
+
+    &:has(.shot-link:focus-visible) {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .shot-link img {
+        transition: transform var(--dur) var(--ease);
+      }
+
+      .shot-link:focus-visible img {
+        transform: scale(1.02);
+      }
+
+      @media (hover: hover) {
+        .shot-link:hover img {
+          transform: scale(1.02);
+        }
+      }
     }
   }
 
