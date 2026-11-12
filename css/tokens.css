@@ -50,6 +50,7 @@
     --stagger-enter: 150ms;
     --stagger-switch: 80ms;
     --color-overlay: rgb(17 24 39 / 0.32);
+    --color-overlay-strong: rgb(17 24 39 / 0.88);
 
     /* fixed header height: bar only */
     --header-h: 64px;

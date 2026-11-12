@@ -202,6 +202,114 @@ function init() {
 
   mqSwitch.addEventListener('change', () => (mqSwitch.matches ? enableSwitch() : disableSwitch()));
   if (mqSwitch.matches) enableSwitch();
+
+  initShots(mqReduce);
+}
+
+/* screenshot zoom: promote the thumbnail links to buttons that open one shared native <dialog> */
+function buildShotDialog() {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'shot-dialog';
+  dlg.setAttribute('aria-labelledby', 'shot-dialog-title');
+  const bar = document.createElement('div');
+  bar.className = 'shot-dialog-bar';
+  const title = document.createElement('p');
+  title.className = 'shot-dialog-title';
+  title.id = 'shot-dialog-title';
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'shot-dialog-close';
+  close.setAttribute('autofocus', '');
+  close.textContent = '닫기';
+  bar.append(title, close);
+  const scroll = document.createElement('div');
+  scroll.className = 'shot-dialog-scroll';
+  dlg.append(bar, scroll);
+  document.body.append(dlg);
+  return dlg;
+}
+
+function initShots(mqReduce) {
+  if (!(window.HTMLDialogElement && 'showModal' in HTMLDialogElement.prototype)) return;
+  const links = [...document.querySelectorAll('a.shot-link')];
+  if (!links.length) return;
+
+  const dlg = buildShotDialog();
+  const titleEl = dlg.querySelector('.shot-dialog-title');
+  const scrollEl = dlg.querySelector('.shot-dialog-scroll');
+  let opener = null;
+
+  let cancelFade = null;
+
+  function finish() {
+    if (cancelFade) cancelFade();
+    delete dlg.dataset.closing;
+    if (dlg.open) dlg.close();
+    opener?.focus({ preventScroll: true });
+  }
+
+  function closeIt() {
+    if (!dlg.open || dlg.dataset.closing) return;
+    if (mqReduce.matches) {
+      finish();
+      return;
+    }
+    dlg.dataset.closing = 'true';
+    const dur = parseFloat(getComputedStyle(root).getPropertyValue('--dur')) || 200;
+    const timer = setTimeout(finish, dur + 50);
+    const onEnd = (e) => {
+      if (e.target === dlg && e.propertyName === 'opacity') finish();
+    };
+    dlg.addEventListener('transitionend', onEnd);
+    /* a finished fade must not leave a listener behind: it would close the next opening */
+    cancelFade = () => {
+      clearTimeout(timer);
+      dlg.removeEventListener('transitionend', onEnd);
+      cancelFade = null;
+    };
+  }
+
+  function open(btn) {
+    opener = btn;
+    const pic = btn.querySelector('picture').cloneNode(true);
+    for (const el of pic.querySelectorAll('source, img')) el.setAttribute('sizes', '100vw');
+    pic.querySelector('img').removeAttribute('loading');
+    const name = btn.closest('article').querySelector('h3').textContent;
+    titleEl.textContent = name;
+    dlg.dataset.frame = btn.closest('.shot').dataset.frame || 'web';
+    scrollEl.replaceChildren(pic);
+    dlg.showModal();
+    if (scrollEl.scrollHeight > scrollEl.clientHeight) {
+      scrollEl.tabIndex = 0;
+      scrollEl.setAttribute('role', 'region');
+      scrollEl.setAttribute('aria-label', name);
+    } else {
+      scrollEl.removeAttribute('tabindex');
+      scrollEl.removeAttribute('role');
+      scrollEl.removeAttribute('aria-label');
+    }
+  }
+
+  dlg.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeIt();
+  });
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) closeIt();
+  });
+  dlg.querySelector('.shot-dialog-close').addEventListener('click', closeIt);
+
+  /* promote last: if anything above threw, the links are still links */
+  for (const a of links) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = a.className;
+    b.setAttribute('aria-haspopup', 'dialog');
+    b.setAttribute('aria-label', a.getAttribute('aria-label'));
+    b.append(...a.childNodes);
+    b.addEventListener('click', () => open(b));
+    a.replaceWith(b);
+  }
 }
 
 /* if anything throws, fall back to the static markup: drop html.js and undo what init touched */
@@ -210,6 +318,7 @@ try {
 } catch (err) {
   root.classList.remove('js');
   document.querySelector('.nav-overlay')?.remove();
+  document.querySelector('dialog.shot-dialog')?.remove();
   document.querySelector('.site-header')?.removeAttribute('data-hidden');
   const kwEl = document.querySelector('#keywords');
   if (kwEl) {

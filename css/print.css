@@ -141,6 +141,10 @@
       display: none;
     }
 
+    .shot-dialog {
+      display: none !important;
+    }
+
     .shot-link {
       cursor: auto;
     }

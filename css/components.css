@@ -677,4 +677,152 @@
     min-block-size: 44px;
     overflow-wrap: anywhere;
   }
+
+  /* screenshot zoom dialog: native <dialog>, built by js/main.js. Never set display on the closed state. */
+  .shot-dialog {
+    position: fixed;
+    inset: var(--space-md);
+    inline-size: auto;
+    block-size: auto;
+    max-inline-size: none;
+    max-block-size: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    overflow: hidden;
+
+    @media (min-width: 640px) {
+      inset: var(--space-lg);
+    }
+
+    &[open] {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    &::backdrop {
+      background: var(--color-overlay-strong);
+    }
+  }
+
+  .shot-dialog-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding-block-end: var(--space-sm);
+  }
+
+  .shot-dialog-title {
+    min-inline-size: 0;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shot-dialog-close {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: var(--space-md);
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 0.5);
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: rgb(255 255 255 / 0.12);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+  }
+
+  .shot-dialog-scroll {
+    display: grid;
+    place-items: start center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    picture {
+      display: block;
+      inline-size: 100%;
+    }
+
+    img {
+      display: block;
+      inline-size: 100%;
+      max-inline-size: 1920px;
+      block-size: auto;
+      margin-inline: auto;
+    }
+  }
+
+  .shot-dialog[data-frame="app"] .shot-dialog-scroll img {
+    inline-size: min(100%, 480px);
+  }
+
+  html:has(dialog.shot-dialog[open]) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shot-dialog[open] {
+      opacity: 1;
+      transition: opacity var(--dur) var(--ease), display var(--dur) allow-discrete, overlay var(--dur) allow-discrete;
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+
+    .shot-dialog[open]::backdrop {
+      opacity: 1;
+      transition: opacity var(--dur) var(--ease);
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+
+    .shot-dialog-scroll {
+      transition: transform var(--dur) var(--ease);
+    }
+
+    .shot-dialog[open] .shot-dialog-scroll {
+      @starting-style {
+        transform: scale(0.98);
+      }
+    }
+
+    .shot-dialog[data-closing] {
+      opacity: 0;
+    }
+
+    .shot-dialog[data-closing]::backdrop {
+      opacity: 0;
+    }
+
+    .shot-dialog[data-closing] .shot-dialog-scroll {
+      transform: scale(0.98);
+    }
+  }
 }
