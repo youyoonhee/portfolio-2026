@@ -244,6 +244,16 @@ async function selfTest() {
     const webpMetaBuf = await makeMetaPositive('webp');
     neg('jpeg metadata', (d) => writeFileSync(join(imgs(d), 'gi-event-480.jpg'), jpegMetaBuf), { rule: 'metadata-present' });
     neg('webp metadata', (d) => writeFileSync(join(imgs(d), 'gi-event-480.webp'), webpMetaBuf), { rule: 'metadata-present' });
+    // allowlist / fail-closed parser cases: COM segment, truncated stream, bytes after EOI, WebP chunk length overflow
+    const goodJpg = readFileSync(join(imgs(good), 'gi-event-480.jpg'));
+    const goodWebp = readFileSync(join(imgs(good), 'gi-event-480.webp'));
+    const comJpg = Buffer.concat([goodJpg.subarray(0, 2), Buffer.from([0xff, 0xfe, 0x00, 0x06, 0x61, 0x62, 0x63, 0x64]), goodJpg.subarray(2)]);
+    neg('jpeg COM segment', (d) => writeFileSync(join(imgs(d), 'gi-event-480.jpg'), comJpg), { rule: 'metadata-present' });
+    neg('jpeg truncated stream', (d) => writeFileSync(join(imgs(d), 'gi-event-480.jpg'), goodJpg.subarray(0, goodJpg.length - 40)), { rule: 'metadata-present' });
+    neg('jpeg bytes after EOI', (d) => writeFileSync(join(imgs(d), 'gi-event-480.jpg'), Buffer.concat([goodJpg, Buffer.from('ExifPayload')])), { rule: 'metadata-present' });
+    const hidden = Buffer.concat([goodWebp, Buffer.from('JUNK', 'latin1'), Buffer.from([0xff, 0xff, 0xff, 0x7f]), Buffer.from('EXIF', 'latin1'), Buffer.alloc(4)]);
+    hidden.writeUInt32LE(hidden.length - 8, 4); // keep the RIFF size consistent so only the chunk length is wrong
+    neg('webp chunk length overflow', (d) => writeFileSync(join(imgs(d), 'gi-event-480.webp'), hidden), { rule: 'metadata-present' });
     neg('draft project', (d) => setManifest(d, (m) => { m.projects['gi-event'].status = 'draft'; }), { rule: 'project-not-approved' });
     neg('missing manifest entry', (d) => setManifest(d, (m) => { delete m.projects['gi-event']; }), { rule: 'project-not-approved' });
     neg('orphan file', (d) => copyFileSync(join(imgs(d), 'gi-event-480.jpg'), join(imgs(d), 'gi-event-777.jpg')), { rule: 'orphan-not-referenced' });

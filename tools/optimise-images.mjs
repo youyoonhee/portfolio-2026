@@ -451,6 +451,10 @@ async function groupParsers() {
   const plainW = await sharp(await makeUiImage({ width: 64, height: 48, format: 'png' })).webp().toBuffer();
   check('plain jpeg clean', jpegMeta(plainJ).length === 0);
   check('plain webp clean', webpMeta(plainW).length === 0);
+  const comJ = Buffer.concat([plainJ.subarray(0, 2), Buffer.from([0xff, 0xfe, 0x00, 0x04, 0x61, 0x62]), plainJ.subarray(2)]);
+  check('jpeg COM flagged', jpegMeta(comJ).includes('COM'));
+  check('jpeg truncated is MALFORMED', jpegMeta(plainJ.subarray(0, plainJ.length - 30)).includes('MALFORMED'));
+  check('webp overflow chunk is MALFORMED', webpMeta(Buffer.concat([plainW, Buffer.from('JUNK', 'latin1'), Buffer.from([0xff, 0xff, 0xff, 0x7f])])).includes('MALFORMED'));
 }
 
 const PH = {
