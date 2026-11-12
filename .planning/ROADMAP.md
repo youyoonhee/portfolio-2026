@@ -117,7 +117,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — 쪽 구성 assert(--min-page-chars 80, --page-plan) RED, A4 print 쪽 계획(빈 프레임 숨김, 스킬 3열, 연락처+푸터 한 쪽) GREEN: 약 6쪽
+- [x] 03-02-PLAN.md — 쪽 구성 assert(--min-page-chars 80, --page-plan) RED, A4 print 쪽 계획(빈 프레임 숨김, 스킬 3열, 연락처+푸터 한 쪽) GREEN: 약 6쪽
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
-| 3. 인터랙션과 제출용 PDF | 1/5 | In Progress|  |
+| 3. 인터랙션과 제출용 PDF | 2/5 | In Progress|  |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
