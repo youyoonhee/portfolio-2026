@@ -56,3 +56,7 @@ cover 5, focus-ring 6, header 12, keyword-focus 12, keyword-media 6, keywords 12
 - `npm run pdf:spike`는 이 PC의 Edge에서 멈춘 적이 있어 타임아웃을 걸고 실행했다. 이번에는 정상 종료했다. 공식 빌드는 Chrome `npm run pdf`다.
 - :3000 serve는 127.0.0.1 바인딩 적용을 위해 재시작이 필요했고, 오케스트레이터가 이미 재시작했다.
 - design-taste `gate.mjs`는 실행하지 않았다.
+
+## 사용자 검토
+
+사용자 승인 (2026-11-12): 1~8 전체 승인, PDF 전화번호 포함 연락처 확인(전체 승인으로 갈음)
