@@ -1,7 +1,7 @@
 // Guard tests for tools/build-pdf.mjs. They never launch Chrome and use fake contact data
 // written to the OS temp dir at runtime (outside the repo). Output is pass/fail lines only.
 // usage: npm run check:pdfguard
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -33,6 +33,11 @@ try {
   expectRefusal('DEBUG=puppeteer:* is refused', run({ DEBUG: 'puppeteer:*' }, good), /unset DEBUG/);
   expectRefusal('placeholder phone.label is refused', run({}, { phone: { label: '<label>', display: fake } }), /phone.label/);
   expectRefusal('placeholder phone.display is refused', run({}, { phone: { display: '<number>' } }), /phone\.display/);
+  const leak = join(ROOT, 'out-test.pdf');
+  expectRefusal('PDF_OUT inside the public tree is refused', run({ PDF_OUT: leak }, good), /PDF_OUT/);
+  const leaked = existsSync(leak);
+  if (leaked) { failed++; rmSync(leak, { force: true }); }
+  console.log(`${leaked ? 'FAIL' : 'PASS'} refused PDF_OUT file was not created`);
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }

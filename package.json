@@ -26,6 +26,7 @@
     "check:ui": "node tools/check-ui.mjs",
     "check:pdfguard": "node tools/check-build-pdf.mjs",
     "pdf": "node tools/build-pdf.mjs",
+    "check:shots-pdf": "node tools/check-shots-pdf.mjs",
     "images": "node tools/optimise-images.mjs",
     "pdf:spike": "node tools/spike-pdf.mjs dist/spike.pdf && node tools/pdf-report.mjs dist/spike.pdf --text --json dist/spike-report.json"
   },

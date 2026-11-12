@@ -1,6 +1,8 @@
 // Zero-dependency PDF inspector for the Phase 2 spike. Reads a Skia/Chrome PDF as latin1,
 // reports fonts, pages, links and (with --text) extracts Korean text through ToUnicode CMaps.
 // usage: node tools/pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture] [--expect-phone] [--min-page-chars <n>] [--page-plan]
+//   [--max-bytes <n>] [--hard-bytes <n>] [--expect-images <n>] [--max-pages <n>]
+// --max-bytes is a soft target (WARN only), --hard-bytes fails, --expect-images needs that many JPEG (DCTDecode) images.
 // Extracted text is never printed. The phone guard prints only a generic message.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -12,7 +14,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
-const file = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--json' && args[i - 1] !== '--min-page-chars');
+const VALUE_FLAGS = ['--json', '--min-page-chars', '--max-bytes', '--hard-bytes', '--expect-images', '--max-pages'];
+const DEFAULT_SOFT_BYTES = 5000000;
+const DEFAULT_HARD_BYTES = 10000000;
+const file = args.find((a, i) => !a.startsWith('--') && !VALUE_FLAGS.includes(args[i - 1]));
 if (!file) { console.error('usage: pdf-report.mjs <file.pdf> [--text] [--json <dist/out.json>] [--fixture]'); process.exit(2); }
 const jsonOut = opt('--json') ? resolve(opt('--json')) : null;
 if (jsonOut && !jsonOut.startsWith(join(root, 'dist') + sep)) { console.error('refusing: --json must be inside dist/'); process.exit(2); }
@@ -75,9 +80,23 @@ const assert = (name, ok, detail = '') => {
 };
 
 console.log(`bytes ${m.bytes}, pages ${m.pages}, MediaBox ${mediaBoxes.join(' | ')}`);
-console.log(`Type3 ${m.type3}, CIDFontType2 ${m.cidFontType2}, FontFile2 ${m.fontFile2}, ToUnicode ${m.toUnicode}, Image ${m.images}`);
+console.log(`pages ${m.pages}`);
+console.log(`Type3 ${m.type3}, CIDFontType2 ${m.cidFontType2}, FontFile2 ${m.fontFile2}, ToUnicode ${m.toUnicode}, Image ${m.images}, DCT ${m.dct}`);
 console.log(`BaseFont ${baseFonts.join(', ')}`);
 console.log(`links ${m.uriCount} (mailto ${m.mailtoCount}); Outlines ${m.outlines}; StructTreeRoot ${m.structTreeRoot}`);
+
+const hardBytes = Number(opt('--hard-bytes') || DEFAULT_HARD_BYTES);
+const softBytes = Number(opt('--max-bytes') || DEFAULT_SOFT_BYTES);
+assert('size under hard limit', m.bytes < hardBytes, `${m.bytes} bytes`);
+if (m.bytes > softBytes) console.log(`WARN size over target (${m.bytes} > ${softBytes})`);
+if (opt('--expect-images') !== undefined) {
+  const n = Number(opt('--expect-images'));
+  assert('JPEG images embedded', m.images >= n && m.dct >= n, `expected ${n}, images ${m.images}, dct ${m.dct}`);
+}
+if (opt('--max-pages') !== undefined) {
+  assert('page count within limit', m.pages <= Number(opt('--max-pages')), `${m.pages} of ${opt('--max-pages')}`);
+}
+assert('no local link targets', uris.every((u) => !/127.0.0.1|localhost|^file:/i.test(u)));
 
 const fixture = flag('--fixture');
 if (fixture) {
