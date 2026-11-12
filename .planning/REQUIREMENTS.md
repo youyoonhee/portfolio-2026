@@ -26,7 +26,7 @@
 
 ### 스크린샷 (SHOT)
 
-- [ ] **SHOT-01**: 방문자는 프로젝트마다 사용자가 제공한 스크린샷을 앱(세로)·웹(가로) 비율에 맞는 프레임으로 볼 수 있다
+- [x] **SHOT-01**: 방문자는 프로젝트마다 사용자가 제공한 스크린샷을 앱(세로)·웹(가로) 비율에 맞는 프레임으로 볼 수 있다
 - [x] **SHOT-02**: 공개되는 스크린샷에는 고객 개인정보, 내부·스테이징 URL, 관리자 계정이 보이지 않는다 (검수 체크리스트 통과, 단색 박스 마스킹, EXIF 제거)
 - [x] **SHOT-03**: 스크린샷은 WebP/JPEG 여러 폭으로 최적화돼 있고 `width`·`height`·`srcset`·의미 있는 대체 텍스트를 가진다
 - [ ] **SHOT-04**: 방문자는 스크린샷을 크게 볼 수 있고, 확대 창은 키보드(Tab, Esc)로 다룰 수 있으며 닫으면 원래 위치로 포커스가 돌아온다
@@ -109,7 +109,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-06 | Phase 1 | Complete |
 | CONT-07 | Phase 1 | Complete |
 | CONT-08 | Phase 1 | Complete |
-| SHOT-01 | Phase 4 | Pending |
+| SHOT-01 | Phase 4 | Complete |
 | SHOT-02 | Phase 4 | Complete |
 | SHOT-03 | Phase 4 | Complete |
 | SHOT-04 | Phase 4 | Pending |

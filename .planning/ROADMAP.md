@@ -160,7 +160,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-03-PLAN.md — 앱·웹 프레임과 썸네일 hover/focus, 인쇄 프레임, 요청 가로채기 픽스처, sizes 실측 검사
+- [x] 04-03-PLAN.md — 앱·웹 프레임과 썸네일 hover/focus, 인쇄 프레임, 요청 가로채기 픽스처, sizes 실측 검사
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -207,7 +207,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
-| 4. 스크린샷 통합 | 2/7 | In Progress|  |
+| 4. 스크린샷 통합 | 3/7 | In Progress|  |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
 ## Notes
