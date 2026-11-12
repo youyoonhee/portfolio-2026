@@ -42,6 +42,11 @@ function loadPhone() {
   return { label: (p.label || '').trim(), display: display.trim(), dial: display.replace(/[^\d+]/g, '') };
 }
 
+// puppeteer's DEBUG protocol logging would echo the injected contact data to stderr
+if (/puppeteer/i.test(process.env.DEBUG || '')) {
+  die('unset DEBUG before building the PDF (protocol logging would print the contact data).');
+}
+
 // drop any previous PDF first so a failed build can never look like a success
 mkdirSync(DIST, { recursive: true });
 rmSync(OUT, { force: true });

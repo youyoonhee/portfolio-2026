@@ -23,6 +23,7 @@
     "check:contrast": "node tools/check-contrast.mjs",
     "check:layout": "node tools/check-layout.mjs",
     "check:ui": "node tools/check-ui.mjs",
+    "check:pdfguard": "node tools/check-build-pdf.mjs",
     "pdf": "node tools/build-pdf.mjs",
     "pdf:spike": "node tools/spike-pdf.mjs dist/spike.pdf && node tools/pdf-report.mjs dist/spike.pdf --text --json dist/spike-report.json"
   },
