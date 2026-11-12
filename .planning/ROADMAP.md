@@ -113,7 +113,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — puppeteer-core 25.17.0(설치 전 사람 확인), Chrome 런처, contact 예시와 로컬 private/contact.json(번호 무출력), build-pdf와 pdf-report --expect-phone: `npm run pdf`로 번호가 든 PDF
+- [x] 03-01-PLAN.md — puppeteer-core 25.17.0(설치 전 사람 확인), Chrome 런처, contact 예시와 로컬 private/contact.json(번호 무출력), build-pdf와 pdf-report --expect-phone: `npm run pdf`로 번호가 든 PDF
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
-| 3. 인터랙션과 제출용 PDF | 0/5 | Planned | - |
+| 3. 인터랙션과 제출용 PDF | 1/5 | In Progress|  |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 

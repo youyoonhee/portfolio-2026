@@ -50,10 +50,10 @@
 
 ### 제출용 PDF (PDF)
 
-- [ ] **PDF-01**: 사용자는 명령 하나로 웹과 같은 디자인의 제출용 PDF를 만들 수 있다 (같은 `index.html` + 인쇄용 CSS + headless Chrome)
-- [ ] **PDF-02**: 제출용 PDF에는 전화번호가 들어가고, 전화번호는 git 밖의 `private/contact.json`에서 PDF를 만들 때만 주입된다
+- [x] **PDF-01**: 사용자는 명령 하나로 웹과 같은 디자인의 제출용 PDF를 만들 수 있다 (같은 `index.html` + 인쇄용 CSS + headless Chrome)
+- [x] **PDF-02**: 제출용 PDF에는 전화번호가 들어가고, 전화번호는 git 밖의 `private/contact.json`에서 PDF를 만들 때만 주입된다
 - [ ] **PDF-03**: PDF는 원본과 비슷한 페이지 구성(표지 / 스킬·경력 / 회사별 / 연락처)이고, 카드가 페이지 중간에서 잘리지 않으며 빈 페이지가 없다
-- [ ] **PDF-04**: PDF 안의 링크는 클릭되고, 한글은 복사·검색되며(TrueType 폰트 임베딩), 머리글·바닥글에 파일 경로가 찍히지 않는다
+- [x] **PDF-04**: PDF 안의 링크는 클릭되고, 한글은 복사·검색되며(TrueType 폰트 임베딩), 머리글·바닥글에 파일 경로가 찍히지 않는다
 - [ ] **PDF-05**: PDF 용량은 5MB 이하를 목표로 하고 10MB를 넘지 않는다
 
 ### 배포 (DEPL)
@@ -124,10 +124,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-04 | Phase 5 | Pending |
 | QUAL-05 | Phase 5 | Pending |
 | QUAL-06 | Phase 5 | Pending |
-| PDF-01 | Phase 3 | Pending |
-| PDF-02 | Phase 3 | Pending |
+| PDF-01 | Phase 3 | Complete |
+| PDF-02 | Phase 3 | Complete |
 | PDF-03 | Phase 3 | Pending |
-| PDF-04 | Phase 3 | Pending |
+| PDF-04 | Phase 3 | Complete |
 | PDF-05 | Phase 4 | Pending |
 | DEPL-01 | Phase 5 | Pending |
 | DEPL-02 | Phase 5 | Pending |
