@@ -1,5 +1,11 @@
 #!/bin/sh
 command -v node >/dev/null 2>&1 || { echo "pre-commit: node not found (blocking)"; exit 1; }
 node tools/check-repo.mjs --self-test || exit 1
-node tools/check-images.mjs --fast || exit 1
-exec node tools/check-repo.mjs --staged
+# Audit what is about to be committed (the staged blobs), not the working tree: export the index copy of the
+# public screenshots, their html and manifest into a temp dir. No stash, the working tree is never touched.
+# Note: `status: approved` in tools/screenshots.json stays the human gate, this only checks the files.
+tmp=$(mktemp -d 2>/dev/null) || { echo "pre-commit: could not create a temp dir (blocking)"; exit 1; }
+trap 'rm -rf "$tmp"' EXIT INT TERM
+git ls-files -z -- img/projects index.html tools/screenshots.json | xargs -0 git checkout-index --prefix="$tmp/" -- || { echo "pre-commit: could not export staged files (blocking)"; exit 1; }
+node tools/check-images.mjs --fast --root "$tmp" || exit 1
+node tools/check-repo.mjs --staged
