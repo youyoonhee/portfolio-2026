@@ -8,7 +8,7 @@
     "node": ">=22.22.0"
   },
   "scripts": {
-    "serve": "serve . -l 3000",
+    "serve": "serve . -l tcp://127.0.0.1:3000",
     "validate": "html-validate index.html",
     "check:content": "node tools/check-content.mjs",
     "check:repo": "node tools/check-repo.mjs",
@@ -16,18 +16,20 @@
     "check:server": "node tools/lib/static-server.mjs --self-test",
     "check:history": "node tools/check-repo.mjs --history",
     "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:server && npm run check:history && npm run check:contrast",
-    "check:links": "linkinator http://localhost:3000 --recurse",
+    "check:links": "linkinator http://127.0.0.1:3000 --recurse",
     "prepare": "node tools/install-hooks.mjs",
     "check:source": "node tools/check-content.mjs --require-source",
     "fonts:copy": "node tools/copy-fonts.mjs",
     "check:contrast": "node tools/check-contrast.mjs",
     "check:layout": "node tools/check-layout.mjs",
+    "pdf": "node tools/build-pdf.mjs",
     "pdf:spike": "node tools/spike-pdf.mjs dist/spike.pdf && node tools/pdf-report.mjs dist/spike.pdf --text --json dist/spike-report.json"
   },
   "devDependencies": {
     "html-validate": "11.21.0",
     "linkinator": "8.1.0",
     "pretendard": "1.3.9",
+    "puppeteer-core": "25.17.0",
     "serve": "14.2.7"
   }
 }

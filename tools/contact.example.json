@@ -1,0 +1,7 @@
+{
+  "_readme": "Copy this file to private/contact.json (gitignored) and replace the two values. Never commit the real file.",
+  "phone": {
+    "label": "<label printed before the number on the source contact line, or an empty string if there is none>",
+    "display": "<the number exactly as it appears on the source contact line>"
+  }
+}
