@@ -165,6 +165,8 @@ async function applyImages(sources) {
   }
   await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
   await document.fonts.ready;
+  // a decode failure is swallowed above on purpose (one bad image must not hang the page); count them here instead
+  return shotImgs.filter((img) => img.naturalWidth === 0).length;
 }
 
 async function renderStep(browser, server, step) {
@@ -178,8 +180,10 @@ async function renderStep(browser, server, step) {
     // long screen) would be re-encoded as Flate and blow up the size, so the crop is done here and the frame ratio fits.
     const sources = [];
     for (const p of picks) sources.push(await jpegForFrame(p, step.quality, server.url));
-    await page.evaluate(applyImages, sources);
-    const shots = picks.length;
+    const broken = await page.evaluate(applyImages, sources);
+    if (broken > 0) throw new Error(`${broken} screenshot image(s) failed to decode`);
+    // Skia stores identical images once, so the PDF holds one image per distinct JPEG, not one per card
+    const shots = new Set(sources.map((s) => s.uri)).size;
     const injected = await page.evaluate((p) => {
       const slot = document.querySelector('[data-slot="phone"]');
       if (!slot) return false;
