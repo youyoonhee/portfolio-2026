@@ -114,4 +114,9 @@ if (!ok) {
 } else {
   const r = spawnSync(process.execPath, ['tools/pdf-report.mjs', OUT, '--text', '--expect-phone', '--min-page-chars', '80', '--page-plan'], { stdio: 'inherit', cwd: ROOT });
   process.exitCode = r.status ?? 1;
+  if (process.exitCode !== 0) {
+    // a PDF that failed verification must not sit at the submission filename
+    rmSync(OUT, { force: true });
+    console.error('build-pdf: verification failed, output PDF removed.');
+  }
 }
