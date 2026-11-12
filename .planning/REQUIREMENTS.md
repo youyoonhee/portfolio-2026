@@ -35,14 +35,14 @@
 
 - [x] **DSGN-01**: 단정한 미니멀 디자인이다: 넓은 여백, Pretendard self-host, 포인트 컬러 하나, design-taste-frontend 규칙을 따르되 CSS는 직접 작성한다 (스킬의 키트 CSS는 불러오지 않음)
 - [x] **DSGN-02**: 375px·768px·1440px 모두에서 레이아웃이 깨지지 않고 가로 스크롤이 생기지 않는다 (한글 `keep-all` + 긴 URL·이메일 줄바꿈 처리 포함)
-- [ ] **DSGN-03**: 모션은 히어로 진입과 hover 정도로 절제되고, `prefers-reduced-motion`을 켜면 꺼진다. JS가 꺼져 있어도 모든 내용이 보인다
+- [x] **DSGN-03**: 모션은 히어로 진입과 hover 정도로 절제되고, `prefers-reduced-motion`을 켜면 꺼진다. JS가 꺼져 있어도 모든 내용이 보인다
 - [x] **DSGN-04**: "10초 테스트"를 통과한다: 처음 보는 사람이 특정 회사의 담당 업무와 기여도를 10초 안에 찾는다
 - [x] **DSGN-05**: 방문자는 표지 바로 다음 키워드 강조 섹션에서 "반응형 웹 / 인터랙션 / AI 활용" 키워드와 해당 프로젝트 목록을 보고, 목록에서 프로젝트 카드로 이동할 수 있다. 데스크톱에서는 스크롤하면 키워드가 하나씩 전환되고, JS 없음·reduced-motion·모바일·PDF에서는 세 덩어리가 모두 펼쳐진다 (2026-11-11 사용자 요청, 키워드 분류는 사용자 제공 사실)
 
 ### 접근성과 품질 (QUAL)
 
 - [x] **QUAL-01**: 시맨틱 마크업으로 HTML 검사기 오류가 0건이다 (제목 구조 h1 → h2 → h3)
-- [ ] **QUAL-02**: 키보드만으로 모든 링크와 버튼에 접근할 수 있다 (본문 바로가기, 보이는 포커스 표시, 논리적 Tab 순서)
+- [x] **QUAL-02**: 키보드만으로 모든 링크와 버튼에 접근할 수 있다 (본문 바로가기, 보이는 포커스 표시, 논리적 Tab 순서)
 - [x] **QUAL-03**: 텍스트 대비가 WCAG 2.2 AA를 만족한다
 - [ ] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다
 - [ ] **QUAL-05**: 깨진 링크가 0개이고 배포 후 브라우저 네트워크 탭에 404가 없다
@@ -115,11 +115,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHOT-04 | Phase 4 | Pending |
 | DSGN-01 | Phase 2 | Complete |
 | DSGN-02 | Phase 2 | Complete |
-| DSGN-03 | Phase 3 | Pending |
+| DSGN-03 | Phase 3 | Complete |
 | DSGN-04 | Phase 2 | Complete |
 | DSGN-05 | Phase 2 (레이아웃), Phase 3 (전환 동작) | Complete |
 | QUAL-01 | Phase 1 | Complete |
-| QUAL-02 | Phase 3 | Pending |
+| QUAL-02 | Phase 3 | Complete |
 | QUAL-03 | Phase 2 | Complete |
 | QUAL-04 | Phase 5 | Pending |
 | QUAL-05 | Phase 5 | Pending |

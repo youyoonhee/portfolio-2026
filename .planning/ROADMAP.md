@@ -121,7 +121,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-03-PLAN.md — check-ui(Puppeteer) RED, html.js와 main.js: 햄버거·오버레이·Esc, 헤더 숨김·표시(80px/8px, focusin), 본문 바로가기, 현재 섹션, check-layout 앵커 보정
+- [x] 03-03-PLAN.md — check-ui(Puppeteer) RED, html.js와 main.js: 햄버거·오버레이·Esc, 헤더 숨김·표시(80px/8px, focusin), 본문 바로가기, 현재 섹션, check-layout 앵커 보정
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 기반과 실제 콘텐츠 페이지 | 4/4 | Complete    | 2026-11-11 |
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
-| 3. 인터랙션과 제출용 PDF | 2/5 | In Progress|  |
+| 3. 인터랙션과 제출용 PDF | 3/5 | In Progress|  |
 | 4. 스크린샷 통합 | 0/TBD | Not started | - |
 | 5. 검증과 배포 | 0/TBD | Not started | - |
 
