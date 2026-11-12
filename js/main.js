@@ -270,6 +270,9 @@ function initShots(mqReduce) {
   }
 
   function open(btn) {
+    /* a close that was still fading (native close, Esc-less paths) must not close this new session */
+    if (cancelFade) cancelFade();
+    delete dlg.dataset.closing;
     opener = btn;
     const pic = btn.querySelector('picture').cloneNode(true);
     for (const el of pic.querySelectorAll('source, img')) el.setAttribute('sizes', '100vw');
@@ -278,7 +281,7 @@ function initShots(mqReduce) {
     titleEl.textContent = name;
     dlg.dataset.frame = btn.closest('.shot').dataset.frame || 'web';
     scrollEl.replaceChildren(pic);
-    dlg.showModal();
+    if (!dlg.open) dlg.showModal();
     if (scrollEl.scrollHeight > scrollEl.clientHeight) {
       scrollEl.tabIndex = 0;
       scrollEl.setAttribute('role', 'region');
