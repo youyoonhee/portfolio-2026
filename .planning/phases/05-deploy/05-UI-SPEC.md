@@ -89,7 +89,7 @@ Not accent: Colophon labels (`--color-ink-3`), values (`--color-ink-2`), the pre
 - Markup: a new `<section id="colophon" aria-labelledby="colophon-title">` inside `<main>`, after `#contact` and before `</main>`, so it sits between `#contact` and `<footer>` [CONTEXT].
 - Nav decision: **footer link, not a nav item** [DISCRETION]. Reasons from the actual markup: `.site-nav` holds exactly four top-level content anchors (Keywords, Skills, Career, Contact); the no-JS mobile row is a single fixed-height row (`--header-h: 112px`) that already scrolls sideways; and the Colophon is site metadata, not content a recruiter navigates to. Adding a fifth item would grow the bar for a low-value target.
 - Footer markup (inside the existing `<footer>`, after the copyright `<p>`): `<p><a href="#colophon">사이트 정보</a></p>`. The Colophon intro line starts with `사이트 정보:` (or the section carries `aria-describedby` to it) so the link text and the `Colophon.` heading are clearly the same place. Style: Label size, weight 400, `--color-ink-3` text, underline on hover/focus only is NOT used; keep a visible underline (text-decoration: underline) so it reads as a link. `display: inline-flex; align-items: center; min-block-size: 44px`. Focus ring is the global accent `:focus-visible` [P2]. The footer link is hidden in print.
-- Scroll-spy guard [CODE main.js:116-134]: the observer watches every `main > section[id]` and looks up a nav link by id. `#colophon` has no nav link, so the executor must confirm the callback tolerates a missing link and clears `aria-current` (no exception, no stuck "Contact" highlight is acceptable but a thrown error is not). If it throws, add a one-line `links.get(key)` null guard.
+- Scroll-spy guard [CODE main.js:116-134]: the observer watches every `main > section[id]` and looks up a nav link by id. `#colophon` has no nav link, Research confirmed the callback already does `setCurrent(links.has(key) ? key : null)`, so no JS change is needed. A `check-ui` assertion verifies that scrolling to `#colophon` throws nothing and clears `aria-current` [RESEARCH, resolved].
 
 ### Layout
 
@@ -108,7 +108,7 @@ Not accent: Colophon labels (`--color-ink-3`), values (`--color-ink-2`), the pre
 | 반응형 구간 | `640px · 900px · 1024px` plus a second line `카드 열 수는 섹션 너비 기준 (600px · 920px)` | Static, must equal the `@media` and `@container` values in the CSS. `check-content` compares them to the stylesheet (see below) |
 | 접근성 목표 | `WCAG 2.2 AA 수준을 목표로 점검` | Static target. The word is `목표`, never a claim of conformance |
 | 확인한 브라우저 | `ul` of items `{브라우저} {버전} · 확인함` or `{브라우저} · 실기기 확인 전` | Measurement record only |
-| Lighthouse | four chips `Performance`, `Accessibility`, `Best Practices`, `SEO` each followed by a `data` score, then a note `측정 환경: {mobile|desktop}` | Measurement record only |
+| Lighthouse | four chips `Performance`, `Accessibility`, `Best Practices`, `SEO` each followed by a `data` score, then a note `측정 환경: {mobile|desktop}`. Because the site is deliberately `noindex`, Lighthouse's crawlability audit fails and SEO scores low; the row adds a static note `SEO는 검색 비노출 설정(noindex)으로 감점` next to the real SEO score. The score is never raised or hidden [RESEARCH] | Measurement record only (note is static) |
 | 검증 | `HTML 검증 오류 {n}건 · 깨진 링크 {n}건` (html-validate and the deployed-URL linkinator run) | Measurement record only |
 | 측정일 | `<time datetime="YYYY-MM-DD">YYYY.MM.DD</time>` | Measurement record only |
 
