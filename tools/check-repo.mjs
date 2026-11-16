@@ -1,12 +1,15 @@
 // Repository privacy guard: phone-like patterns, forbidden paths, file naming.
 // Flags: (none)=tracked + untracked(non-ignored) tree, --staged=index content,
+//        --dir <path>=every file under a directory (artifact scan, symlinks rejected),
 //        --history=every reachable blob, path, commit message and author in history,
 //        --self-test=matcher assertions (positives are assembled at runtime).
 // Failure output never prints the matched string (logs must not become a leak path).
 // The scan fails closed: unreadable files and unknown binary files are errors.
-import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync, readdirSync, lstatSync, mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
 // ---------- phone matcher ----------
 const ZERO_WIDTH = /[­͏؜ᅟᅠ឴឵᠋-᠎​-‏‪-‮⁠-⁯ㅤ︀-️﻿ﾠ]/g;
@@ -187,6 +190,28 @@ function selfTest() {
   if (!FORBIDDEN.test('a/out/x.txt') || !FORBIDDEN.test('.private/x') || !FORBIDDEN.test('.taste-skill/x') || FORBIDDEN.test('about/index.html')) {
     console.error('self-test: forbidden paths'); fail++;
   }
+  // --dir mode (artifact scan): spawn self against temp directories
+  {
+    const run = (dir) => spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--dir', dir], { encoding: 'utf8' });
+    const tmp = mkdtempSync(join(tmpdir(), 'check-repo-dir-'));
+    try {
+      const mk = (name) => { const p = join(tmp, name); mkdirSync(p); return p; };
+      const clean = mk('clean'); writeFileSync(join(clean, 'index.html'), '<p>2024.09 ~ 2026.09</p>');
+      if (run(clean).status !== 0) { console.error('self-test: --dir clean should pass'); fail++; }
+      const ph = mk('phone'); writeFileSync(join(ph, 'index.html'), `<p>${a}-${b}-${c}</p>`);
+      const r = run(ph);
+      if (r.status === 0 || (r.stdout + r.stderr).includes(b + '-' + c)) { console.error('self-test: --dir phone should fail without echo'); fail++; }
+      const pdf = mk('pdf'); writeFileSync(join(pdf, 'x.pdf'), 'x');
+      if (run(pdf).status === 0) { console.error('self-test: --dir pdf should fail'); fail++; }
+      const sl = mk('link'); writeFileSync(join(sl, 'real.txt'), 'x');
+      let linked = true;
+      try { symlinkSync(join(sl, 'real.txt'), join(sl, 'ln.txt')); } catch (e) { if (e.code === 'EPERM' || e.code === 'EACCES') linked = false; else throw e; }
+      if (!linked) console.log('self-test: --dir symlink case SKIP (symlink not permitted)');
+      else if (run(sl).status === 0) { console.error('self-test: --dir symlink should fail'); fail++; }
+      if (run(join(tmp, 'nope')).status === 0) { console.error('self-test: --dir missing should fail'); fail++; }
+    } finally { rmSync(tmp, { recursive: true, force: true }); }
+  }
+  console.log('self-test: --dir cases done');
   if (fail) process.exit(1);
   console.log(`self-test: ${positives.length + negatives.length + split.length + 8} passed`);
 }
@@ -260,8 +285,47 @@ function scanTree(staged) {
   console.log(`check-repo: ${files.length} file(s) clean`);
 }
 
+// ---------- directory (staged artifact) ----------
+function scanDir(root) {
+  const base = resolve(root);
+  if (!existsSync(base) || !lstatSync(base).isDirectory()) { console.error('check-repo: --dir path is not a directory'); process.exit(1); }
+  const files = [];
+  let bad = 0;
+  const walk = (dir, rel) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      const r = rel ? `${rel}/${name}` : name;
+      const st = lstatSync(p);
+      if (st.isSymbolicLink()) { console.error(`symlink: ${r}`); bad++; continue; }
+      if (st.isDirectory()) {
+        if (FORBIDDEN.test(`${r}/`)) { console.error(`forbidden path: ${r}/`); bad++; }
+        walk(p, r); continue;
+      }
+      files.push([r, p]);
+    }
+  };
+  walk(base, '');
+  if (!files.length) { console.error('check-repo: --dir is empty'); process.exit(1); }
+  for (const [r, p] of files) {
+    if (FORBIDDEN.test(r)) { console.error(`forbidden path: ${r}`); bad++; continue; }
+    if (hasPhone(r)) { console.error('file name: phone-like pattern'); bad++; }
+    let buf;
+    try { buf = readFileSync(p); }
+    catch (e) { console.error(`cannot read ${r}: ${e.code || 'error'} (scan fails closed)`); bad++; continue; }
+    bad += scanBuffer(r, r, buf);
+  }
+  if (bad) { console.error(`BLOCKED: ${bad} problem(s)`); process.exit(1); }
+  console.log(`check-repo: ${files.length} file(s) clean`);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv.includes('--self-test')) selfTest();
+  else if (process.argv.includes('--dir')) {
+    const i = process.argv.indexOf('--dir');
+    const v = process.argv[i + 1];
+    if (!v || v.startsWith('--')) { console.error('check-repo: --dir needs a path'); process.exit(2); }
+    scanDir(v);
+  }
   else if (process.argv.includes('--history')) scanHistory();
   else scanTree(process.argv.includes('--staged'));
 }
