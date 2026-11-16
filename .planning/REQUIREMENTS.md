@@ -44,8 +44,8 @@
 - [x] **QUAL-01**: 시맨틱 마크업으로 HTML 검사기 오류가 0건이다 (제목 구조 h1 → h2 → h3)
 - [x] **QUAL-02**: 키보드만으로 모든 링크와 버튼에 접근할 수 있다 (본문 바로가기, 보이는 포커스 표시, 논리적 Tab 순서)
 - [x] **QUAL-03**: 텍스트 대비가 WCAG 2.2 AA를 만족한다
-- [ ] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다
-- [ ] **QUAL-05**: 깨진 링크가 0개이고 배포 후 브라우저 네트워크 탭에 404가 없다
+- [x] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다
+- [x] **QUAL-05**: 깨진 링크가 0개이고 배포 후 브라우저 네트워크 탭에 404가 없다
 - [x] **QUAL-06**: 방문자는 "이 사이트는 이렇게 만들었습니다"(Colophon) 섹션에서 사용 기술, 반응형·접근성 기준, 테스트 브라우저, 실제로 측정한 Lighthouse·검사기 결과와 측정일을 볼 수 있다
 
 ### 제출용 PDF (PDF)
@@ -61,7 +61,7 @@
 - [x] **DEPL-01**: 사이트는 GitHub 무료 플랜 공개 저장소에서 GitHub Pages로 배포된다
 - [x] **DEPL-02**: 검색엔진에 노출되지 않는다 (`noindex` 메타 + `robots.txt`). 링크를 받은 사람만 본다
 - [x] **DEPL-03**: 링크를 메신저나 메일에 붙였을 때 제목·설명·대표 이미지 미리보기가 뜬다 (OG 메타, favicon)
-- [ ] **DEPL-04**: 저장소 README에 직접 작성한 코드 범위, PDF 만드는 법, 스크린샷 추가 규칙이 적혀 있다
+- [x] **DEPL-04**: 저장소 README에 직접 작성한 코드 범위, PDF 만드는 법, 스크린샷 추가 규칙이 적혀 있다
 
 ## v2 Requirements
 
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-01 | Phase 1 | Complete |
 | QUAL-02 | Phase 3 | Complete |
 | QUAL-03 | Phase 2 | Complete |
-| QUAL-04 | Phase 5 | Pending |
-| QUAL-05 | Phase 5 | Pending |
+| QUAL-04 | Phase 5 | Complete |
+| QUAL-05 | Phase 5 | Complete |
 | QUAL-06 | Phase 5 | Complete |
 | PDF-01 | Phase 3 | Complete |
 | PDF-02 | Phase 3 | Complete |
@@ -132,7 +132,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEPL-01 | Phase 5 | Complete |
 | DEPL-02 | Phase 5 | Complete |
 | DEPL-03 | Phase 5 | Complete |
-| DEPL-04 | Phase 5 | Pending |
+| DEPL-04 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 36 total

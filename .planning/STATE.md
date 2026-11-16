@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-11-16T04:30:53.040Z"
+last_updated: "2026-11-16T04:34:56.074Z"
 last_activity: 2026-11-16
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 29
-  completed_plans: 25
+  completed_plans: 26
   percent: 80
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 ## Current Position
 
 Phase: 5 (검증과 배포) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-11-16
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 05-01]: check-preview self-test runs in-process; page404 check does not require color-surface
 - [Phase 05]: colophon-sync is the only writer of measured Colophon rows; self-test runs in-process
 - [Phase 05]: Pages artifact = allowlist stage + independent check-artifact + check-repo --dir; deploy only on workflow_dispatch
+- [Phase 05]: Edge headless works (Edg/157); record as headless-tested in 05-06
 
 ### Pending Todos
 
