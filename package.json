@@ -28,6 +28,7 @@
     "pdf": "node tools/build-pdf.mjs",
     "check:shots-pdf": "node tools/check-shots-pdf.mjs",
     "images": "node tools/optimise-images.mjs",
+    "og": "node tools/make-og.mjs",
     "pdf:spike": "node tools/spike-pdf.mjs dist/spike.pdf && node tools/pdf-report.mjs dist/spike.pdf --text --json dist/spike-report.json"
   },
   "devDependencies": {
