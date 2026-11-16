@@ -25,6 +25,8 @@
     "check:layout": "node tools/check-layout.mjs",
     "check:ui": "node tools/check-ui.mjs",
     "check:pdfguard": "node tools/check-build-pdf.mjs",
+    "colophon": "node tools/colophon-sync.mjs",
+    "colophon:check": "node tools/colophon-sync.mjs --check && node tools/colophon-sync.mjs --self-test",
     "pdf": "node tools/build-pdf.mjs",
     "check:shots-pdf": "node tools/check-shots-pdf.mjs",
     "images": "node tools/optimise-images.mjs",

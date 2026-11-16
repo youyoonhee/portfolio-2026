@@ -1,0 +1,20 @@
+{
+  "measuredAt": null,
+  "lighthouse": {
+    "form": null,
+    "performance": null,
+    "accessibility": null,
+    "bestPractices": null,
+    "seo": null,
+    "crawlableFailed": null
+  },
+  "validator": {
+    "htmlErrors": null,
+    "brokenLinks": null
+  },
+  "browsers": [
+    { "name": "Chrome", "version": null, "tested": false, "method": "headless" },
+    { "name": "Edge", "version": null, "tested": false, "method": "headless" },
+    { "name": "iOS Safari", "version": null, "tested": false, "method": "real-device" }
+  ]
+}
