@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-11-16T04:23:04.339Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-11-16T04:30:53.040Z"
 last_activity: 2026-11-16
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 29
-  completed_plans: 24
+  completed_plans: 25
   percent: 80
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 ## Current Position
 
 Phase: 5 (검증과 배포) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-11-16
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [████████░░] 83%
 | Phase 04 P02 | 30m | 2 tasks | 6 files |
 | Phase 05 P01 | 25min | 3 tasks | 12 files |
 | Phase 05 P02 | 25min | 3 tasks | 10 files |
+| Phase 05 P03 | 30min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,7 @@ Recent decisions affecting current work:
 - [Phase 04]: check-images imports sharp dynamically so --fast has zero dependencies for pre-commit
 - [Phase ?]: [Phase 05-01]: check-preview self-test runs in-process; page404 check does not require color-surface
 - [Phase 05]: colophon-sync is the only writer of measured Colophon rows; self-test runs in-process
+- [Phase 05]: Pages artifact = allowlist stage + independent check-artifact + check-repo --dir; deploy only on workflow_dispatch
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-11-16T04:23:04.311Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-11-16T04:30:53.012Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None
