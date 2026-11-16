@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-11-16T04:02:50.623Z"
-last_activity: 2026-11-16 -- Phase 5 planning complete
+last_updated: "2026-11-16T04:12:50.263Z"
+last_activity: 2026-11-16
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 29
-  completed_plans: 22
-  percent: 76
+  completed_plans: 23
+  percent: 79
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
+Phase: 5 (검증과 배포) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-11-16 -- Phase 5 planning complete
+Last activity: 2026-11-16
 
-Progress: [██████████] 100%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████████] 100%
 | Phase 2 P04 | 40min | 3 tasks | 5 files |
 | Phase 02 P06 | 15min | 3 tasks | 1 files |
 | Phase 04 P02 | 30m | 2 tasks | 6 files |
+| Phase 05 P01 | 25min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 02-04: PDF spike measured 9 A4 pages; recommend Puppeteer 25 for Phase 3, CLI kept as preview
 - [Phase 02-06]: User accepts 9-page A4 PDF; orphan footer page removal optional for Phase 3
 - [Phase 04]: check-images imports sharp dynamically so --fast has zero dependencies for pre-commit
+- [Phase ?]: [Phase 05-01]: check-preview self-test runs in-process; page404 check does not require color-surface
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-11-16T03:26:20.603Z
+Last session: 2026-11-16T04:12:41.829Z
 Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-deploy/05-UI-SPEC.md
+Resume file: None

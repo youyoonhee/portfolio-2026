@@ -59,8 +59,8 @@
 ### 배포 (DEPL)
 
 - [ ] **DEPL-01**: 사이트는 GitHub 무료 플랜 공개 저장소에서 GitHub Pages로 배포된다
-- [ ] **DEPL-02**: 검색엔진에 노출되지 않는다 (`noindex` 메타 + `robots.txt`). 링크를 받은 사람만 본다
-- [ ] **DEPL-03**: 링크를 메신저나 메일에 붙였을 때 제목·설명·대표 이미지 미리보기가 뜬다 (OG 메타, favicon)
+- [x] **DEPL-02**: 검색엔진에 노출되지 않는다 (`noindex` 메타 + `robots.txt`). 링크를 받은 사람만 본다
+- [x] **DEPL-03**: 링크를 메신저나 메일에 붙였을 때 제목·설명·대표 이미지 미리보기가 뜬다 (OG 메타, favicon)
 - [ ] **DEPL-04**: 저장소 README에 직접 작성한 코드 범위, PDF 만드는 법, 스크린샷 추가 규칙이 적혀 있다
 
 ## v2 Requirements
@@ -130,8 +130,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PDF-04 | Phase 3 | Complete |
 | PDF-05 | Phase 4 | Complete |
 | DEPL-01 | Phase 5 | Pending |
-| DEPL-02 | Phase 5 | Pending |
-| DEPL-03 | Phase 5 | Pending |
+| DEPL-02 | Phase 5 | Complete |
+| DEPL-03 | Phase 5 | Complete |
 | DEPL-04 | Phase 5 | Pending |
 
 **Coverage:**
