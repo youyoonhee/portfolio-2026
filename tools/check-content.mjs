@@ -604,6 +604,7 @@ register('forbidden', () => {
 
 // 404.html is self-contained (served at any URL depth), so it copies token values instead of linking css/.
 // The only absolute project path is the documented W-19 exception; the `paths` check stays index.html only.
+// color-surface is not required: the page ground is white and uses no panel (UI-SPEC section 2).
 register('page404', () => {
   const N = 'page404';
   const file = resolve(ROOT, '404.html');
@@ -632,7 +633,7 @@ register('page404', () => {
   const tokens = readFileSync(resolve(ROOT, 'css', 'tokens.css'), 'utf8');
   const style = (/<style\b[^>]*>([\s\S]*?)<\/style>/i.exec(src) || [])[1] || '';
   const tokenValues = [];
-  for (const name of ['color-bg', 'color-surface', 'color-ink', 'color-ink-2', 'color-ink-3', 'color-accent', 'color-accent-strong', 'text-heading']) {
+  for (const name of ['color-bg', 'color-ink', 'color-ink-2', 'color-ink-3', 'color-accent', 'color-accent-strong', 'text-heading']) {
     const v = new RegExp(`--${name}:\\s*([^;]+);`).exec(tokens)?.[1].trim();
     if (!v) { bad.push(`token ${name} missing`); continue; }
     if (!style.includes(v)) bad.push(`token drift ${name}`);

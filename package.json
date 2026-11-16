@@ -9,13 +9,13 @@
   },
   "scripts": {
     "serve": "serve . -l tcp://127.0.0.1:3000",
-    "validate": "html-validate index.html",
+    "validate": "html-validate index.html 404.html",
     "check:content": "node tools/check-content.mjs",
     "check:repo": "node tools/check-repo.mjs",
     "check:selftest": "node tools/check-repo.mjs --self-test",
     "check:server": "node tools/lib/static-server.mjs --self-test",
     "check:history": "node tools/check-repo.mjs --history",
-    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:server && npm run check:history && npm run check:contrast && npm run check:images",
+    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:server && npm run check:history && npm run check:contrast && npm run check:images && npm run check:preview",
     "check:images": "node tools/check-images.mjs && node tools/check-images.mjs --self-test && node tools/optimise-images.mjs --self-test",
     "check:links": "linkinator http://127.0.0.1:3000 --recurse",
     "prepare": "node tools/install-hooks.mjs",
@@ -28,6 +28,7 @@
     "pdf": "node tools/build-pdf.mjs",
     "check:shots-pdf": "node tools/check-shots-pdf.mjs",
     "images": "node tools/optimise-images.mjs",
+    "check:preview": "node tools/check-preview.mjs && node tools/check-preview.mjs --self-test",
     "og": "node tools/make-og.mjs",
     "pdf:spike": "node tools/spike-pdf.mjs dist/spike.pdf && node tools/pdf-report.mjs dist/spike.pdf --text --json dist/spike-report.json"
   },

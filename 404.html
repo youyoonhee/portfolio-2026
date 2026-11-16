@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+  404 페이지. GitHub Pages는 없는 주소를 어떤 깊이에서든 이 파일로 응답한다(/portfolio-2026/a/b/c 등).
+  그래서 css/ 같은 상대경로가 깨지므로 스타일을 인라인으로 두고, 스크립트와 이미지는 쓰지 않는 독립 페이지로 만들었다.
+  돌아가기 링크와 파비콘 경로는 어느 깊이에서도 동작하는 절대경로 /portfolio-2026/ 를 쓴다(사이트 전체의 상대경로 원칙에서 유일한 예외).
+  색과 제목 크기는 css/tokens.css 값과 같아야 하며 tools/check-content.mjs의 page404 검사가 비교한다.
+-->
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="robots" content="noindex, nofollow">
+  <title>페이지를 찾을 수 없습니다 · 퍼블리셔 유윤희 포트폴리오</title>
+  <link rel="icon" href="/portfolio-2026/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/portfolio-2026/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/portfolio-2026/apple-touch-icon.png">
+  <style>
+    body {
+      margin: 0;
+      min-block-size: 100svh;
+      display: grid;
+      place-content: center;
+      padding: 48px 24px;
+      background: #ffffff;
+      color: #4b5563;
+      font-family: "Pretendard", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    main {
+      display: grid;
+      gap: 16px;
+      max-inline-size: 32rem;
+      text-align: start;
+    }
+    p { margin: 0; }
+    .eyebrow {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #5b6370;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 2.4vw + 16px, 36px);
+      font-weight: 600;
+      line-height: 1.25;
+      color: #111827;
+      text-wrap: balance;
+    }
+    h1 + p { margin-block-start: 8px; }
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-block-size: 44px;
+      margin-block-start: 24px;
+      justify-self: start;
+      color: #0a7a3d;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    a::after {
+      content: "";
+      flex: none;
+      inline-size: 8px;
+      block-size: 8px;
+      border-inline-end: 2px solid currentcolor;
+      border-block-start: 2px solid currentcolor;
+      transform: rotate(45deg);
+    }
+    a:hover { color: #075c2d; }
+    a:focus-visible { outline: 2px solid #0a7a3d; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow" lang="en">404</p>
+    <h1>페이지를 찾을 수 없습니다.</h1>
+    <p>주소가 바뀌었거나 없는 페이지입니다. 포트폴리오 첫 화면으로 돌아가 주세요.</p>
+    <a href="/portfolio-2026/">첫 화면으로 돌아가기</a>
+  </main>
+</body>
+</html>
