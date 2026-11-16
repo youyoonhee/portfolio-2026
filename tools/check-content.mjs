@@ -249,15 +249,15 @@ register('colophon', () => {
   if (JSON.stringify(dts.map(textIn)) !== JSON.stringify(want) || dds.length !== want.length) return fail(N, 'dt order differs');
   const css = readFileSync(resolve(ROOT, 'css', 'layout.css'), 'utf8');
   const uniq = (re) => [...new Set([...css.matchAll(re)].map((x) => Number(x[1])))].sort((a, b) => a - b);
-  const media = uniq(/@media[^{]*(min-width:s*(d+)px)/g);
-  const cont = uniq(/@container company (min-width:s*(d+)px)/g);
+  const media = uniq(/@media[^{]*\(min-width:\s*(\d+)px\)/g);
+  const cont = uniq(/@container company \(min-width:\s*(\d+)px\)/g);
   const px = (a) => a.map((v) => v + 'px').join(' · ');
   const bp = px(media) + ' 카드 열 수는 섹션 너비 기준 (' + px(cont) + ')';
   if (textIn(dds[0]) !== '직접 작성한 HTML · CSS · JavaScript, 빌드 도구 없음') return fail(N, '구성 row differs');
   if (textIn(dds[1]) !== bp) return fail(N, '반응형 구간 row differs from CSS: ' + bp);
   if (textIn(dds[2]) !== 'WCAG 2.2 AA 수준을 목표로 점검') return fail(N, '접근성 목표 row differs');
   const rendered = renderMeasured(JSON.parse(readFileSync(resolve(ROOT, 'tools', 'measurements.json'), 'utf8')));
-  const grab = (k) => (new RegExp('<dd data-measured="' + k + '"[^>]*>([\s\S]*?)</dd>').exec(html) || [])[1];
+  const grab = (k) => (new RegExp('<dd data-measured="' + k + '"[^>]*>([\\s\\S]*?)</dd>').exec(html) || [])[1];
   for (const k of ['browsers', 'lighthouse', 'validator', 'date']) {
     if (grab(k) !== rendered[k]) return fail(N, 'measured row differs from record: ' + k);
   }

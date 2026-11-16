@@ -256,6 +256,26 @@
     }
   }
 
+  #colophon {
+    border-block-start: 1px solid var(--color-line);
+    padding-block: var(--space-2xl);
+
+    & > p:not(.eyebrow) {
+      margin-block-start: var(--space-md);
+      color: var(--color-ink-2);
+    }
+
+    @media (min-width: 1024px) {
+      .colophon-list {
+        max-inline-size: 48rem;
+      }
+    }
+  }
+
+  #colophon-title {
+    margin-block-start: var(--space-sm);
+  }
+
   .contact-list {
     margin: var(--space-lg) 0 0;
 
@@ -277,6 +297,16 @@
     small {
       font-size: var(--text-label);
       color: var(--color-ink-3);
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: 44px;
+      font-size: var(--text-label);
+      font-weight: 400;
+      color: var(--color-ink-3);
+      text-decoration: underline;
     }
   }
 }

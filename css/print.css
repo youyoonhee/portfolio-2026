@@ -181,6 +181,10 @@
       padding-block: 8mm;
     }
 
+    #colophon, body > footer a {
+      display: none !important;
+    }
+
     body > footer {
       break-before: avoid;
       padding-block: 6mm 0;

@@ -15,7 +15,7 @@
     "check:selftest": "node tools/check-repo.mjs --self-test",
     "check:server": "node tools/lib/static-server.mjs --self-test",
     "check:history": "node tools/check-repo.mjs --history",
-    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:server && npm run check:history && npm run check:contrast && npm run check:images && npm run check:preview",
+    "check": "npm run validate && npm run check:content && npm run check:repo && npm run check:selftest && npm run check:server && npm run check:history && npm run check:contrast && npm run check:images && npm run check:preview && npm run colophon:check",
     "check:images": "node tools/check-images.mjs && node tools/check-images.mjs --self-test && node tools/optimise-images.mjs --self-test",
     "check:links": "linkinator http://127.0.0.1:3000 --recurse",
     "prepare": "node tools/install-hooks.mjs",
