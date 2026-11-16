@@ -8,6 +8,7 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { WEB_SIZES, APP_SIZES } from './lib/shot-markup.mjs';
 import { fileURLToPath } from 'node:url';
 import { hasPhone, hasPhoneAnywhere } from './check-repo.mjs';
+import { renderMeasured } from './colophon-sync.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argValue = (flag) => {
@@ -115,6 +116,21 @@ const html = readFileSync(HTML_PATH, 'utf8');
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
 const { root, all, texts } = parse(html);
 const visibleTexts = texts.filter((n) => !hasHiddenAncestor(n)).map((n) => collapse(n.text)).filter(Boolean);
+// Colophon and the footer link are web-only meta text, not portfolio content from the source PDF.
+const underColophonOrFooterLink = (node) => {
+  let inFooter = false;
+  for (let e = node.parent; e; e = e.parent) {
+    if (e.tag === 'section' && e.attrs && e.attrs.id === 'colophon') return true;
+    if (e.tag === 'footer') inFooter = true;
+  }
+  if (!inFooter) return false;
+  for (let e = node.parent; e; e = e.parent) if (e.tag === 'a') return true;
+  return false;
+};
+const sourceTexts = texts
+  .filter((n) => !hasHiddenAncestor(n) && !underColophonOrFooterLink(n))
+  .map((n) => collapse(n.text))
+  .filter(Boolean);
 const byTag = (t) => all.filter((e) => e.tag === t);
 const withText = (arr, pred) => arr.find(pred);
 const source = existsSync(SOURCE_PATH) ? readFileSync(SOURCE_PATH, 'utf8') : null;
@@ -209,6 +225,47 @@ register('sections', () => {
   const ids = main.kids.filter((k) => isEl(k) && k.tag === 'section').map((s) => s.attrs.id);
   if (JSON.stringify(ids) !== JSON.stringify(manifest.sections)) return fail('sections', `section ids ${JSON.stringify(ids)}`);
   pass('sections');
+});
+
+register('colophon', () => {
+  const N = 'colophon';
+  const main = byTag('main')[0];
+  const secs = main ? main.kids.filter((k) => isEl(k) && k.tag === 'section') : [];
+  const sec = secs.find((x) => x.attrs.id === 'colophon');
+  if (!sec) return fail(N, 'section#colophon missing');
+  if (secs.findIndex((x) => x === sec) !== secs.findIndex((x) => x.attrs.id === 'contact') + 1) return fail(N, 'colophon must follow #contact');
+  const els = descendants(sec).filter(isEl);
+  const eyebrow = els.find((e) => e.tag === 'p' && hasClass(e, 'eyebrow'));
+  if (!eyebrow || textIn(eyebrow) !== '09 / Colophon') return fail(N, 'eyebrow differs');
+  const h2 = els.find((e) => e.tag === 'h2' && e.attrs.id === 'colophon-title');
+  if (!h2 || textIn(h2) !== 'Colophon.') return fail(N, 'h2 differs');
+  const intro = els.find((e) => e.tag === 'p' && !hasClass(e, 'eyebrow'));
+  if (!intro || textIn(intro) !== '이 사이트를 만든 방식과 직접 측정한 결과입니다.') return fail(N, 'intro differs');
+  const dl = els.find((e) => e.tag === 'dl' && hasClass(e, 'colophon-list'));
+  if (!dl) return fail(N, 'dl.colophon-list missing');
+  const dts = elsIn(dl, 'dt');
+  const dds = elsIn(dl, 'dd');
+  const want = ['구성', '반응형 구간', '접근성 목표', '확인한 브라우저', 'Lighthouse', '검증', '측정일'];
+  if (JSON.stringify(dts.map(textIn)) !== JSON.stringify(want) || dds.length !== want.length) return fail(N, 'dt order differs');
+  const css = readFileSync(resolve(ROOT, 'css', 'layout.css'), 'utf8');
+  const uniq = (re) => [...new Set([...css.matchAll(re)].map((x) => Number(x[1])))].sort((a, b) => a - b);
+  const media = uniq(/@media[^{]*(min-width:s*(d+)px)/g);
+  const cont = uniq(/@container company (min-width:s*(d+)px)/g);
+  const px = (a) => a.map((v) => v + 'px').join(' · ');
+  const bp = px(media) + ' 카드 열 수는 섹션 너비 기준 (' + px(cont) + ')';
+  if (textIn(dds[0]) !== '직접 작성한 HTML · CSS · JavaScript, 빌드 도구 없음') return fail(N, '구성 row differs');
+  if (textIn(dds[1]) !== bp) return fail(N, '반응형 구간 row differs from CSS: ' + bp);
+  if (textIn(dds[2]) !== 'WCAG 2.2 AA 수준을 목표로 점검') return fail(N, '접근성 목표 row differs');
+  const rendered = renderMeasured(JSON.parse(readFileSync(resolve(ROOT, 'tools', 'measurements.json'), 'utf8')));
+  const grab = (k) => (new RegExp('<dd data-measured="' + k + '"[^>]*>([\s\S]*?)</dd>').exec(html) || [])[1];
+  for (const k of ['browsers', 'lighthouse', 'validator', 'date']) {
+    if (grab(k) !== rendered[k]) return fail(N, 'measured row differs from record: ' + k);
+  }
+  const rec = JSON.parse(readFileSync(resolve(ROOT, 'tools', 'measurements.json'), 'utf8'));
+  const pendingL = rec.lighthouse.form === null || [rec.lighthouse.performance, rec.lighthouse.accessibility, rec.lighthouse.bestPractices, rec.lighthouse.seo].includes(null);
+  if (pendingL && /<data/.test(grab('lighthouse'))) return fail(N, 'lighthouse chips in null state');
+  if ((rec.validator.htmlErrors === null || rec.validator.brokenLinks === null) && /<data/.test(grab('validator'))) return fail(N, 'validator chips in null state');
+  pass(N);
 });
 
 const elsIn = (el, tag) => descendants(el).filter((e) => isEl(e) && e.tag === tag);
@@ -442,7 +499,11 @@ register('footer', () => {
   if (!manifest.footer) return skip('footer', 'not in manifest');
   const f = byTag('footer')[0];
   if (!f) return fail('footer', 'footer missing');
-  if (textIn(f) !== manifest.footer) return fail('footer', 'footer text differs');
+  const copy = f.kids.find((k) => isEl(k) && k.tag === 'p');
+  if (!copy || textIn(copy) !== manifest.footer) return fail('footer', 'footer text differs');
+  const links = descendants(f).filter((e) => isEl(e) && e.tag === 'a' && e.attrs.href === '#colophon');
+  if (links.length !== 1) return fail('footer', '#colophon link missing or duplicated in footer');
+  if (textIn(links[0]) !== '사이트 정보') return fail('footer', '#colophon link text differs');
   const count = visibleTexts.filter((t) => t.includes(manifest.footer)).length;
   if (count !== 1) return fail('footer', `copyright appears ${count} times (expected 1)`);
   pass('footer');
@@ -671,7 +732,7 @@ register('source-reverse', () => {
     for (let w = 1; w <= 3 && i + w <= lines.length; w++) windows.add(lines.slice(i, i + w).join(''));
   }
   const inSource = (n) => [...windows].some((w) => w.includes(n));
-  for (const t of visibleTexts) {
+  for (const t of sourceTexts) {
     const n = normalize(t);
     if (n === '' || !/\p{L}/u.test(n)) continue; // digits/punctuation-only strings are covered by source-numbers
     if (inSource(n) || allow.has(n)) continue;
@@ -691,7 +752,7 @@ register('source-numbers', () => {
       .replace(/(\d)\.\s+(\d)/g, '$1.$2')
       .match(NUM) || []
   );
-  for (const t of visibleTexts) {
+  for (const t of sourceTexts) {
     for (const n of t.match(NUM) || []) {
       if (!srcNums.has(n)) return fail('source-numbers', `number "${n}" not in source`);
     }
@@ -704,7 +765,7 @@ register('source-coverage', () => {
   const cov = manifest.sourceCoverage;
   if (!cov) return fail('source-coverage', 'sourceCoverage missing in manifest');
   const src = normalize(source);
-  const siteText = visibleTexts.map(normalize).join('');
+  const siteText = sourceTexts.map(normalize).join('');
   let siteN = 0;
   let excludedN = 0;
   for (const c of cov) {
