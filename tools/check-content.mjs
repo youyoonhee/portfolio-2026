@@ -602,6 +602,52 @@ register('forbidden', () => {
   pass('forbidden');
 });
 
+// 404.html is self-contained (served at any URL depth), so it copies token values instead of linking css/.
+// The only absolute project path is the documented W-19 exception; the `paths` check stays index.html only.
+register('page404', () => {
+  const N = 'page404';
+  const file = resolve(ROOT, '404.html');
+  if (!existsSync(file)) return fail(N, '404.html missing');
+  const src = readFileSync(file, 'utf8');
+  const doc = parse(src);
+  const by = (t) => doc.all.filter((e) => e.tag === t);
+  const bad = [];
+  if (by('html')[0]?.attrs.lang !== 'ko') bad.push('html lang');
+  if (!by('meta').some((m) => m.attrs.name === 'robots' && m.attrs.content === 'noindex, nofollow')) bad.push('robots noindex');
+  const textOf = (el) => (el ? textIn(el) : undefined);
+  if (textOf(by('title')[0]) !== '페이지를 찾을 수 없습니다 · 퍼블리셔 유윤희 포트폴리오') bad.push('title');
+  if (textOf(doc.all.find((e) => e.tag === 'p' && hasClass(e, 'eyebrow'))) !== '404') bad.push('eyebrow');
+  if (textOf(by('h1')[0]) !== '페이지를 찾을 수 없습니다.') bad.push('h1');
+  const body = doc.all.find((e) => e.tag === 'p' && !hasClass(e, 'eyebrow'));
+  if (textOf(body) !== '주소가 바뀌었거나 없는 페이지입니다. 포트폴리오 첫 화면으로 돌아가 주세요.') bad.push('body text');
+  const anchors = by('a');
+  if (anchors.length !== 1 || textOf(anchors[0]) !== '첫 화면으로 돌아가기' || anchors[0].attrs.href !== '/portfolio-2026/') bad.push('single return link');
+  if (by('link').some((l) => (l.attrs.rel || '').toLowerCase() === 'stylesheet')) bad.push('stylesheet link');
+  if (/<script\b/i.test(src)) bad.push('script');
+  if (by('img').length) bad.push('img');
+  const iconHrefs = by('link').filter((l) => /icon/i.test(l.attrs.rel || '')).map((l) => l.attrs.href);
+  for (const want of ['/portfolio-2026/favicon.svg', '/portfolio-2026/favicon-32.png', '/portfolio-2026/apple-touch-icon.png']) {
+    if (!iconHrefs.includes(want)) bad.push(`icon ${want}`);
+  }
+  const tokens = readFileSync(resolve(ROOT, 'css', 'tokens.css'), 'utf8');
+  const style = (/<style\b[^>]*>([\s\S]*?)<\/style>/i.exec(src) || [])[1] || '';
+  const tokenValues = [];
+  for (const name of ['color-bg', 'color-surface', 'color-ink', 'color-ink-2', 'color-ink-3', 'color-accent', 'color-accent-strong', 'text-heading']) {
+    const v = new RegExp(`--${name}:\\s*([^;]+);`).exec(tokens)?.[1].trim();
+    if (!v) { bad.push(`token ${name} missing`); continue; }
+    if (!style.includes(v)) bad.push(`token drift ${name}`);
+    tokenValues.push(v.toLowerCase());
+  }
+  for (const hex of style.match(/#[0-9a-fA-F]{3,8}\b/g) || []) {
+    if (!tokenValues.includes(hex.toLowerCase())) bad.push(`non-token hex ${hex}`);
+  }
+  const comments = [...src.matchAll(/<!--([\s\S]*?)-->/g)].map((m) => m[1]);
+  if (!comments.some((c) => c.includes('/portfolio-2026/'))) bad.push('W-19 comment');
+  if (hasPhoneAnywhere(src)) bad.push('phone-like text');
+  if (bad.length) return fail(N, bad.join(', '));
+  pass(N);
+});
+
 const sourceGate = (name) => {
   if (source !== null) return true;
   if (REQUIRE_SOURCE) fail(name, 'source text required but not found');
