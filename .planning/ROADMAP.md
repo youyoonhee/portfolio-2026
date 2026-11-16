@@ -203,7 +203,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Colophon(측정 전 상태), measurements.json + colophon-sync, check-content/check-ui, PDF 제외
+- [x] 05-02-PLAN.md — Colophon(측정 전 상태), measurements.json + colophon-sync, check-content/check-ui, PDF 제외
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 1/7 | In Progress|  |
+| 5. 검증과 배포 | 2/7 | In Progress|  |
 
 ## Notes
 

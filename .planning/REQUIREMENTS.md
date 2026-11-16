@@ -46,7 +46,7 @@
 - [x] **QUAL-03**: 텍스트 대비가 WCAG 2.2 AA를 만족한다
 - [ ] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다
 - [ ] **QUAL-05**: 깨진 링크가 0개이고 배포 후 브라우저 네트워크 탭에 404가 없다
-- [ ] **QUAL-06**: 방문자는 "이 사이트는 이렇게 만들었습니다"(Colophon) 섹션에서 사용 기술, 반응형·접근성 기준, 테스트 브라우저, 실제로 측정한 Lighthouse·검사기 결과와 측정일을 볼 수 있다
+- [x] **QUAL-06**: 방문자는 "이 사이트는 이렇게 만들었습니다"(Colophon) 섹션에서 사용 기술, 반응형·접근성 기준, 테스트 브라우저, 실제로 측정한 Lighthouse·검사기 결과와 측정일을 볼 수 있다
 
 ### 제출용 PDF (PDF)
 
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-03 | Phase 2 | Complete |
 | QUAL-04 | Phase 5 | Pending |
 | QUAL-05 | Phase 5 | Pending |
-| QUAL-06 | Phase 5 | Pending |
+| QUAL-06 | Phase 5 | Complete |
 | PDF-01 | Phase 3 | Complete |
 | PDF-02 | Phase 3 | Complete |
 | PDF-03 | Phase 3 | Complete |
