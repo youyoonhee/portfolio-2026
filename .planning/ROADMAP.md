@@ -194,7 +194,34 @@ Plans:
   4. Colophon 섹션에서 사용 기술, 반응형·접근성 기준, 테스트 브라우저, 실제 측정한 Lighthouse·검사기 결과와 측정일을 볼 수 있다
   5. README에 직접 작성한 코드 범위, PDF 만드는 법, 스크린샷 추가 규칙이 적혀 있고, 배포 직전 전화번호 검사가 다시 0건이다
 
-**Plans**: TBD
+**Plans**: 7 plans (6 waves, vertical slices; 05-05~05-07 have human checkpoints)
+
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — 링크 미리보기(OG·twitter 메타, og-card.png), favicon, 404.html, robots.txt, check-preview
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md — Colophon(측정 전 상태), measurements.json + colophon-sync, check-content/check-ui, PDF 제외
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 05-03-PLAN.md — Pages 산출물 allowlist(stage-pages, check-artifact, check-repo --dir), Actions 워크플로(push=검증, dispatch=배포), pre-push
+- [ ] 05-04-PLAN.md — 실측 도구(check-network, check-nu, record-measurements)와 README
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 05-05-PLAN.md — 배포 전 전체 검사, 05-HUMAN-UAT 체크리스트, D-04 스크린샷 게이트(사용자), push 후 CI 검증
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 05-06-PLAN.md — 사용자 승인 후 Pages 켜기와 1차 배포, 배포 URL 검사·Lighthouse, iOS Safari 실기기 UAT(사용자)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 05-07-PLAN.md — 측정 기록 반영(Colophon), 2차 배포, 최종 전화번호 검사, 공개 전 최종 확인(사용자)
+
 **UI hint**: yes
 
 ## Progress
@@ -208,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 0/TBD | Not started | - |
+| 5. 검증과 배포 | 0/7 | Not started | - |
 
 ## Notes
 
