@@ -23,6 +23,11 @@
       transform: none !important;
     }
 
+    /* decorations stay off the submission PDF (page plan unchanged) */
+    .deco {
+      display: none !important;
+    }
+
     .site-header,
     .nav-toggle,
     .skip-link,

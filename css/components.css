@@ -1,5 +1,37 @@
 @layer components {
+  /* decorative pixel images: empty alt, no interaction, kept crisp */
+  .deco {
+    display: inline-block;
+    flex: none;
+    max-inline-size: none;
+    vertical-align: middle;
+    image-rendering: pixelated;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .deco-cat-run {
+    block-size: 32px;
+    inline-size: auto;
+    margin-inline-start: 0.5em;
+  }
+
+  .deco-cursor {
+    block-size: 0.7em;
+    inline-size: auto;
+    margin-inline-start: 0.08em;
+    vertical-align: baseline;
+  }
+
+  .deco-cat-desk {
+    block-size: clamp(72px, 2.4em + 16px, 112px);
+    inline-size: auto;
+    margin-inline-start: 0.35em;
+    vertical-align: bottom;
+  }
+
   .wordmark {
+    white-space: nowrap;
     font-size: var(--text-label);
     font-weight: var(--weight-semibold);
     line-height: 1.4;

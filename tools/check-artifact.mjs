@@ -11,7 +11,7 @@ const ALLOW = [
   /^(index|404)\.html$/, /^robots\.txt$/, /^favicon\.svg$/, /^favicon-32\.png$/, /^apple-touch-icon\.png$/,
   /^css\/[a-z0-9-]+\.css$/, /^js\/[a-z0-9-]+\.js$/,
   /^fonts\/pretendard\/[a-z0-9.-]+\.woff2$/, /^fonts\/print\/[a-z0-9-]+\.ttf$/, /^fonts\/[a-z0-9-]+\.txt$/,
-  /^img\/og-card\.png$/, /^img\/projects\/[a-z0-9-]+\/[a-z0-9-]+\.(avif|webp|jpg|png)$/,
+  /^img\/og-card\.png$/, /^img\/deco\/[a-z0-9-]+\.png$/,/^img\/projects\/[a-z0-9-]+\/[a-z0-9-]+\.(avif|webp|jpg|png)$/,
 ];
 const REQUIRED = ['index.html', '404.html', 'robots.txt', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'img/og-card.png'];
 const BAD_EXT = /\.(pdf|json|md|mjs|map|yml|yaml|zip)$/i;
@@ -114,6 +114,7 @@ function selfTest() {
   pos('clean');
   neg('stray-tool', (d) => w(d, 'tools/x.mjs'), 'FAIL not-allowlisted tools/x.mjs');
   neg('package-json', (d) => w(d, 'package.json', '{}'), 'FAIL not-allowlisted package.json');
+  neg('deco-not-png', (d) => w(d, 'img/deco/x.svg'), 'FAIL not-allowlisted img/deco/x.svg');
   neg('pdf', (d) => w(d, 'a.pdf'), 'FAIL not-allowlisted a.pdf');
   neg('env', (d) => w(d, '.env'), 'FAIL dotfile .env');
   neg('nojekyll', (d) => w(d, '.nojekyll'), 'FAIL dotfile .nojekyll');

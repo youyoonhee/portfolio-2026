@@ -22,6 +22,7 @@ const DIRS = [
   ['fonts/pretendard', /^[a-z0-9.-]+\.woff2$/],
   ['fonts/print', /^[a-z0-9-]+\.ttf$/],
   ['fonts', /^[a-z0-9-]+\.txt$/],
+  ['img/deco', /^[a-z0-9-]+\.png$/],
 ];
 const PROJECT_IMG = /^[a-z0-9-]+\.(avif|webp|jpg|png)$/;
 // sub-directories of fonts/ that are handled by their own DIRS entry
