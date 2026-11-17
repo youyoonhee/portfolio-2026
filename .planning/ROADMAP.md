@@ -15,7 +15,7 @@
 - [x] **Phase 2: 디자인 시스템과 반응형 + PDF spike** - 직접 쓴 CSS로 단정한 미니멀 디자인을 입히고 375/768/1440에서 완성하며, 레이아웃이 굳기 전에 PDF 위험을 확인한다 (completed 2026-11-11)
 - [x] **Phase 3: 인터랙션과 제출용 PDF** - 키보드·모션·JS 없는 상태를 다듬고, 명령 하나로 전화번호가 들어간 제출용 PDF를 만든다 (completed 2026-11-12)
 - [x] **Phase 4: 스크린샷 통합** - 사용자가 준 스크린샷을 검수·최적화해 프레임에 넣고, 확대 보기와 PDF 용량까지 마무리한다 (completed 2026-11-12)
-- [ ] **Phase 5: 검증과 배포** - 크로스브라우저·링크 검증을 끝내고 Colophon과 README를 갖춰 GitHub Pages에 noindex로 배포한다
+- [x] **Phase 5: 검증과 배포** - 크로스브라우저·링크 검증을 끝내고 Colophon과 README를 갖춰 GitHub Pages에 noindex로 배포한다 (completed 2026-11-17)
 
 ## Phase Details
 
@@ -220,7 +220,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 05-07-PLAN.md — 측정 기록 반영(Colophon), 2차 배포, 최종 전화번호 검사, 공개 전 최종 확인(사용자)
+- [x] 05-07-PLAN.md — 측정 기록 반영(Colophon), 2차 배포, 최종 전화번호 검사, 공개 전 최종 확인(사용자)
 
 **UI hint**: yes
 
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 6/7 | In Progress|  |
+| 5. 검증과 배포 | 7/7 | Complete   | 2026-11-17 |
 
 ## Notes
 
