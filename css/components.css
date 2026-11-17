@@ -239,15 +239,14 @@
     }
   }
 
-  /* cover ground: an ivory panel (one gutter past the wrap, like the keywords panel) holding four
+  /* cover ground: a full-width ivory band (edge to edge, user request) holding four
      decorative circles that sit on its bottom edge, left to right, smaller and stronger in colour */
   .cover-orbs {
     position: absolute;
     inset-block: 0;
-    inset-inline: calc(-1 * var(--gutter));
+    inset-inline: calc(50% - 50vw);
     z-index: -1;
     overflow: hidden;
-    border-radius: var(--radius-lg);
     background: var(--color-cover-bg);
     pointer-events: none;
 
@@ -338,19 +337,16 @@
   @keyframes cover-orb {
     from {
       opacity: 0;
-      transform: scale(0);
     }
 
     to {
       opacity: 1;
-      transform: none;
     }
   }
 
   @media screen and (prefers-reduced-motion: no-preference) {
     html.js .cover-orbs span {
-      transform-origin: 50% 50%;
-      animation: cover-orb var(--orb-dur) var(--ease) both;
+      animation: cover-orb var(--orb-dur) ease-out both;
       animation-delay: calc(var(--i, 0) * var(--orb-stagger));
     }
 

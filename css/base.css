@@ -21,6 +21,11 @@
     scroll-margin-top: var(--space-md);
   }
 
+  /* the full-width cover band uses 100vw; clip the scrollbar-width overhang without creating a scroll container */
+  html {
+    overflow-x: clip;
+  }
+
   body {
     font-family: var(--font-sans);
     font-size: var(--text-body);

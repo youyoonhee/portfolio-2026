@@ -11,7 +11,7 @@
     --color-accent: #0a7a3d;
     --color-accent-strong: #075c2d;
     --color-accent-tint: #eaf6ee;
-    --color-cover-bg: #faf7f0;
+    --color-cover-bg: #fdfbf6;
     --color-gold: #e4d3aa;
     --color-sage: #a9b89b;
     --color-sage-strong: #8fa382;
@@ -53,10 +53,10 @@
     --dur-enter: 600ms;
     --stagger-enter: 150ms;
     --stagger-switch: 80ms;
-    --orb-dur: 380ms;
-    --orb-stagger: 110ms;
-    /* last circle ends at orb-dur + 3 x orb-stagger = 710ms; the cover text starts just after */
-    --cover-text-start: 760ms;
+    --orb-dur: 900ms;
+    --orb-stagger: 200ms;
+    /* user request: slow opacity fade, about 1.5s in total; last circle ends at orb-dur + 3 x orb-stagger = 1500ms */
+    --cover-text-start: 1550ms;
     --color-overlay: rgb(17 24 39 / 0.32);
     --color-overlay-strong: rgb(17 24 39 / 0.88);
 

@@ -354,14 +354,14 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         return { n: l.length, op3: l.length === 3 ? parseFloat(getComputedStyle(l[2]).opacity) : 1 };
       });
       report('cover 1 three lines, entrance started', first.n === 3 && first.op3 < 1, `${first.n} ${first.op3}`);
-      await sleep(2100);
+      await sleep(3000);
       const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')].map((e) => {
         const c = getComputedStyle(e);
         return [c.opacity, c.transform];
       }));
       report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
-      report('cover 3 stagger 0.76, 0.91, 1.06s (starts after the circles)', delays.join() === '0.76s,0.91s,1.06s', delays.join());
+      report('cover 3 stagger 1.55, 1.7, 1.85s (starts after the circles)', delays.join() === '1.55s,1.7s,1.85s', delays.join());
       const orbEnd = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')]
         .map((e) => { const t = e.getAnimations()[0]?.effect.getComputedTiming(); return t ? t.delay + t.duration : Infinity; })));
       const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')]
@@ -430,11 +430,13 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       const bad = [];
       for (let e = document.querySelector('.keywords-stage'); e; e = e.parentElement) {
         const c = getComputedStyle(e);
-        if (c.overflowX !== 'visible' || c.overflowY !== 'visible') bad.push(e.tagName);
+        // sticky needs no scroll container in the chain: visible or clip (clip does not create one)
+        const ok = (v) => v === 'visible' || v === 'clip';
+        if (!ok(c.overflowX) || !ok(c.overflowY)) bad.push(e.tagName);
       }
       return bad;
     });
-    report(`${P} 4 ancestors overflow visible`, ov.length === 0, ov.join());
+    report(`${P} 4 ancestors create no scroll container (overflow visible or clip)`, ov.length === 0, ov.join());
     const slot = (t.h - t.stageH) / 3;
     const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + t.h + 50, 2]];
     for (const [y, exp] of marks) {
