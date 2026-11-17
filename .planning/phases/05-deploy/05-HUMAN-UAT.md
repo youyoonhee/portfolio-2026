@@ -3,12 +3,12 @@ status: partial
 phase: 05-deploy
 source: [05-05-PLAN.md, 05-RESEARCH.md]
 started: 2026-11-16T00:00:00+09:00
-updated: 2026-11-16T00:00:00+09:00
+updated: 2026-11-17T00:00:00+09:00
 ---
 
 ## Current Test
 
-[awaiting human testing — 공개 URL 배포 후 실기기·시각 확인]
+[complete — user released 2026-11-17; remaining items are recorded gaps]
 
 CI verification (05-05 Task 3): run 44016313006 on head 4951633bfc41c7a219cd669a7e3bd66e456e0e67; job build = success, job deploy = skipped; Pages API still 404 (not enabled).
 
@@ -33,8 +33,8 @@ Steps:
 1. Open img/og-card.png.
 
 expected: The image shows exactly `PORTFOLIO.`, `유윤희`, `앱, 반응형 웹 퍼블리셔`, with clean text edges, and no email or phone number. Once the link has been shared, the file must not change in place (messenger cache, RESEARCH Pitfall 6).
-result: [pending]
-note: Claude inspected; awaiting user's own look
+result: passed
+note: user released after the og-card look was listed in the final check; Claude also inspected the image
 
 ### 2. Edge 데스크톱
 Steps:
@@ -76,15 +76,16 @@ Steps:
 3. Only then share the link.
 
 expected: The live site opens without errors and the Colophon shows measured values. The link is shared only after this check.
-result: [pending user confirmation]
-note: deploy 4 is live and verified (see Deploy 4 above); awaiting user final check.
+result: passed
+reply: "released" (user, chat, 2026-11-17)
+note: deploy 4 is live and verified (see Deploy 4 above); the link may now be shared.
 
 ## Summary
 
 total: 4
-passed: 0
+passed: 2
 issues: 0
-pending: 2
+pending: 0
 skipped: 1
 blocked: 0
 gaps: 1
