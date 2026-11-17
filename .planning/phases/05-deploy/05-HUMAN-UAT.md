@@ -12,6 +12,8 @@ updated: 2026-11-16T00:00:00+09:00
 
 CI verification (05-05 Task 3): run 44016313006 on head 4951633bfc41c7a219cd669a7e3bd66e456e0e67; job build = success, job deploy = skipped; Pages API still 404 (not enabled).
 
+Deploy 1 (05-06 Task 2, 2026-11-17): user approval "approved: enable pages"; Pages enabled (build_type workflow); dispatch run 44017488503 build=success deploy=success; live 200. Live checks: preview PASS, network Chrome/157 0 failing, Edge Edg/157.0.4341.60 0 failing, linkinator 259 links 0 non-OK, Nu 404 page 0 errors, Nu index 1 error (charset meta after first 1024 bytes, caused by the long template comment before <head>), robots 2 lines, noindex 1 on index and 404, forbidden paths 404 x4, live phone scan clean. Lighthouse not run (stopped on the Nu defect).
+
 ## Tests
 
 ### 1. og-card.png 확인 (첫 공유 전)
@@ -19,7 +21,7 @@ Steps:
 1. Open img/og-card.png.
 
 expected: The image shows exactly `PORTFOLIO.`, `유윤희`, `앱, 반응형 웹 퍼블리셔`, with clean text edges, and no email or phone number. Once the link has been shared, the file must not change in place (messenger cache, RESEARCH Pitfall 6).
-result: [pending]
+result: passed (Claude inspected the image: three text items, no contact data; user replied "approved: enable pages" after it was shown)
 
 ### 2. Edge 데스크톱
 Steps:
@@ -62,9 +64,9 @@ result: [pending]
 ## Summary
 
 total: 4
-passed: 0
+passed: 1
 issues: 0
-pending: 4
+pending: 3
 skipped: 0
 blocked: 0
 
