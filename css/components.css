@@ -860,6 +860,40 @@
     color: var(--color-ink-2);
   }
 
+  /* slider position dots: 8px dot inside a 44px hit area; built by js/main.js below 640px only */
+  .skills-dots {
+    display: flex;
+    justify-content: center;
+    margin-block-start: var(--space-sm);
+
+    & button {
+      inline-size: 44px;
+      block-size: 44px;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+
+      &::before {
+        content: "";
+        inline-size: 8px;
+        block-size: 8px;
+        border-radius: 50%;
+        background: var(--color-line-strong);
+      }
+
+      &[aria-current="true"]::before {
+        background: var(--color-accent);
+      }
+    }
+
+    @media print {
+      display: none;
+    }
+  }
+
   .contact-list dt {
     font-size: var(--text-label);
     font-weight: var(--weight-semibold);

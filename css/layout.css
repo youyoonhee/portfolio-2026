@@ -201,6 +201,26 @@
       border-radius: var(--radius-md);
     }
 
+    /* user request 2026-11-17: below 640px the tiles become a one-card-per-screen swipe slider (native scroll-snap) */
+    @media screen and (width < 640px) {
+      grid-auto-flow: column;
+      grid-auto-columns: 100%;
+      grid-template-columns: none;
+      align-items: start;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      & > div {
+        scroll-snap-align: start;
+      }
+    }
+
     @media (min-width: 640px) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }

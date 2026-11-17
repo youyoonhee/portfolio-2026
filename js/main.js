@@ -204,6 +204,67 @@ function init() {
   if (mqSwitch.matches) enableSwitch();
 
   initShots(mqReduce);
+  initSkillsSlider(mqReduce);
+}
+
+/* Tech stack slider (below 640px): CSS scroll-snap does the swiping, this adds the dots and the focusable region */
+function initSkillsSlider(mqReduce) {
+  const list = document.querySelector('dl.skills');
+  if (!list) return;
+  const cards = [...list.children];
+  const mq = matchMedia('(width < 640px)');
+  let dots = null;
+  let raf = 0;
+
+  const current = () => {
+    const x = list.scrollLeft;
+    let best = 0;
+    cards.forEach((c, i) => {
+      if (Math.abs(c.offsetLeft - list.offsetLeft - x) < Math.abs(cards[best].offsetLeft - list.offsetLeft - x)) best = i;
+    });
+    return best;
+  };
+  const sync = () => {
+    raf = 0;
+    const cur = current();
+    dots.querySelectorAll('button').forEach((b, i) => {
+      if (i === cur) b.setAttribute('aria-current', 'true');
+      else b.removeAttribute('aria-current');
+    });
+  };
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(sync); };
+
+  const enable = () => {
+    if (dots) return;
+    list.setAttribute('tabindex', '0');
+    list.setAttribute('role', 'region');
+    list.setAttribute('aria-label', 'Tech stack 목록, 좌우로 넘겨 보기');
+    dots = document.createElement('div');
+    dots.className = 'skills-dots';
+    cards.forEach((card, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', `${card.querySelector('dt').textContent} 보기`);
+      b.addEventListener('click', () => {
+        list.scrollTo({ left: card.offsetLeft - list.offsetLeft, behavior: mqReduce.matches ? 'auto' : 'smooth' });
+      });
+      dots.append(b);
+    });
+    list.after(dots);
+    list.addEventListener('scroll', onScroll, { passive: true });
+    sync();
+  };
+  const disable = () => {
+    if (!dots) return;
+    list.removeEventListener('scroll', onScroll);
+    list.removeAttribute('tabindex');
+    list.removeAttribute('role');
+    list.removeAttribute('aria-label');
+    dots.remove();
+    dots = null;
+  };
+  mq.addEventListener('change', () => (mq.matches ? enable() : disable()));
+  if (mq.matches) enable();
 }
 
 /* screenshot zoom: promote the thumbnail links to buttons that open one shared native <dialog> */
@@ -339,6 +400,10 @@ try {
   root.classList.remove('js');
   document.querySelector('.nav-overlay')?.remove();
   document.querySelector('dialog.shot-dialog')?.remove();
+  document.querySelector('.skills-dots')?.remove();
+  document.querySelector('dl.skills')?.removeAttribute('tabindex');
+  document.querySelector('dl.skills')?.removeAttribute('role');
+  document.querySelector('dl.skills')?.removeAttribute('aria-label');
   document.querySelector('.site-header')?.removeAttribute('data-hidden');
   const kwEl = document.querySelector('#keywords');
   if (kwEl) {

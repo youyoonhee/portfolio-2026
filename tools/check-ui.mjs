@@ -1,6 +1,6 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback|skills-slider]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -875,6 +875,70 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const saw = await page.evaluate(() => window.__sawClosing);
     report(`${P} no data-closing, focus back`, !saw && (await isBtn(page, 'gi-calculator')), `closing=${saw}`);
   }));
+
+  // Tech stack slider (user request 2026-11-17): one card per screen below 640px, grid unchanged above
+  await scenario('skills-slider', browser, url, async () => {
+    const P = 'skills-slider';
+    const state = (page) => page.evaluate(() => {
+      const l = document.querySelector('dl.skills');
+      const r = l.getBoundingClientRect();
+      const cards = [...l.children].map((c) => c.getBoundingClientRect());
+      const cs = getComputedStyle(l);
+      return {
+        full: cards.filter((c) => c.left >= r.left - 1 && c.right <= r.right + 1).length,
+        partial: cards.filter((c) => c.right > r.left + 1 && c.left < r.right - 1 && !(c.left >= r.left - 1 && c.right <= r.right + 1)).length,
+        snap: cs.scrollSnapType, cols: cs.gridTemplateColumns.split(' ').length,
+        tab: l.getAttribute('tabindex'), role: l.getAttribute('role'), label: l.getAttribute('aria-label'),
+        dots: document.querySelectorAll('.skills-dots button').length,
+        cur: [...document.querySelectorAll('.skills-dots button')].findIndex((b) => b.getAttribute('aria-current') === 'true'),
+        behavior: cs.scrollBehavior,
+      };
+    });
+    const shotDir = join(ROOT, 'dist', 'skills-slider');
+    mkdirSync(shotDir, { recursive: true });
+    const snap = async (page, name) => {
+      const el = await page.$('#skills');
+      await el.scrollIntoView();
+      await sleep(100);
+      // viewport clip around the section: element screenshots resize the page and reset the slider scroll
+      const b = await el.boundingBox();
+      const sy = await page.evaluate(() => window.scrollY);
+      await page.screenshot({ path: join(shotDir, name), captureBeyondViewport: false, clip: { x: 0, y: Math.max(0, b.y + sy - 16), width: page.viewport().width, height: b.height + 32 } });
+    };
+    for (const w of [320, 375, 414]) {
+      await withPage(browser, url, w, 812, {}, async (page) => {
+        const s = await state(page);
+        report(`${P} ${w} one card fully visible, none partial`, s.full === 1 && s.partial === 0, JSON.stringify([s.full, s.partial]));
+        if (w !== 375) return;
+        report(`${P} 375 snap x mandatory`, /^x +mandatory/.test(s.snap), s.snap);
+        report(`${P} 375 region tabindex + label`, s.tab === '0' && s.role === 'region' && !!s.label, JSON.stringify([s.tab, s.role, s.label]));
+        report(`${P} 375 5 dots, first current`, s.dots === 5 && s.cur === 0, JSON.stringify([s.dots, s.cur]));
+        await snap(page, 'mobile-375-card1.png');
+        await page.evaluate(() => document.querySelectorAll('.skills-dots button')[2].click());
+        await sleep(900);
+        const a = await state(page);
+        report(`${P} 375 dot 3 shows card 3 and is current`, a.cur === 2 && a.full === 1 && a.partial === 0, JSON.stringify([a.cur, a.full, a.partial]));
+        await snap(page, 'mobile-375-card3.png');
+        const label = await attr(page, '.skills-dots button:nth-child(3)', 'aria-label');
+        report(`${P} 375 dot label from dt`, label === 'Framework 보기', label);
+        const ow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+        report(`${P} 375 no page overflow`, ow);
+      });
+    }
+    for (const [w, cols] of [[768, 2], [1440, 3]]) {
+      await withPage(browser, url, w, 900, {}, async (page) => {
+        const s = await state(page);
+        report(`${P} ${w} grid ${cols} cols, no region/tabindex/dots`, s.cols === cols && s.tab === null && s.role === null && s.dots === 0, JSON.stringify(s));
+        if (w === 1440) await snap(page, 'desktop-1440.png');
+      });
+    }
+    await withPage(browser, url, 375, 812, { reduce: true }, async (page) => {
+      await page.evaluate(() => document.querySelectorAll('.skills-dots button')[3].click());
+      await sleep(60);
+      const a = await state(page);
+      report(`${P} reduced motion: instant scroll`, a.cur === 3 && a.full === 1, JSON.stringify([a.cur, a.full]));
+    });
+  });
 
   await scenario('shot-fallback', browser, url, async () => {
     const ctx = await browser.createBrowserContext();
