@@ -361,14 +361,15 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       }));
       report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
-      report('cover 3 stagger 3, 3.5, 4s (as the last circle looks complete)', delays.join() === '3s,3.5s,4s', delays.join());
-      // the circles ease out, so the last one is about 90% opaque at 75% of its run and looks finished;
-      // the text starts at that point (user request: "as soon as the last circle is done")
+      report('cover 3 stagger 2.5, 3.5, 4s (first line one step early)', delays.join() === '2.5s,3.5s,4s', delays.join());
+      // "Publishing," starts one step early so it is already showing as the last circle completes;
+      // it must begin after the last circle has started and be showing before that circle ends
       const orbSeen = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')]
         .map((e) => { const t = e.getAnimations()[0]?.effect.getComputedTiming(); return t ? t.delay + t.duration * 0.75 : Infinity; })));
       const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')]
         .map((e) => e.getAnimations()[0]?.effect.getComputedTiming().delay ?? 0)));
-      report('cover 6 first text starts once the last circle looks complete (>= 75% of its run)', orbSeen <= textStart && orbSeen > 0, `${orbSeen} <= ${textStart}`);
+      const orbFirst = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')].map((e) => e.getAnimations()[0]?.effect.getComputedTiming().delay ?? 0)));
+      report('cover 6 first text starts while the last circle completes (after it starts, before it looks complete)', textStart > orbFirst && textStart <= orbSeen, `${orbFirst} < ${textStart} <= ${orbSeen}`);
       report('cover 4 sub has no animation', (await cs(page, '.cover-sub', 'animationName')) === 'none');
     } finally { await ctx.close().catch(() => {}); }
     const ctx2 = await browser.createBrowserContext();

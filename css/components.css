@@ -372,6 +372,12 @@
       animation-delay: calc(var(--cover-text-start) + var(--i, 0) * var(--orb-stagger));
     }
 
+    /* "Publishing," only: its 2s fade rises slowly at first, so it starts one step earlier and is
+       already showing as the last circle completes; the lines after it keep their timing (user request) */
+    html.js .cover-line:first-child {
+      animation-delay: calc(var(--cover-text-start) - var(--orb-stagger));
+    }
+
     html.js .cover-intro,
     html.js .cover-mail {
       --rise: var(--space-md);
