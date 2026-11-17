@@ -2,7 +2,7 @@
   "measuredAt": "2026-11-17",
   "lighthouse": {
     "form": "mobile",
-    "performance": 83,
+    "performance": 90,
     "accessibility": 100,
     "bestPractices": 100,
     "seo": 63,
