@@ -10,6 +10,8 @@ updated: 2026-11-16T00:00:00+09:00
 
 [awaiting human testing — 공개 URL 배포 후 실기기·시각 확인]
 
+CI verification (05-05 Task 3): run 44016313006 on head 4951633bfc41c7a219cd669a7e3bd66e456e0e67; job build = success, job deploy = skipped; Pages API still 404 (not enabled).
+
 ## Tests
 
 ### 1. og-card.png 확인 (첫 공유 전)

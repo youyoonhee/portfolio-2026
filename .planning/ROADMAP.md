@@ -212,7 +212,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 05-05-PLAN.md — 배포 전 전체 검사, 05-HUMAN-UAT 체크리스트, D-04 스크린샷 게이트(사용자), push 후 CI 검증
+- [x] 05-05-PLAN.md — 배포 전 전체 검사, 05-HUMAN-UAT 체크리스트, D-04 스크린샷 게이트(사용자), push 후 CI 검증
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 4/7 | In Progress|  |
+| 5. 검증과 배포 | 5/7 | In Progress|  |
 
 ## Notes
 
