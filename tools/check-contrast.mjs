@@ -11,6 +11,7 @@ const PAIRS = [ // [fg, bg, min, why]
   ['color-bg', 'color-accent', 4.5], ['color-accent-strong', 'color-bg', 4.5],
   ['color-ink', 'color-bg', 4.5], ['color-ink-2', 'color-bg', 4.5], ['color-ink-2', 'color-surface', 4.5],
   ['color-ink-3', 'color-bg', 4.5], ['color-ink-3', 'color-surface', 4.5], ['color-ink-3', 'color-accent-tint', 4.5],
+  ['color-ink', 'color-cover-bg', 4.5], ['color-ink-2', 'color-cover-bg', 4.5], ['color-ink-3', 'color-cover-bg', 4.5], ['color-accent', 'color-cover-bg', 4.5],
   ['color-accent', 'color-bg', 3, 'focus ring'], ['color-line-strong', 'color-bg', 3, 'non-text'],
 ];
 let bad = 0;

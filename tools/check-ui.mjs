@@ -1,9 +1,9 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdirSync } from 'node:fs';
 import sharp from 'sharp';
 import { ladder, figureMarkup, readArticle, replaceFigure, articleIds, emptyFigure, emptyFigureLike } from './lib/shot-markup.mjs';
 import { makeUiImage } from './lib/shot-fixtures.mjs';
@@ -354,14 +354,19 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         return { n: l.length, op3: l.length === 3 ? parseFloat(getComputedStyle(l[2]).opacity) : 1 };
       });
       report('cover 1 three lines, entrance started', first.n === 3 && first.op3 < 1, `${first.n} ${first.op3}`);
-      await sleep(1500);
+      await sleep(2100);
       const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')].map((e) => {
         const c = getComputedStyle(e);
         return [c.opacity, c.transform];
       }));
       report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
-      report('cover 3 stagger 0, 150, 300ms', delays.join() === '0s,0.15s,0.3s', delays.join());
+      report('cover 3 stagger 0.76, 0.91, 1.06s (starts after the circles)', delays.join() === '0.76s,0.91s,1.06s', delays.join());
+      const orbEnd = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')]
+        .map((e) => { const t = e.getAnimations()[0]?.effect.getComputedTiming(); return t ? t.delay + t.duration : Infinity; })));
+      const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')]
+        .map((e) => e.getAnimations()[0]?.effect.getComputedTiming().delay ?? 0)));
+      report('cover 6 last circle ends before the first text starts', orbEnd <= textStart && orbEnd > 0, `${orbEnd} <= ${textStart}`);
       report('cover 4 sub has no animation', (await cs(page, '.cover-sub', 'animationName')) === 'none');
     } finally { await ctx.close().catch(() => {}); }
     const ctx2 = await browser.createBrowserContext();
@@ -372,6 +377,46 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       const vis = await cs(page2, '.cover-mail a', 'visibility');
       report('cover 5 mail link visible during entrance', vis === 'visible', vis);
     } finally { await ctx2.close().catch(() => {}); }
+  });
+
+  await scenario('cover-orbs', browser, url, async () => {
+    const OUT = join(ROOT, 'dist', 'cover-orbs');
+    mkdirSync(OUT, { recursive: true });
+    for (const [w, h] of [[320, 640], [375, 812], [768, 1024], [1024, 768], [1440, 900]]) {
+      await withPage(browser, url, w, h, {}, async (page) => {
+        await sleep(1900);
+        const r = await page.evaluate(() => {
+          const orbs = [...document.querySelectorAll('.cover-orbs span')].map((e) => {
+            const b = e.getBoundingClientRect();
+            return { cx: b.left + b.width / 2, cy: b.top + b.height / 2, r: b.width / 2 };
+          });
+          const hit = [];
+          for (const sel of ['.cover h1', '.cover-intro', '.cover-mail']) {
+            const b = document.querySelector(sel).getBoundingClientRect();
+            orbs.forEach((o, i) => {
+              const nx = Math.max(b.left, Math.min(o.cx, b.right));
+              const ny = Math.max(b.top, Math.min(o.cy, b.bottom));
+              if (Math.hypot(o.cx - nx, o.cy - ny) < o.r) hit.push(sel + '#' + (i + 1));
+            });
+          }
+          const op = [...document.querySelectorAll('.cover-orbs span')].map((e) => getComputedStyle(e).opacity);
+          return { n: orbs.length, hit, op };
+        });
+        report(`cover-orbs ${w} four circles, no text overlap`, r.n === 4 && r.hit.length === 0 && r.op.every((o) => o === '1'), r.hit.join() || r.op.join());
+        if (w === 375 || w === 1440) await page.screenshot({ path: join(OUT, `cover-${w}.png`) });
+      });
+    }
+    const { page, ctx } = await newPage(browser, url, 1440, 900, {});
+    try {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await sleep(330);
+      await page.screenshot({ path: join(OUT, 'cover-1440-mid.png') });
+    } finally { await ctx.close().catch(() => {}); }
+    await withPage(browser, url, 1440, 900, { reduce: true }, async (page) => {
+      const st = await page.evaluate(() => [...document.querySelectorAll('.cover-orbs span, .cover-line, .cover-intro, .cover-mail')]
+        .map((e) => [getComputedStyle(e).opacity, e.getAnimations().length]));
+      report('cover-orbs reduced: no animation, all opacity 1', st.length === 9 && st.every(([o, a]) => o === '1' && a === 0), JSON.stringify(st));
+    });
   });
 
   await scenario('keywords', browser, url, () => withPage(browser, url, 1440, 900, {}, async (page) => {
@@ -512,6 +557,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     report('print-state 2 all opacity 1', ops.length > 0 && ops.every((o) => o === '1'), ops.join());
     const pos = await page.evaluate(() => { const e = document.querySelector('.keywords-stage'); return e ? getComputedStyle(e).position : 'static'; });
     report('print-state 3 stage not sticky', pos !== 'sticky', pos);
+    report('print-state 4 cover circles hidden', (await cs(page, '.cover-orbs', 'display')) === 'none');
   }));
 
   /* ---- Plan 04-03: screenshot frames (fixture figures, repo untouched) ---- */
