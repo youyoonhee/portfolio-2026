@@ -15,6 +15,10 @@
     --color-gold: #e4d3aa;
     --color-sage: #a9b89b;
     --color-sage-strong: #8fa382;
+    /* circles that pass behind cover text are lightened just enough for ink-2 and the
+       cover link (accent-strong) to keep 4.5:1 (user chose: text stays centred, circles lighter) */
+    --color-orb-2: #cccbaa;
+    --color-sage-soft: #c3cdb7;
 
     /* spacing */
     --space-xs: 4px;
@@ -53,10 +57,11 @@
     --dur-enter: 600ms;
     --stagger-enter: 150ms;
     --stagger-switch: 80ms;
-    --orb-dur: 900ms;
-    --orb-stagger: 200ms;
-    /* user request: slow opacity fade, about 1.5s in total; last circle ends at orb-dur + 3 x orb-stagger = 1500ms */
-    --cover-text-start: 1550ms;
+    --orb-dur: 2000ms;
+    --orb-stagger: 500ms;
+    /* user request: slow opacity fade, 3.5s in total; last circle ends at orb-dur + 3 x orb-stagger = 3500ms.
+       the text starts right as the last circle has fully appeared */
+    --cover-text-start: 3500ms;
     --color-overlay: rgb(17 24 39 / 0.32);
     --color-overlay-strong: rgb(17 24 39 / 0.88);
 

@@ -354,14 +354,14 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         return { n: l.length, op3: l.length === 3 ? parseFloat(getComputedStyle(l[2]).opacity) : 1 };
       });
       report('cover 1 three lines, entrance started', first.n === 3 && first.op3 < 1, `${first.n} ${first.op3}`);
-      await sleep(3000);
+      await sleep(9000);
       const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')].map((e) => {
         const c = getComputedStyle(e);
         return [c.opacity, c.transform];
       }));
       report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
-      report('cover 3 stagger 1.55, 1.7, 1.85s (starts after the circles)', delays.join() === '1.55s,1.7s,1.85s', delays.join());
+      report('cover 3 stagger 3.5, 4, 4.5s (right after the last circle)', delays.join() === '3.5s,4s,4.5s', delays.join());
       const orbEnd = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')]
         .map((e) => { const t = e.getAnimations()[0]?.effect.getComputedTiming(); return t ? t.delay + t.duration : Infinity; })));
       const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')]
@@ -384,32 +384,47 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     mkdirSync(OUT, { recursive: true });
     for (const [w, h] of [[320, 640], [375, 812], [768, 1024], [1024, 768], [1440, 900]]) {
       await withPage(browser, url, w, h, {}, async (page) => {
-        await sleep(1900);
+        await sleep(9000);
+        // circles may pass behind the centred cover text (user choice); every text line that a circle
+        // reaches must keep WCAG contrast against that circle: 4.5:1, or 3:1 for the large heading
         const r = await page.evaluate(() => {
+          const rgb = (s) => s.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number);
+          const lum = (c) => { const v = c.map((x) => x / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+          const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
           const orbs = [...document.querySelectorAll('.cover-orbs span')].map((e) => {
             const b = e.getBoundingClientRect();
-            return { cx: b.left + b.width / 2, cy: b.top + b.height / 2, r: b.width / 2 };
+            return { cx: b.left + b.width / 2, cy: b.top + b.height / 2, r: b.width / 2, bg: rgb(getComputedStyle(e).backgroundColor) };
           });
-          const hit = [];
-          for (const sel of ['.cover h1', '.cover-intro', '.cover-mail']) {
-            const b = document.querySelector(sel).getBoundingClientRect();
-            orbs.forEach((o, i) => {
-              const nx = Math.max(b.left, Math.min(o.cx, b.right));
-              const ny = Math.max(b.top, Math.min(o.cy, b.bottom));
-              if (Math.hypot(o.cx - nx, o.cy - ny) < o.r) hit.push(sel + '#' + (i + 1));
-            });
+          const bad = [];
+          let hits = 0;
+          for (const sel of ['.cover-sub', '.cover h1', '.cover-intro', '.cover-mail a']) {
+            const el = document.querySelector(sel);
+            const fg = rgb(getComputedStyle(el).color);
+            const min = sel === '.cover h1' ? 3 : 4.5;
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            for (const b of range.getClientRects()) {
+              orbs.forEach((o, i) => {
+                const nx = Math.max(b.left, Math.min(o.cx, b.right));
+                const ny = Math.max(b.top, Math.min(o.cy, b.bottom));
+                if (Math.hypot(o.cx - nx, o.cy - ny) >= o.r) return;
+                hits++;
+                const c = ratio(fg, o.bg);
+                if (c < min) bad.push(`${sel}#${i + 1}=${c.toFixed(2)}`);
+              });
+            }
           }
           const op = [...document.querySelectorAll('.cover-orbs span')].map((e) => getComputedStyle(e).opacity);
-          return { n: orbs.length, hit, op };
+          return { n: orbs.length, hits, bad, op };
         });
-        report(`cover-orbs ${w} four circles, no text overlap`, r.n === 4 && r.hit.length === 0 && r.op.every((o) => o === '1'), r.hit.join() || r.op.join());
+        report(`cover-orbs ${w} four circles, text over circles keeps contrast (${r.hits} overlaps)`, r.n === 4 && r.bad.length === 0 && r.op.every((o) => o === '1'), r.bad.join() || r.op.join());
         if (w === 375 || w === 1440) await page.screenshot({ path: join(OUT, `cover-${w}.png`) });
       });
     }
     const { page, ctx } = await newPage(browser, url, 1440, 900, {});
     try {
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await sleep(330);
+      await sleep(1400);
       await page.screenshot({ path: join(OUT, 'cover-1440-mid.png') });
     } finally { await ctx.close().catch(() => {}); }
     await withPage(browser, url, 1440, 900, { reduce: true }, async (page) => {

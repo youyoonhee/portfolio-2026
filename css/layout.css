@@ -42,7 +42,7 @@
 
   .cover {
     /* largest circle diameter; the visible half is reserved under the text */
-    --orb-d: min(30vw, 380px);
+    --orb-d: min(60vw, 760px);
     position: relative;
     isolation: isolate;
     min-block-size: min(100svh - var(--header-h), 880px);
@@ -50,7 +50,7 @@
     place-content: center;
     justify-items: center;
     text-align: center;
-    padding-block: var(--space-2xl) calc(var(--space-xl) + var(--orb-d) / 2);
+    padding-block: var(--space-2xl);
     gap: var(--space-lg);
   }
 

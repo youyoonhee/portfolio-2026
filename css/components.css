@@ -250,41 +250,57 @@
     background: var(--color-cover-bg);
     pointer-events: none;
 
+    /* each circle is placed by its centre: the first straddles the left edge at mid height,
+       the next ones step down and to the right (user request, like the reference) */
     span {
       position: absolute;
       inline-size: calc(var(--orb-d) * var(--k));
       aspect-ratio: 1;
-      inset-block-end: calc(var(--orb-d) * var(--k) / -2);
-      inset-inline-start: var(--x);
+      inset-inline-start: calc(var(--orb-d) * var(--cx));
+      inset-block-start: calc(50% + var(--orb-d) * var(--cy) + var(--dy, 0px));
+      translate: -50% -50%;
       border-radius: 50%;
       background: var(--c);
     }
 
     span:nth-child(1) {
       --k: 1;
-      --x: 1%;
+      --cx: 0;
+      --cy: 0;
       --c: var(--color-gold);
+
+      /* at least 30px lower than mid height, and always low enough that its bottom reaches the
+         band's bottom edge, so no ivory strip shows under it at any screen size (user request) */
+      inset-block-start: max(calc(50% + 60px), calc(100% - var(--orb-d) / 2 + 30px));
     }
 
     span:nth-child(2) {
       --k: 0.8;
-      --x: 22%;
-      --c: color-mix(in srgb, var(--color-gold) 50%, var(--color-sage));
+      --cx: 0.55;
+      --cy: 0.364;
+      --c: var(--color-orb-2);
       --i: 1;
     }
 
     span:nth-child(3) {
       --k: 0.6;
-      --x: 44%;
-      --c: var(--color-sage);
+      --cx: 1;
+      --cy: 0.5;
+      --c: var(--color-sage-soft);
       --i: 2;
     }
 
     span:nth-child(4) {
       --k: 0.45;
-      --x: 66%;
+      --cx: 1.38;
+      --cy: 0.66;
       --c: var(--color-sage-strong);
       --i: 3;
+
+      /* only on narrow screens does the last circle reach the cover text */
+      @media (width < 768px) {
+        --c: var(--color-sage-soft);
+      }
     }
   }
 
@@ -350,23 +366,24 @@
       animation-delay: calc(var(--i, 0) * var(--orb-stagger));
     }
 
+    /* the text enters at the same pace as the circles (user request): same duration and step */
     html.js .cover-line {
-      animation: cover-rise var(--dur-enter) var(--ease) both;
-      animation-delay: calc(var(--cover-text-start) + var(--i, 0) * var(--stagger-enter));
+      animation: cover-rise var(--orb-dur) ease-out both;
+      animation-delay: calc(var(--cover-text-start) + var(--i, 0) * var(--orb-stagger));
     }
 
     html.js .cover-intro,
     html.js .cover-mail {
       --rise: var(--space-md);
-      animation: cover-rise var(--dur-switch) var(--ease) both;
+      animation: cover-rise var(--orb-dur) ease-out both;
     }
 
     html.js .cover-intro {
-      animation-delay: calc(var(--cover-text-start) + 450ms);
+      animation-delay: calc(var(--cover-text-start) + 3 * var(--orb-stagger));
     }
 
     html.js .cover-mail {
-      animation-delay: calc(var(--cover-text-start) + 600ms);
+      animation-delay: calc(var(--cover-text-start) + 4 * var(--orb-stagger));
     }
   }
 
@@ -416,6 +433,12 @@
     display: inline-flex;
     align-items: center;
     min-block-size: 44px;
+    /* the deeper site green (the usual hover colour) keeps 4.5:1 over the circles behind it */
+    color: var(--color-accent-strong);
+
+    &:hover {
+      color: var(--color-ink);
+    }
   }
 
   .skip-link {
