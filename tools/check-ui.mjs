@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
-import { ladder, figureMarkup, readArticle, replaceFigure } from './lib/shot-markup.mjs';
+import { ladder, figureMarkup, readArticle, replaceFigure, articleIds, emptyFigure } from './lib/shot-markup.mjs';
 import { makeUiImage } from './lib/shot-fixtures.mjs';
 import { startStaticServer } from './lib/static-server.mjs';
 import { launchChrome, closeBrowser } from './lib/browser.mjs';
@@ -50,6 +50,8 @@ async function buildShotFixture() {
   if (shotFixture) return shotFixture;
   const specs = [['gi-calculator', 'web', 1920, 4800], ['gi-oneday', 'app', 1080, 1920]];
   let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  // empty every real frame first so the fixture page always has exactly 2 filled and the rest empty
+  for (const id of articleIds(html)) html = replaceFigure(html, id, emptyFigure(readArticle(html, id).frame));
   const assets = new Map();
   for (const [id, frame, width, height] of specs) {
     const src = await makeUiImage({ width, height, label: id, format: 'png' });

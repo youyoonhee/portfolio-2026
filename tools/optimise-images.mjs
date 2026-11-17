@@ -728,7 +728,9 @@ async function groupValidation(origHtml) {
 }
 
 async function selfTest() {
-  const origHtml = fs.readFileSync(REPO_HTML, 'utf8');
+  // start from the real page with every frame emptied, so real published shots do not leak into the fixtures
+  let origHtml = fs.readFileSync(REPO_HTML, 'utf8');
+  for (const id of articleIds(origHtml)) origHtml = replaceFigure(origHtml, id, emptyFigure(readArticle(origHtml, id).frame));
   const groups = [
     ['markup', () => groupMarkup(origHtml)],
     ['parsers', () => groupParsers()],

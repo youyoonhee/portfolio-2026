@@ -1,1 +1,68 @@
-{ "version": 1, "projects": {} }
+{
+  "version": 1,
+  "projects": {
+    "kn-puring": {
+      "crop": null,
+      "masks": [
+        {
+          "x": 46,
+          "y": 1590,
+          "w": 988,
+          "h": 276,
+          "kind": "other"
+        }
+      ],
+      "alt": "puring 앱 홈 화면, 온수·냉수·정수와 컵 용량 토출 버튼",
+      "status": "approved"
+    },
+    "kn-wecankids": {
+      "crop": null,
+      "masks": [],
+      "alt": "위캔키즈클럽 메인 화면, 수업 예약과 예약 내역 메뉴 카드",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "kn-fsd": {
+      "crop": null,
+      "masks": [],
+      "alt": "FSD 코스메틱 웹사이트 메인 화면, 브랜드 소개 문구와 수치 영역",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "kn-greenda": {
+      "crop": null,
+      "masks": [],
+      "alt": "그린다 웹사이트 메인 화면, 상단 메뉴와 친환경 항공유 배너",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "kn-universe": {
+      "crop": null,
+      "masks": [
+        {
+          "x": 0,
+          "y": 696,
+          "w": 375,
+          "h": 100,
+          "kind": "person-name"
+        }
+      ],
+      "alt": "EXAONE Universe 채팅 화면, 질문과 논문 출처가 달린 답변",
+      "status": "approved"
+    },
+    "bs-samsung": {
+      "crop": null,
+      "masks": [],
+      "alt": "삼성닷컴 기획전 페이지, JBL 80주년 특별 기획전 배너",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "ab-peach": {
+      "crop": null,
+      "masks": [],
+      "alt": "피치 앱 시작 화면, 마이데이터 등록 안내와 분야별 메뉴",
+      "status": "approved",
+      "noSensitive": true
+    }
+  }
+}

@@ -253,7 +253,8 @@ try {
       const webLen = pick(webSizes), appLen = pick(appSizes);
       const wp = probe(webLen), ap = probe(appLen);
       const webs = [...document.querySelectorAll('.shot[data-frame="web"]')].map((f) => f.clientWidth);
-      const apps = [...document.querySelectorAll('.shot[data-frame="app"]')].map((f) => parseFloat(getComputedStyle(f, '::before').width));
+      // filled app frames have no ::before placeholder: measure the rendered image instead
+      const apps = [...document.querySelectorAll('.shot[data-frame="app"]')].map((f) => { const img = f.querySelector('img'); return img ? img.getBoundingClientRect().width : parseFloat(getComputedStyle(f, '::before').width); });
       return { webLen, wp, ap, webMax: Math.max(...webs), webOk: webs.every((cw) => wp >= cw - 1), appMax: Math.max(...apps), appOk: apps.every((aw) => aw <= 200.5 && aw <= ap + 1) };
     })(${JSON.stringify(WEB_SIZES)}, ${JSON.stringify(APP_SIZES)})`);
     report(r.webOk && r.appOk, `${w}px shot-sizes (web max ${r.webMax}, sizes ${r.wp}px; app max ${r.appMax}, sizes ${r.ap}px)`);
