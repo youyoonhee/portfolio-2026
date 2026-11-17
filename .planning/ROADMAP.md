@@ -216,7 +216,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 05-06-PLAN.md — 사용자 승인 후 Pages 켜기와 1차 배포, 배포 URL 검사·Lighthouse, iOS Safari 실기기 UAT(사용자)
+- [x] 05-06-PLAN.md — 사용자 승인 후 Pages 켜기와 1차 배포, 배포 URL 검사·Lighthouse, iOS Safari 실기기 UAT(사용자)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 5/7 | In Progress|  |
+| 5. 검증과 배포 | 6/7 | In Progress|  |
 
 ## Notes
 
