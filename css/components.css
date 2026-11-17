@@ -28,6 +28,13 @@
     inline-size: auto;
     margin-inline-start: 0.35em;
     vertical-align: bottom;
+
+    /* mobile: the cat sits below the "Contact." text, centred like the heading */
+    @media (max-width: 639.98px) {
+      display: block;
+      margin-inline: auto;
+      margin-block-start: var(--space-sm);
+    }
   }
 
   .wordmark {

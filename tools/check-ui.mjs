@@ -304,6 +304,39 @@ try {
     report('colophon no horizontal overflow', r.sw <= r.iw, `${r.sw}/${r.iw}`);
   }));
 
+  // Contact cat: below the "Contact." line at 375, sharing a line with it at 1440
+  await scenario('contact-cat', browser, url, async () => {
+    for (const [vw, vh] of [[375, 812], [1440, 900]]) {
+      await withPage(browser, url, vw, vh, {}, async (page) => {
+        await page.evaluate(() => document.querySelector('.deco-cat-desk').scrollIntoView({ block: 'center', behavior: 'instant' }));
+        await page.evaluate(async () => {
+          const img = document.querySelector('.deco-cat-desk');
+          img.loading = 'eager';
+          if (!img.complete) await new Promise((r) => { img.onload = r; img.onerror = r; });
+        });
+        await sleep(200);
+        const r = await page.evaluate(() => {
+          const h2 = document.querySelector('#contact-title');
+          const img = h2.querySelector('.deco-cat-desk');
+          const range = document.createRange();
+          range.selectNodeContents(h2.firstChild);
+          const t = range.getBoundingClientRect();
+          const i = img.getBoundingClientRect();
+          return { textTop: t.top, textBottom: t.bottom, imgTop: i.top, imgBottom: i.bottom, name: h2.textContent.trim() };
+        });
+        if (vw < 640) {
+          report(`contact-cat ${vw} cat is below the Contact. line`, r.imgTop >= r.textBottom - 1, `img top ${r.imgTop.toFixed(1)} / text bottom ${r.textBottom.toFixed(1)}`);
+        } else {
+          report(`contact-cat ${vw} cat shares the line with Contact.`, r.imgTop < r.textBottom && r.imgBottom > r.textTop, `img ${r.imgTop.toFixed(1)}-${r.imgBottom.toFixed(1)} / text ${r.textTop.toFixed(1)}-${r.textBottom.toFixed(1)}`);
+        }
+        report(`contact-cat ${vw} h2 name stays Contact.`, r.name === 'Contact.', r.name);
+        mkdirSync(join(ROOT, 'dist', 'contact-cat'), { recursive: true });
+        const el = await page.$('#contact');
+        await el.screenshot({ path: join(ROOT, 'dist', 'contact-cat', `contact-${vw}.png`) });
+      });
+    }
+  });
+
   await scenario('nojs', browser, url, async () => {
     for (const [vw, vh, exp] of [[375, 812, 112], [1440, 900, 72]]) {
       await withPage(browser, url, vw, vh, { noJs: true }, async (page) => {
