@@ -156,7 +156,7 @@ function selfTest() {
   const base = mkdtempSync(join(tmpdir(), 'colophon-sync-'));
   const results = [];
   const t = (name, ok) => results.push([name, Boolean(ok)]);
-  const nullRec = () => JSON.parse(readFileSync(join(REPO, 'tools', 'measurements.json'), 'utf8'));
+  const nullRec = () => ({ measuredAt: null, lighthouse: { form: null, performance: null, accessibility: null, bestPractices: null, seo: null, crawlableFailed: null }, validator: { htmlErrors: null, brokenLinks: null }, browsers: [{ name: 'Chrome', version: null, tested: false, method: 'headless' }, { name: 'Edge', version: null, tested: false, method: 'headless' }, { name: 'iOS Safari', version: null, tested: false, method: 'real-device' }] });
   const dd = (k) => `<dd data-measured="${k}">old</dd>`;
   const fixture = `<main>\n<dl>\n<div><dt>a</dt>${dd('browsers')}</div>\n<div><dt>b</dt>${dd('lighthouse')}</div>\n<div><dt>c</dt>${dd('validator')}</div>\n<div><dt>d</dt>${dd('date')}</div>\n</dl>\n<p>keep 123</p>\n</main>\n`;
   let n = 0;
