@@ -759,7 +759,7 @@
   .skills dt {
     font-size: var(--text-label);
     font-weight: var(--weight-semibold);
-    color: var(--color-ink-3);
+    color: var(--color-accent); /* user request 2026-11-17: Tech stack subheadings in the main color (5.43:1 on white) */
   }
 
   .skills dd {

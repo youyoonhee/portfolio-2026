@@ -3,17 +3,10 @@
   "projects": {
     "kn-puring": {
       "crop": null,
-      "masks": [
-        {
-          "x": 46,
-          "y": 1590,
-          "w": 988,
-          "h": 276,
-          "kind": "other"
-        }
-      ],
+      "masks": [],
       "alt": "puring 앱 홈 화면, 온수·냉수·정수와 컵 용량 토출 버튼",
-      "status": "approved"
+      "status": "approved",
+      "noSensitive": true
     },
     "kn-wecankids": {
       "crop": null,
