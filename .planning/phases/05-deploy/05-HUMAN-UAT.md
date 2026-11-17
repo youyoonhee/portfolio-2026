@@ -14,6 +14,10 @@ CI verification (05-05 Task 3): run 44016313006 on head 4951633bfc41c7a219cd669a
 
 Deploy 1 (05-06 Task 2, 2026-11-17): user approval "approved: enable pages"; Pages enabled (build_type workflow); dispatch run 44017488503 build=success deploy=success; live 200. Live checks: preview PASS, network Chrome/157 0 failing, Edge Edg/157.0.4341.60 0 failing, linkinator 259 links 0 non-OK, Nu 404 page 0 errors, Nu index 1 error (charset meta after first 1024 bytes, caused by the long template comment before <head>), robots 2 lines, noindex 1 on index and 404, forbidden paths 404 x4, live phone scan clean. Lighthouse not run (stopped on the Nu defect).
 
+Deviation (deploy 1 defect): live Nu on index reported 1 error (meta charset after first 1024 bytes, template comment before <head>). Fix commit b995282 moved the comment below <meta charset> and added a check-artifact `charset-late` rule.
+
+Re-deploy (2026-11-17): user approval "approved: redeploy" (fresh chat approval); run 44019615286 on head b995282, build=success deploy=success; live 200. Live checks re-run, outputs overwrite dist/live/*: preview URL mode PASS, network Chrome/157.0.8103.78 0 failing + probe-404 OK, Edge Edg/157.0.4341.60 0 failing, linkinator 259 links 0 non-OK (no recheck needed), Nu index 0 errors, Nu nested 404 0 errors, robots 2 lines, noindex 1 on index and 404, forbidden paths 404 x4, live phone scan clean (2 files). Lighthouse 13.6.0 mobile x3: performance 83/73/84 (median 83), accessibility 100, best-practices 100, seo 63 (median 63); is-crawlable score 0 in all runs (expected, noindex).
+
 ## Tests
 
 ### 1. og-card.png 확인 (첫 공유 전)
@@ -21,7 +25,8 @@ Steps:
 1. Open img/og-card.png.
 
 expected: The image shows exactly `PORTFOLIO.`, `유윤희`, `앱, 반응형 웹 퍼블리셔`, with clean text edges, and no email or phone number. Once the link has been shared, the file must not change in place (messenger cache, RESEARCH Pitfall 6).
-result: passed (Claude inspected the image: three text items, no contact data; user replied "approved: enable pages" after it was shown)
+result: [pending]
+note: Claude inspected; awaiting user's own look
 
 ### 2. Edge 데스크톱
 Steps:
@@ -64,9 +69,9 @@ result: [pending]
 ## Summary
 
 total: 4
-passed: 1
+passed: 0
 issues: 0
-pending: 3
+pending: 4
 skipped: 0
 blocked: 0
 
