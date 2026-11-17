@@ -422,7 +422,7 @@ function checkProjects() {
     const wantRest = pm.contributionContext ? `· ${pm.contributionContext}` : '';
     if (rest !== wantRest) return f(`contribution context differs: "${rest}"`);
     if (!hasStatusBox) {
-      if (elsIn(art, 'a').length) return f('project without status box must have no link');
+      if (elsIn(art, 'a').some((a) => !hasClass(a, 'shot-link'))) return f('project without status box must have no link');
       if (elsIn(art, 'p').some((q) => hasClass(q, 'status'))) return f('live project must not show a status badge');
       continue;
     }
@@ -558,6 +558,16 @@ register('paths', () => {
   pass('paths');
 });
 
+// "No image" placeholder: read once as text, never a control, never zoomable
+function isNoImage(shot) {
+  if (shot.attrs['data-empty'] !== 'no-image' || 'aria-hidden' in shot.attrs) return false;
+  const ds = descendants(shot).filter(isEl);
+  if (ds.some((e) => ['a', 'img', 'picture', 'button'].includes(e.tag) || 'tabindex' in e.attrs)) return false;
+  const svg = ds.filter((e) => e.tag === 'svg');
+  if (svg.length !== 1 || svg[0].attrs['aria-hidden'] !== 'true') return false;
+  return textIn(shot) === 'No image';
+}
+
 register('slots', () => {
   const phone = all.filter((e) => e.attrs['data-slot'] === 'phone');
   if (phone.length !== 1) return fail('slots', `expected one data-slot="phone", found ${phone.length}`);
@@ -575,7 +585,9 @@ register('slots', () => {
     const bad = `${pm.id}: screenshot slot must be empty+aria-hidden or a.shot-link`;
     if (!shot) return fail('slots', bad);
     const kids = shot.kids.filter((k) => isEl(k) || collapse(k.text) !== '');
-    if (!kids.length) {
+    if (pm.noImage) {
+      if (!isNoImage(shot)) return fail('slots', `${pm.id}: no-image frame must be data-empty="no-image" with an aria-hidden svg and "No image", no aria-hidden, a, img or button`);
+    } else if (!kids.length) {
       if (shot.attrs['aria-hidden'] !== 'true') return fail('slots', bad);
     } else if (kids.length !== 1 || !isEl(kids[0]) || kids[0].tag !== 'a' || !hasClass(kids[0], 'shot-link') || 'aria-hidden' in shot.attrs) {
       return fail('slots', bad);
@@ -591,12 +603,18 @@ register('shots', () => {
   const dir = dirname(HTML_PATH);
   let filled = 0;
   let empty = 0;
+  let noImage = 0;
   for (const pm of manifest.projects || []) {
     const art = all.find((e) => e.tag === 'article' && e.attrs.id === pm.id);
     if (!art) continue;
     const f = (msg) => fail('shots', `${pm.id}: ${msg}`);
     const shot = descendants(art).find((e) => isEl(e) && e.attrs['data-slot'] === 'screenshot');
     if (!shot) return f('screenshot slot missing');
+    if (pm.noImage) {
+      if (!isNoImage(shot)) return f('no-image frame is malformed');
+      noImage++;
+      continue;
+    }
     if (!shot.kids.some((k) => isEl(k) || collapse(k.text) !== '')) { empty++; continue; }
     filled++;
     const link = shot.kids.filter(isEl)[0];
@@ -644,7 +662,7 @@ register('shots', () => {
     if (link.attrs.href !== biggest[0]) return f('href must be the largest jpeg');
   }
   if (results.some((r) => !r.ok && r.line.startsWith('FAIL shots'))) return;
-  pass(`shots (${filled} filled, ${empty} empty)`);
+  pass(`shots (${filled} filled, ${noImage} no-image, ${empty} empty)`);
 });
 
 register('phone', () => {

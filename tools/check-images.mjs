@@ -10,7 +10,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hasPhone, hasPhoneAnywhere } from './check-repo.mjs';
 import { jpegMeta, sniff, webpMeta } from './lib/image-meta.mjs';
-import { articleIds, emptyFigure, readArticle, replaceFigure } from './lib/shot-markup.mjs';
+import { articleIds, emptyFigure, emptyFigureLike, readArticle, replaceFigure } from './lib/shot-markup.mjs';
 
 const SELF = fileURLToPath(import.meta.url);
 const REPO = resolve(dirname(SELF), '..');
@@ -190,7 +190,7 @@ async function selfTest() {
     // 1) build clean outputs through the real conversion tool
     // fixtures start from the real page with every frame emptied, so real published shots do not leak in
     let html = readFileSync(join(REPO, 'index.html'), 'utf8');
-    for (const id of articleIds(html)) html = replaceFigure(html, id, emptyFigure(readArticle(html, id).frame));
+    for (const id of articleIds(html)) html = replaceFigure(html, id, emptyFigureLike(readArticle(html, id)));
     const good = join(base, 'good');
     const src = join(base, 'src');
     mkdirSync(join(good, 'tools'), { recursive: true });

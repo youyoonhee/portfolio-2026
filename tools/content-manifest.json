@@ -51,6 +51,7 @@
     "본문 바로가기",
     "(새 탭)",
     "운영 종료",
+    "No image",
     "관련 기사",
     "운영 여부 확인 어려움",
     "플랫폼",
@@ -81,7 +82,8 @@
     "복용약 알림 어플": "user-provided 2026-11-17",
     "교육 상담 예약": "user-provided 2026-11-17",
     "화장품 브랜드 소개": "user-provided 2026-11-17",
-    "재활용 친환경 사업 소개": "user-provided 2026-11-17"
+    "재활용 친환경 사업 소개": "user-provided 2026-11-17",
+    "No image": "UI structural label: placeholder for the project without a screenshot, user-provided 2026-11-17"
   },
   "forbiddenText": [
     "Phone",
@@ -361,7 +363,8 @@
       "contributionContext": null,
       "status": "closed",
       "link": null,
-      "point": null
+      "point": null,
+      "noImage": true
     },
     {
       "id": "bs-samsung",

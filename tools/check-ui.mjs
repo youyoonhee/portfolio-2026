@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
-import { ladder, figureMarkup, readArticle, replaceFigure, articleIds, emptyFigure } from './lib/shot-markup.mjs';
+import { ladder, figureMarkup, readArticle, replaceFigure, articleIds, emptyFigure, emptyFigureLike } from './lib/shot-markup.mjs';
 import { makeUiImage } from './lib/shot-fixtures.mjs';
 import { startStaticServer } from './lib/static-server.mjs';
 import { launchChrome, closeBrowser } from './lib/browser.mjs';
@@ -51,7 +51,7 @@ async function buildShotFixture() {
   const specs = [['gi-calculator', 'web', 1920, 4800], ['gi-oneday', 'app', 1080, 1920]];
   let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
   // empty every real frame first so the fixture page always has exactly 2 filled and the rest empty
-  for (const id of articleIds(html)) html = replaceFigure(html, id, emptyFigure(readArticle(html, id).frame));
+  for (const id of articleIds(html)) html = replaceFigure(html, id, emptyFigureLike(readArticle(html, id)));
   const assets = new Map();
   for (const [id, frame, width, height] of specs) {
     const src = await makeUiImage({ width, height, label: id, format: 'png' });
@@ -556,10 +556,39 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         report(`${P} filled app has no placeholder, empty keeps it`, g.filledBefore === 'none' && g.emptyBefore !== 'none', `${g.filledBefore} | ${g.emptyBefore}`);
         report(`${P} link cursor zoom-in`, g.linkCursor === 'zoom-in', g.linkCursor);
         const empty = await page.evaluate(() => {
-          const e = [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img'));
+          const e = [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img') && !f.hasAttribute('data-empty'));
           return { n: e.length, bad: e.filter((f) => f.getAttribute('aria-hidden') !== 'true' || f.querySelector('a, button, [tabindex]') || getComputedStyle(f).cursor !== 'auto').length };
         });
-        report(`${P} empty frames aria-hidden, unfocusable, cursor auto`, empty.n === 9 && empty.bad === 0, JSON.stringify(empty));
+        report(`${P} empty frames aria-hidden, unfocusable, cursor auto`, empty.n === 8 && empty.bad === 0, JSON.stringify(empty));
+        // CJ ADDY: the only project without a screenshot shows a centred icon + "No image"
+        const ni = await page.evaluate(() => {
+          const f = document.querySelector('#bs-addy .shot');
+          const cs = getComputedStyle(f);
+          const fr = f.getBoundingClientRect();
+          const ic = f.querySelector('svg').getBoundingClientRect();
+          const lb = f.querySelector('span').getBoundingClientRect();
+          const webEl = document.querySelector('#gi-calculator .shot');
+          const web = webEl.getBoundingClientRect();
+          return {
+            state: f.dataset.empty,
+            hiddenAttr: f.hasAttribute('aria-hidden'),
+            text: f.textContent.replace(/\s+/g, ' ').trim(),
+            svgHidden: f.querySelector('svg').getAttribute('aria-hidden'),
+            controls: f.querySelectorAll('a, button, img, picture, [tabindex]').length,
+            cursor: cs.cursor,
+            dx: Math.abs((ic.x + ic.width / 2) - (fr.x + fr.width / 2)),
+            lx: Math.abs((lb.x + lb.width / 2) - (fr.x + fr.width / 2)),
+            dy: Math.abs(((ic.y + lb.bottom) / 2) - (fr.y + fr.height / 2)),
+            sameBox: Math.abs(fr.width - web.width) < 1 && Math.abs(fr.height - web.height) < 1,
+            bg: cs.backgroundColor === getComputedStyle(webEl).backgroundColor,
+          };
+        });
+        const niOk = ni.state === 'no-image' && !ni.hiddenAttr && ni.text === 'No image' && ni.svgHidden === 'true' && ni.controls === 0
+          && ni.cursor === 'auto' && ni.dx < 1.5 && ni.lx < 1.5 && ni.dy < 3 && ni.sameBox && ni.bg;
+        report(`${P} no-image frame: icon + "No image", read once, no control, centred, same box`, niOk, JSON.stringify(ni));
+        await page.click('#bs-addy .shot');
+        await sleep(200);
+        report(`${P} no-image frame does not open the zoom dialog`, await page.evaluate(() => !document.querySelector('dialog.shot-dialog[open]')));
 
         if (vw === 1440) {
           await page.hover('#gi-calculator .shot-link');
@@ -586,15 +615,16 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
           const pr = await page.evaluate(() => {
             const fr = [...document.querySelectorAll('.shot')];
             const filled = fr.filter((f) => f.querySelector('picture, img'));
-            const emptyF = fr.filter((f) => !f.querySelector('picture, img'));
+            const emptyF = fr.filter((f) => !f.querySelector('picture, img') && !f.hasAttribute('data-empty'));
             return {
               filled: filled.map((f) => getComputedStyle(f).display),
               empty: emptyF.every((f) => getComputedStyle(f).display === 'none'),
+              noImage: getComputedStyle(document.querySelector('#bs-addy .shot')).display !== 'none',
               cursor: getComputedStyle(document.querySelector('.shot-link')).cursor,
               tf: getComputedStyle(document.querySelector('#gi-calculator .shot-link img')).transform,
             };
           });
-          report(`${P} print: filled shown, empty hidden, no cursor, no transform`, pr.filled.length === 2 && pr.filled.every((d) => d !== 'none') && pr.empty && pr.cursor === 'auto' && pr.tf === 'none', JSON.stringify(pr));
+          report(`${P} print: filled and no-image shown, empty hidden, no cursor, no transform`, pr.filled.length === 2 && pr.filled.every((d) => d !== 'none') && pr.empty && pr.noImage && pr.cursor === 'auto' && pr.tf === 'none', JSON.stringify(pr));
         }
       });
     }
@@ -623,13 +653,13 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
             b: document.querySelectorAll('button.shot-link').length,
             res,
             dim: [...document.querySelectorAll('body *')].filter((e) => getComputedStyle(e).opacity !== '1').length,
-            hidden: [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img') && f.getAttribute('aria-hidden') === 'true').length,
+            hidden: [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img') && f.getAttribute('aria-hidden') === 'true' && !f.hasAttribute('data-empty')).length,
           };
         });
         report(`${P} two links, no buttons`, r.a === 2 && r.b === 0, `${r.a} ${r.b}`);
         const okHref = r.res.length === 2 && r.res[0].href.endsWith('-1920.jpg') && r.res[1].href.endsWith('-1080.jpg') && r.res.every((x) => x.status === 200 && x.type === 'image/jpeg');
         report(`${P} big JPEG targets`, okHref, JSON.stringify(r.res));
-        report(`${P} opacity 1, 9 empty frames aria-hidden`, r.dim === 0 && r.hidden === 9, `${r.dim} ${r.hidden}`);
+        report(`${P} opacity 1, 8 empty frames aria-hidden`, r.dim === 0 && r.hidden === 8, `${r.dim} ${r.hidden}`);
       });
     }
   });

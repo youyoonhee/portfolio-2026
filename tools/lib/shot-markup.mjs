@@ -20,6 +20,16 @@ export function emptyFigure(frame) {
   return `<figure class="shot" data-slot="screenshot" data-frame="${frame}" aria-hidden="true"></figure>`;
 }
 
+// the "No image" placeholder (data-empty="no-image") is a stable state of its own:
+// resets keep it, only an approved screenshot replaces it
+export function isNoImageFigure(figure) {
+  return /data-empty="no-image"/.test(figure);
+}
+
+export function emptyFigureLike(art) {
+  return isNoImageFigure(art.figure) ? art.figure : emptyFigure(art.frame);
+}
+
 const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const unesc = (s) =>

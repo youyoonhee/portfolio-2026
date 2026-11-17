@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { hasPhone } from './check-repo.mjs';
 import {
-  APP_WIDTHS, ladder, emptyFigure, figureMarkup, readArticle, articleIds, replaceFigure,
+  APP_WIDTHS, ladder, emptyFigure, emptyFigureLike, figureMarkup, readArticle, articleIds, replaceFigure,
 } from './lib/shot-markup.mjs';
 import { jpegMeta, webpMeta } from './lib/image-meta.mjs';
 import { makeUiImage, makeMetaPositive } from './lib/shot-fixtures.mjs';
@@ -325,7 +325,7 @@ async function clear(o, id) {
   let html = fs.readFileSync(o.html, 'utf8');
   if (!articleIds(html).includes(id)) fail('', 'unknown-project', 'the id given to --clear is not an article id');
   const art = readArticle(html, id);
-  const next = replaceFigure(html, id, emptyFigure(art.frame));
+  const next = replaceFigure(html, id, emptyFigureLike(art));
   if (next !== html) fs.writeFileSync(o.html, next);
   const dir = path.join(o.out, id);
   if (fs.existsSync(dir)) {
@@ -452,8 +452,8 @@ function flags(p, extra = []) {
 
 async function groupMarkup(origHtml) {
   for (const id of articleIds(origHtml)) {
-    const { frame } = readArticle(origHtml, id);
-    check(`round-trip ${id}`, replaceFigure(origHtml, id, emptyFigure(frame)) === origHtml);
+    const art = readArticle(origHtml, id);
+    check(`round-trip ${id}`, replaceFigure(origHtml, id, emptyFigureLike(art)) === origHtml);
   }
   check('ladder web 400', JSON.stringify(ladder('web', 400)) === '[400]');
   check('ladder app 2000', JSON.stringify(ladder('app', 2000)) === JSON.stringify(APP_WIDTHS));
@@ -624,7 +624,7 @@ async function groupContent(origHtml) {
     const run = (file) =>
       spawnSync(process.execPath, [path.join(path.dirname(SELF), 'check-content.mjs'), '--html', file, '--only', 'shots,slots'], { encoding: 'utf8' });
     const good = run(p.html);
-    check(`filled html passes (${(good.stderr || '').trim().slice(0, 100)})`, good.status === 0 && /PASS shots \(2 filled, 9 empty\)/.test(good.stdout));
+    check(`filled html passes (${(good.stderr || '').trim().slice(0, 100)})`, good.status === 0 && /PASS shots \(2 filled, 1 no-image, 8 empty\)/.test(good.stdout));
     const filled = fs.readFileSync(p.html, 'utf8');
     const id = PH.web.id;
     const broken = {
@@ -730,7 +730,7 @@ async function groupValidation(origHtml) {
 async function selfTest() {
   // start from the real page with every frame emptied, so real published shots do not leak into the fixtures
   let origHtml = fs.readFileSync(REPO_HTML, 'utf8');
-  for (const id of articleIds(origHtml)) origHtml = replaceFigure(origHtml, id, emptyFigure(readArticle(origHtml, id).frame));
+  for (const id of articleIds(origHtml)) origHtml = replaceFigure(origHtml, id, emptyFigureLike(readArticle(origHtml, id)));
   const groups = [
     ['markup', () => groupMarkup(origHtml)],
     ['parsers', () => groupParsers()],

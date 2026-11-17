@@ -141,8 +141,9 @@
       font-weight: 400;
     }
 
-    /* empty screenshot frames stay out of the PDF; a picture makes the frame appear again */
-    .shot:not(:has(picture, img)) {
+    /* empty screenshot frames stay out of the PDF; a picture makes the frame appear again.
+       the "No image" frame prints like on screen */
+    .shot:not(:has(picture, img)):not([data-empty="no-image"]) {
       display: none;
     }
 

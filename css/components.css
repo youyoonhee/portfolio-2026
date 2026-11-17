@@ -527,6 +527,28 @@
       }
     }
 
+    /* project without a screenshot: icon + "No image", centred, not interactive */
+    &[data-empty="no-image"] {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      color: var(--color-ink-3);
+      cursor: auto;
+
+      .no-image-icon {
+        flex: none;
+        inline-size: 32px;
+        block-size: 32px;
+      }
+
+      .no-image-label {
+        font-size: var(--text-label);
+        line-height: 1.2;
+        color: var(--color-ink-3);
+      }
+    }
+
     /* filled app frame: a quiet 9:16 box, no device mockup */
     &[data-frame="app"]:has(.shot-link)::before {
       content: none;
