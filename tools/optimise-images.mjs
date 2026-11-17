@@ -624,7 +624,7 @@ async function groupContent(origHtml) {
     const run = (file) =>
       spawnSync(process.execPath, [path.join(path.dirname(SELF), 'check-content.mjs'), '--html', file, '--only', 'shots,slots'], { encoding: 'utf8' });
     const good = run(p.html);
-    check(`filled html passes (${(good.stderr || '').trim().slice(0, 100)})`, good.status === 0 && /PASS shots \(2 filled, 11 empty\)/.test(good.stdout));
+    check(`filled html passes (${(good.stderr || '').trim().slice(0, 100)})`, good.status === 0 && /PASS shots \(2 filled, 9 empty\)/.test(good.stdout));
     const filled = fs.readFileSync(p.html, 'utf8');
     const id = PH.web.id;
     const broken = {

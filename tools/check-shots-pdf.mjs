@@ -1,5 +1,5 @@
 // End-to-end synthetic test for the submission PDF with screenshots (Phase 4, D-13/D-14).
-// Builds a temp copy of the site with 13 synthetic images, runs tools/build-pdf.mjs against it and checks
+// Builds a temp copy of the site with one synthetic image per project article, runs tools/build-pdf.mjs against it and checks
 // size, JPEG embedding, local links and page count. The repo is never touched; output is PASS/FAIL lines only.
 // usage: node tools/check-shots-pdf.mjs [--measure]
 //   --measure  run only the normal case with the page cap lifted and print `measured pages <n>`
@@ -13,6 +13,7 @@ import { articleIds } from './lib/shot-markup.mjs';
 import { makeUiImage } from './lib/shot-fixtures.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const EXPECTED = JSON.parse(readFileSync(join(ROOT, 'tools', 'content-manifest.json'), 'utf8')).projects.length;
 const MEASURE = process.argv.includes('--measure');
 const KEEP = process.argv.includes('--keep'); // keep the temp folder for debugging (prints its path)
 const SOFT_TARGET = 5000000;
@@ -75,7 +76,7 @@ try {
     '--manifest', join(tmp, 'screenshots.json'), '--preview', join(tmp, 'preview'),
   ], { encoding: 'utf8' });
   const filled = (readFileSync(join(site, 'index.html'), 'utf8').match(/<picture>/g) || []).length;
-  if (!(opt.status === 0 && ids.length === 13 && filled === 13)) {
+  if (!(opt.status === 0 && ids.length === EXPECTED && filled === EXPECTED)) {
     say(false, `setup (exit ${opt.status}, articles ${ids.length}, filled ${filled})`);
     throw new Error('setup failed');
   }

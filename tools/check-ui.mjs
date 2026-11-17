@@ -557,7 +557,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
           const e = [...document.querySelectorAll('.shot')].filter((f) => !f.querySelector('picture, img'));
           return { n: e.length, bad: e.filter((f) => f.getAttribute('aria-hidden') !== 'true' || f.querySelector('a, button, [tabindex]') || getComputedStyle(f).cursor !== 'auto').length };
         });
-        report(`${P} empty frames aria-hidden, unfocusable, cursor auto`, empty.n === 11 && empty.bad === 0, JSON.stringify(empty));
+        report(`${P} empty frames aria-hidden, unfocusable, cursor auto`, empty.n === 9 && empty.bad === 0, JSON.stringify(empty));
 
         if (vw === 1440) {
           await page.hover('#gi-calculator .shot-link');
@@ -627,7 +627,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         report(`${P} two links, no buttons`, r.a === 2 && r.b === 0, `${r.a} ${r.b}`);
         const okHref = r.res.length === 2 && r.res[0].href.endsWith('-1920.jpg') && r.res[1].href.endsWith('-1080.jpg') && r.res.every((x) => x.status === 200 && x.type === 'image/jpeg');
         report(`${P} big JPEG targets`, okHref, JSON.stringify(r.res));
-        report(`${P} opacity 1, 11 empty frames aria-hidden`, r.dim === 0 && r.hidden === 11, `${r.dim} ${r.hidden}`);
+        report(`${P} opacity 1, 9 empty frames aria-hidden`, r.dim === 0 && r.hidden === 9, `${r.dim} ${r.hidden}`);
       });
     }
   });

@@ -63,7 +63,12 @@
     "반응형 웹",
     "인터랙션",
     "AI 활용",
-    "하나손해보험 보험상품산출기, 상품소개페이지"
+    "하나손해보험 보험상품산출기, 상품소개페이지",
+    "소개",
+    "복용약 알림 어플",
+    "교육 상담 예약",
+    "화장품 브랜드 소개",
+    "재활용 친환경 사업 소개"
   ],
   "uiAllowlistReasons": {
     "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)",
@@ -71,7 +76,12 @@
     "반응형 웹": "user-provided 2026-11-11",
     "인터랙션": "user-provided 2026-11-11",
     "AI 활용": "user-provided 2026-11-11",
-    "하나손해보험 보험상품산출기, 상품소개페이지": "user-provided 2026-11-11"
+    "하나손해보험 보험상품산출기, 상품소개페이지": "user-provided 2026-11-11",
+    "소개": "UI structural label: 케이엔큐레이션 project intro row, user-provided 2026-11-17",
+    "복용약 알림 어플": "user-provided 2026-11-17",
+    "교육 상담 예약": "user-provided 2026-11-17",
+    "화장품 브랜드 소개": "user-provided 2026-11-17",
+    "재활용 친환경 사업 소개": "user-provided 2026-11-17"
   },
   "forbiddenText": [
     "Phone",
@@ -81,7 +91,10 @@
     "Abbey Road",
     "소개서만 확인 가능",
     "ePbxeupybeolicnsthdeidtnh.ge",
-    "sTteacchk."
+    "sTteacchk.",
+    "로드필",
+    "링크알바",
+    "ChatGPT"
   ],
   "forbiddenHrefs": [
     "tel:",
@@ -262,22 +275,12 @@
       "company": "kn-curation",
       "name": "puring",
       "platform": "app",
-      "description": "앱 제작 · APK 보유",
+      "metaLabel": "소개",
+      "description": "복용약 알림 어플",
+      "descriptionNote": "user-provided 2026-11-17",
       "contribution": 100,
       "contributionContext": null,
       "status": "unknown",
-      "link": null,
-      "point": null
-    },
-    {
-      "id": "kn-roadpill",
-      "company": "kn-curation",
-      "name": "로드필",
-      "platform": "web",
-      "description": "현재 운영 종료",
-      "contribution": 50,
-      "contributionContext": null,
-      "status": "closed",
       "link": null,
       "point": null
     },
@@ -286,7 +289,9 @@
       "company": "kn-curation",
       "name": "위캔키즈클럽",
       "platform": "web",
-      "description": null,
+      "metaLabel": "소개",
+      "description": "교육 상담 예약",
+      "descriptionNote": "user-provided 2026-11-17",
       "contribution": 50,
       "contributionContext": null,
       "status": "live",
@@ -297,23 +302,13 @@
       "point": null
     },
     {
-      "id": "kn-linkalba",
-      "company": "kn-curation",
-      "name": "링크알바",
-      "platform": "web",
-      "description": null,
-      "contribution": 100,
-      "contributionContext": null,
-      "status": "closed",
-      "link": null,
-      "point": null
-    },
-    {
       "id": "kn-fsd",
       "company": "kn-curation",
       "name": "FSD 코스메틱",
       "platform": "web",
-      "description": null,
+      "metaLabel": "소개",
+      "description": "화장품 브랜드 소개",
+      "descriptionNote": "user-provided 2026-11-17",
       "contribution": 100,
       "contributionContext": null,
       "status": "live",
@@ -328,7 +323,9 @@
       "company": "kn-curation",
       "name": "그린다",
       "platform": "web",
-      "description": null,
+      "metaLabel": "소개",
+      "description": "재활용 친환경 사업 소개",
+      "descriptionNote": "user-provided 2026-11-17",
       "contribution": 80,
       "contributionContext": null,
       "status": "live",
@@ -343,7 +340,8 @@
       "company": "kn-curation",
       "name": "universe",
       "platform": "web",
-      "description": "LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 / 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능 · 디자인·기능은 ChatGPT와 거의 유사",
+      "metaLabel": "소개",
+      "description": "LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 / 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능",
       "contribution": 100,
       "contributionContext": null,
       "status": "article",
@@ -582,11 +580,13 @@
     },
     {
       "text": "앱 제작 · APK 보유",
-      "status": "site"
+      "status": "excluded",
+      "reason": "2026-11-17 사용자 개정: puring 소개 문구로 대체"
     },
     {
       "text": "로드필",
-      "status": "site"
+      "status": "excluded",
+      "reason": "2026-11-17 사용자 개정: 프로젝트 카드 삭제"
     },
     {
       "text": "위캔키즈클럽",
@@ -594,7 +594,8 @@
     },
     {
       "text": "링크알바",
-      "status": "site"
+      "status": "excluded",
+      "reason": "2026-11-17 사용자 개정: 프로젝트 카드 삭제"
     },
     {
       "text": "FSD 코스메틱",
@@ -609,8 +610,13 @@
       "status": "site"
     },
     {
-      "text": "LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능 · 디자인·기능은 ChatGPT와 거의 유사",
+      "text": "LG AI연구원 의뢰 · 생성형 AI ‘EXAONE’ 초기모델 개발 미국 학회 발표용 초기모델 · 현재 관련 기사만 확인 가능",
       "status": "site"
+    },
+    {
+      "text": "디자인·기능은 ChatGPT와 거의 유사",
+      "status": "excluded",
+      "reason": "2026-11-17 사용자 개정: universe 소개 문구에서 삭제"
     },
     {
       "text": "보험상품산출기·상품소개페이지",

@@ -399,7 +399,8 @@ function checkProjects() {
     if (!hasClass(fig, 'shot') || fig.attrs['data-frame'] !== pm.platform) return f('figure.shot or data-frame differs');
     const rows = dl.kids.filter(isEl).filter((d) => d.tag === 'div');
     const dts = rows.map((r) => textIn(elsIn(r, 'dt')[0]));
-    const want = ['플랫폼'].concat(pm.description ? ['담당 업무'] : [], ['퍼블 기여도']);
+    const want = ['플랫폼'].concat(pm.description ? [pm.metaLabel || '담당 업무'] : [], ['퍼블 기여도']);
+    if (pm.metaLabel && !(manifest.uiAllowlist || []).includes(pm.metaLabel)) return f('metaLabel needs uiAllowlist entry');
     if (JSON.stringify(dts) !== JSON.stringify(want)) return f(`dt order is ${JSON.stringify(dts)}`);
     const dd = (i) => elsIn(rows[i], 'dd')[0];
     if (textIn(dd(0)) !== (pm.platform === 'app' ? 'App' : 'Web')) return f('platform text differs');
@@ -408,6 +409,11 @@ function checkProjects() {
       const reason = (manifest.uiAllowlistReasons || {})[pm.name];
       const allowed = (manifest.uiAllowlist || []).includes(pm.name);
       if (!allowed || reason !== 'user-provided 2026-11-11') return f('renamed title needs uiAllowlist entry with reason "user-provided 2026-11-11"');
+    }
+    if (pm.descriptionNote) {
+      const reason = (manifest.uiAllowlistReasons || {})[pm.description];
+      const allowed = (manifest.uiAllowlist || []).includes(pm.description);
+      if (pm.descriptionNote !== 'user-provided 2026-11-17' || !allowed || reason !== pm.descriptionNote) return f('user-provided description needs uiAllowlist entry with matching reason');
     }
     const cd = dd(rows.length - 1);
     const data = elsIn(cd, 'data')[0];
