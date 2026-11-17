@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5 (검증과 배포) — EXECUTING
 Plan: 7 of 7
 Status: Ready to execute
-Last activity: 2026-11-17
+Last activity: 2026-11-17 - Completed quick task 261117-klf: 픽셀 장식 이미지 배치
 
 Progress: [██████████] 97%
 
@@ -99,6 +99,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 261117-fxc | 케이엔큐레이션 프로젝트 소개 문구 반영, 로드필·링크알바 삭제 | 2026-11-17 | 1a8e109 | [261117-fxc-kn-curation-project-intros](./quick/261117-fxc-kn-curation-project-intros/) |
+| 261117-klf | 픽셀 장식 이미지 3개(헤더·커버·Contact) PNG 변환·배치 | 2026-11-17 | 172c67e | [261117-klf-pixel-deco-images](./quick/261117-klf-pixel-deco-images/) |
 
 ## Deferred Items
 
