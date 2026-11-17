@@ -20,6 +20,12 @@ Re-deploy (2026-11-17): user approval "approved: redeploy" (fresh chat approval)
 
 Deploy 2 (05-07 Task 3, 2026-11-17): user approval "approved: deploy 2"; push b995282..f38d19b; dispatch run 44025774302 on head f38d19b, build=success deploy=success. Live checks (dist/live-final): colophon-sync --check passes (live Colophon equals record), preview PASS, network Chrome/157.0.8103.78 0 failing + probe-404 OK, linkinator 73 links 0 non-OK, Nu index 0 errors (equals record htmlErrors 0), Nu nested 404 0 errors, noindex 1. Final phone scans: tree 408 files clean, history 694 blobs clean, staged artifact 257 files clean, live HTML 4 files clean. Lighthouse not re-run: scores are from the deploy-1 page (re-deploy 44019615286, pre-fill); deploy 2 changed only the Colophon rows (+ tools/colophon-sync.mjs self-test fix).
 
+Quick task 261117-klf (2026-11-17): three decorative pixel PNGs added (header/cover/contact). User approval (chat, 2026-11-17): "approved: deploy 3 and 4".
+
+Deploy 3 (2026-11-17): push f38d19b..ace58d9; dispatch run 44029631610 on head ace58d9, build=success deploy=success. Re-measured live (dist/live/*): preview PASS, network Chrome/157.0.8103.78 0 failing + probe-404 OK, Edge Edg/157.0.4341.60 0 failing, linkinator 262 links 0 non-OK, Nu index 0, Nu nested 404 0, robots 2 lines, noindex 1/1, forbidden paths 404 x4, live phone scan clean (2 files). Lighthouse 13.6.0 mobile x3: performance 92/90/90 (median 90), accessibility 100, best-practices 100, seo 63; is-crawlable score 0 in all runs (expected, noindex). measurements.json refilled via record-measurements (Chrome/Edge headless, iOS Safari untested), measuredAt 2026-11-17; commit 39dc5c5.
+
+Deploy 4 (2026-11-17): push ace58d9..39dc5c5 (push-triggered run 44031165140 build=success); dispatch run 44031222808 on head 39dc5c5, build=success deploy=success. Live checks (dist/live-final): colophon-sync --check passes, preview PASS, network Chrome 0 failing + probe-404 OK, linkinator 262 links 0 non-OK, Nu index 0 (equals recorded htmlErrors 0), Nu nested 404 0, noindex 1. Phone scans: tree 414 files clean, history 709 blobs clean, staged artifact 260 files clean, live HTML 5 files clean. Lighthouse is now measured on the deploy-3 page (ace58d9); it differs from deploy 4 only in the Colophon rows.
+
 ## Tests
 
 ### 1. og-card.png 확인 (첫 공유 전)
@@ -71,7 +77,7 @@ Steps:
 
 expected: The live site opens without errors and the Colophon shows measured values. The link is shared only after this check.
 result: [pending user confirmation]
-note: deploy 2 is live and verified (see Deploy 2 above); awaiting user final check.
+note: deploy 4 is live and verified (see Deploy 4 above); awaiting user final check.
 
 ## Summary
 
