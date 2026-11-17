@@ -44,7 +44,7 @@
 - [x] **QUAL-01**: 시맨틱 마크업으로 HTML 검사기 오류가 0건이다 (제목 구조 h1 → h2 → h3)
 - [x] **QUAL-02**: 키보드만으로 모든 링크와 버튼에 접근할 수 있다 (본문 바로가기, 보이는 포커스 표시, 논리적 Tab 순서)
 - [x] **QUAL-03**: 텍스트 대비가 WCAG 2.2 AA를 만족한다
-- [x] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다
+- [ ] **QUAL-04**: 최신 Chrome, Edge, iOS Safari(실기기)에서 같은 모습으로 보인다 _(부분: Chrome·Edge 자동화 점검 완료, iOS 실기기 미확인 — 05-HUMAN-UAT test 3)_
 - [x] **QUAL-05**: 깨진 링크가 0개이고 배포 후 브라우저 네트워크 탭에 404가 없다
 - [x] **QUAL-06**: 방문자는 "이 사이트는 이렇게 만들었습니다"(Colophon) 섹션에서 사용 기술, 반응형·접근성 기준, 테스트 브라우저, 실제로 측정한 Lighthouse·검사기 결과와 측정일을 볼 수 있다
 
@@ -121,7 +121,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-01 | Phase 1 | Complete |
 | QUAL-02 | Phase 3 | Complete |
 | QUAL-03 | Phase 2 | Complete |
-| QUAL-04 | Phase 5 | Complete |
+| QUAL-04 | Phase 5 | Partial (iOS 실기기 미확인) |
 | QUAL-05 | Phase 5 | Complete |
 | QUAL-06 | Phase 5 | Complete |
 | PDF-01 | Phase 3 | Complete |
