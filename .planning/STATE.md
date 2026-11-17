@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-17 - Completed quick task 261117-mjq: CJ ADDY No image 표시, 하나손해보험 스크린샷 3장 반영
+Last activity: 2026-11-17 - Completed quick task 261117-nnn: 커버 원 인트로 애니메이션
 
 Progress: [██████████] 100%
 
@@ -103,6 +103,7 @@ None yet.
 | 261117-fxc | 케이엔큐레이션 프로젝트 소개 문구 반영, 로드필·링크알바 삭제 | 2026-11-17 | 1a8e109 | [261117-fxc-kn-curation-project-intros](./quick/261117-fxc-kn-curation-project-intros/) |
 | 261117-klf | 픽셀 장식 이미지 3개(헤더·커버·Contact) PNG 변환·배치 | 2026-11-17 | 172c67e | [261117-klf-pixel-deco-images](./quick/261117-klf-pixel-deco-images/) |
 | 261117-mjq | CJ ADDY 카드 No image 표시 | 2026-11-17 | a80e32e | [261117-mjq-addy-no-image-frame](./quick/261117-mjq-addy-no-image-frame/) |
+| 261117-nnn | 커버 원 인트로 애니메이션(아이보리·샴페인골드·세이지그린), 텍스트 진입 지연 | 2026-11-17 | ba18380 | [261117-nnn-cover-circles-intro](./quick/261117-nnn-cover-circles-intro/) |
 
 ## Deferred Items
 
