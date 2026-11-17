@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-17 - Completed quick task 261117-pk2: 모바일 Tech stack 슬라이드 (커버 원 조정 8c84e37 포함)
+Last activity: 2026-11-17 - Completed quick task 261117-qqx: Colophon 삭제, 모바일 Contact 고양이 배치
 
 Progress: [██████████] 100%
 
@@ -105,6 +105,7 @@ None yet.
 | 261117-mjq | CJ ADDY 카드 No image 표시 | 2026-11-17 | a80e32e | [261117-mjq-addy-no-image-frame](./quick/261117-mjq-addy-no-image-frame/) |
 | 261117-nnn | 커버 원 인트로 애니메이션(아이보리·샴페인골드·세이지그린), 텍스트 진입 지연 | 2026-11-17 | ba18380 | [261117-nnn-cover-circles-intro](./quick/261117-nnn-cover-circles-intro/) |
 | 261117-pk2 | 모바일 Tech stack 슬라이드(한 장씩, 점 표시) | 2026-11-17 | 318fc71 | [261117-pk2-mobile-skills-slider](./quick/261117-pk2-mobile-skills-slider/) |
+| 261117-qqx | 모바일 Contact 고양이를 제목 아래로, Colophon 섹션·도구 삭제(QUAL-06 제거) | 2026-11-17 | 5109c90 | [261117-qqx-contact-cat-mobile-drop-colophon](./quick/261117-qqx-contact-cat-mobile-drop-colophon/) |
 
 ## Deferred Items
 
