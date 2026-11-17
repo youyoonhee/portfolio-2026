@@ -11,6 +11,10 @@
     --color-accent: #0a7a3d;
     --color-accent-strong: #075c2d;
     --color-accent-tint: #eaf6ee;
+    --color-cover-bg: #faf7f0;
+    --color-gold: #e4d3aa;
+    --color-sage: #a9b89b;
+    --color-sage-strong: #8fa382;
 
     /* spacing */
     --space-xs: 4px;
@@ -49,6 +53,10 @@
     --dur-enter: 600ms;
     --stagger-enter: 150ms;
     --stagger-switch: 80ms;
+    --orb-dur: 380ms;
+    --orb-stagger: 110ms;
+    /* last circle ends at orb-dur + 3 x orb-stagger = 710ms; the cover text starts just after */
+    --cover-text-start: 760ms;
     --color-overlay: rgb(17 24 39 / 0.32);
     --color-overlay-strong: rgb(17 24 39 / 0.88);
 

@@ -64,6 +64,10 @@
       gap: 4mm;
     }
 
+    .cover-orbs {
+      display: none !important;
+    }
+
     .cover h1,
     .keyword-title {
       font-size: var(--text-display);

@@ -239,6 +239,56 @@
     }
   }
 
+  /* cover ground: an ivory panel (one gutter past the wrap, like the keywords panel) holding four
+     decorative circles that sit on its bottom edge, left to right, smaller and stronger in colour */
+  .cover-orbs {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: calc(-1 * var(--gutter));
+    z-index: -1;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-cover-bg);
+    pointer-events: none;
+
+    span {
+      position: absolute;
+      inline-size: calc(var(--orb-d) * var(--k));
+      aspect-ratio: 1;
+      inset-block-end: calc(var(--orb-d) * var(--k) / -2);
+      inset-inline-start: var(--x);
+      border-radius: 50%;
+      background: var(--c);
+    }
+
+    span:nth-child(1) {
+      --k: 1;
+      --x: 1%;
+      --c: var(--color-gold);
+    }
+
+    span:nth-child(2) {
+      --k: 0.8;
+      --x: 22%;
+      --c: color-mix(in srgb, var(--color-gold) 50%, var(--color-sage));
+      --i: 1;
+    }
+
+    span:nth-child(3) {
+      --k: 0.6;
+      --x: 44%;
+      --c: var(--color-sage);
+      --i: 2;
+    }
+
+    span:nth-child(4) {
+      --k: 0.45;
+      --x: 66%;
+      --c: var(--color-sage-strong);
+      --i: 3;
+    }
+  }
+
   .cover-sub {
     font-size: var(--text-label);
     line-height: 1.4;
@@ -285,10 +335,28 @@
     }
   }
 
+  @keyframes cover-orb {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   @media screen and (prefers-reduced-motion: no-preference) {
+    html.js .cover-orbs span {
+      transform-origin: 50% 50%;
+      animation: cover-orb var(--orb-dur) var(--ease) both;
+      animation-delay: calc(var(--i, 0) * var(--orb-stagger));
+    }
+
     html.js .cover-line {
       animation: cover-rise var(--dur-enter) var(--ease) both;
-      animation-delay: calc(var(--i, 0) * var(--stagger-enter));
+      animation-delay: calc(var(--cover-text-start) + var(--i, 0) * var(--stagger-enter));
     }
 
     html.js .cover-intro,
@@ -298,11 +366,11 @@
     }
 
     html.js .cover-intro {
-      animation-delay: 450ms;
+      animation-delay: calc(var(--cover-text-start) + 450ms);
     }
 
     html.js .cover-mail {
-      animation-delay: 600ms;
+      animation-delay: calc(var(--cover-text-start) + 600ms);
     }
   }
 
