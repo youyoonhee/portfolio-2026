@@ -197,8 +197,9 @@ if (flag('--text') && !fixture) {
     const hero = manifest.hero.lines.map((l) => first(l));
     assert('page plan: cover and keywords on page 1', [...hero, ...kw].every((p) => p === 1), `pages ${[...hero, ...kw].join(',')}`);
     const sk = first(manifest.skillsSection.title); const ca = first(manifest.careerSection.title);
-    assert('page plan: skills and career together', sk === 2 && ca === 2, `pages ${sk},${ca}`);
+    // the career list is gone (2026-11-17): skills fill page 2, the career heading opens the GI Data page
     const co = manifest.companies.map((c) => first(c.name + '.'));
+    assert('page plan: skills on page 2, career heading with the first company', sk === 2 && ca === 3 && co[0] === ca, `pages ${sk},${ca},${co[0]}`);
     assert('page plan: companies in order from page 3', co[0] === 3 && co.every((p, i) => p >= 3 && (i === 0 || p >= co[i - 1])), `pages ${co.join(',')}`);
     const ct = sp.map((t, i) => (t.includes(strip(manifest.contact.title)) ? i + 1 : 0)).filter(Boolean);
     assert('page plan: contact last', ct.length === 1 && ct[0] === sp.length, `pages ${ct.join(',')}`);

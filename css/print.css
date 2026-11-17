@@ -164,13 +164,15 @@
       transition: none !important;
     }
 
-    /* page plan: cover + keywords | skills + career | companies | contact */
+    /* page plan: cover + keywords | skills | career heading + companies | contact.
+       the career list is gone (2026-11-17), so the heading opens the GI Data page instead of trailing the skills page */
     #skills {
       break-before: page;
     }
 
-    #gi-data {
+    #career {
       break-before: page;
+      break-after: avoid;
     }
 
     .company > .eyebrow,
@@ -200,6 +202,16 @@
       padding-block: 8mm;
     }
 
+    /* the career heading opens a fresh page, so the page margin is its top space; GI Data follows closely
+       so its whole card grid still fits under the heading on that page */
+    main > section#career {
+      padding-block: 0;
+    }
+
+    #career + .company {
+      padding-block-start: 5mm;
+    }
+
     .skills {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 4mm;
@@ -208,25 +220,6 @@
 
     .skills > div {
       padding: 4mm;
-    }
-
-    .career {
-      margin-block-start: 4mm;
-    }
-
-    .career > li {
-      grid-template-columns: 1.2fr 2fr auto;
-      align-items: center;
-      gap: 4mm;
-      padding-block: 1mm;
-    }
-
-    .career a {
-      min-block-size: 0;
-    }
-
-    .career .career-period {
-      text-align: end;
     }
 
     /* injected phone: label + accent underlined link */

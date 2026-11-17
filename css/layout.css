@@ -231,34 +231,18 @@
     }
   }
 
-  /* career rows */
-  .career {
-    list-style: none;
-    margin: var(--space-xl) 0 0;
-    padding: 0;
+  /* career heading: user request 2026-11-17, the company list is gone, so the heading leads straight into GI Data */
+  main > section#career {
+    padding-block-end: 0;
+  }
 
-    & > li {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-xs);
-      padding-block: var(--space-lg);
-      border-block-end: 1px solid var(--color-line);
+  /* the first company reads as the first entry under the heading: no divider, a shorter lead-in */
+  #career + .company {
+    padding-block-start: var(--space-xl);
+    border-block-start: 0;
 
-      & > * {
-        min-inline-size: 0;
-      }
-
-      @media (min-width: 1024px) {
-        grid-template-columns: 1.2fr 2fr auto;
-        align-items: center;
-        gap: var(--space-lg);
-      }
-    }
-
-    .career-period {
-      @media (min-width: 1024px) {
-        text-align: end;
-      }
+    @media (min-width: 1024px) {
+      padding-block-start: var(--space-2xl);
     }
   }
 

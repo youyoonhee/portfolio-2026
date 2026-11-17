@@ -275,16 +275,15 @@ function checkCareer() {
     const h2 = elsIn(sec, 'h2')[0];
     if (!h2 || textIn(h2) !== cm.title) return fail('career', 'h2 title mismatch');
   }
-  const ol = elsIn(sec, 'ol')[0];
-  const lis = ol ? ol.kids.filter((k) => isEl(k) && k.tag === 'li') : [];
-  if (lis.length !== manifest.companies.length) return fail('career', `expected ${manifest.companies.length} items, found ${lis.length}`);
-  for (let i = 0; i < lis.length; i++) {
-    const c = manifest.companies[i];
-    const a = elsIn(lis[i], 'a')[0];
-    if (!a || a.attrs.href !== `#${c.id}` || textIn(a) !== c.name) return fail('career', `link mismatch for ${c.id}`);
-    if (!textIn(lis[i]).includes(c.summary)) return fail('career', `summary missing for ${c.id}`);
-    if (JSON.stringify(timesOf(lis[i])) !== JSON.stringify([c.from, c.to])) return fail('career', `period mismatch for ${c.id}`);
+  // user request 2026-11-17: the company list is gone; the section is only the eyebrow + h2 heading
+  // and the first company section must follow it directly
+  if (elsIn(sec, 'ol').length || elsIn(sec, 'li').length || descendants(sec).filter(isEl).some((e) => hasClass(e, 'career'))) {
+    return fail('career', 'career list (ol.career / li rows) still present');
   }
+  const first = manifest.companies[0] && sectionById(manifest.companies[0].id);
+  if (!first || first.parent !== sec.parent) return fail('career', 'first company section is not a sibling of section#career');
+  const sibs = sec.parent.kids.filter((k) => isEl(k) && k.tag === 'section');
+  if (sibs[sibs.indexOf(sec) + 1] !== first) return fail('career', `section#${manifest.companies[0].id} does not follow section#career`);
   pass('career');
 }
 register('career', checkCareer);
@@ -294,9 +293,11 @@ function checkCompanies() {
   for (const c of manifest.companies) {
     const sec = sectionById(c.id);
     if (!sec) return fail('companies', `section#${c.id} missing`);
-    const eyebrow = elsIn(sec, 'p').find((p) => hasClass(p, 'eyebrow'));
-    if (!eyebrow || textIn(eyebrow) !== c.number) return fail('companies', `eyebrow mismatch for ${c.id}`);
+    // user request 2026-11-17: no number eyebrow, the company-name h2 opens the section
+    if (descendants(sec).filter(isEl).some((e) => hasClass(e, 'eyebrow'))) return fail('companies', `eyebrow present in ${c.id}`);
     const h2 = elsIn(sec, 'h2')[0];
+    const firstEl = sec.kids.find((k) => isEl(k));
+    if (firstEl !== h2) return fail('companies', `h2 is not the first child of section#${c.id}`);
     if (!h2 || textIn(h2) !== `${c.name}.`) return fail('companies', `h2 mismatch for ${c.id}`);
     const period = elsIn(sec, 'p').find((p) => hasClass(p, 'period'));
     if (!period || JSON.stringify(timesOf(period)) !== JSON.stringify([c.from, c.to])) return fail('companies', `period mismatch for ${c.id}`);

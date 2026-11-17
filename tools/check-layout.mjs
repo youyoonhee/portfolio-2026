@@ -178,7 +178,7 @@ try {
     const cases = [
       ['#career', '.site-nav a[href="#career"]'],
       ['#keywords', null],
-      ['#abbey-road', '.career a[href="#abbey-road"]'],
+      ['#abbey-road', null], // company section anchor; the career list links are gone (2026-11-17)
       ['#kn-fsd', '.keyword-list a[href="#kn-fsd"]'],
       ['#gi-oneday', '.keyword-list a[href="#gi-oneday"]'],
       ['#ab-peach', null],
@@ -197,7 +197,7 @@ try {
     // tap targets
     const tap = await evalJs(`(() => {
       const bad = [];
-      document.querySelectorAll('.site-nav a, .career a, .keyword-list a, .links a, .cover-mail a, .contact-list a').forEach((a) => {
+      document.querySelectorAll('.site-nav a, .keyword-list a, .links a, .cover-mail a, .contact-list a').forEach((a) => {
         const r = a.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
         const min = a.closest('.keyword-list') ? 48 : 44;
