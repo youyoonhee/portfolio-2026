@@ -39,6 +39,8 @@ function check(root) {
   const read = (f) => readFileSync(join(base, f), 'utf8');
   for (const f of ['index.html', '404.html']) {
     if (files.includes(f) && !NOINDEX.test(read(f))) problems.push(`FAIL noindex ${f}`);
+    // the HTML spec (and W3C Nu) require the charset declaration inside the first 1024 bytes
+    if (files.includes(f)) { const at = readFileSync(join(base, f)).indexOf('<meta charset='); if (at < 0 || at > 1024 - 24) problems.push(`FAIL charset-late ${f}`); }
   }
 
   // exact-case existence: compare each path segment with the real directory listing
@@ -88,7 +90,7 @@ function selfTest() {
   let passed = 0;
   let fail = 0;
   const w = (dir, rel, body = 'x') => { const p = join(dir, rel); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, body); };
-  const html = '<!doctype html><meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="css/base.css"><img src="img/og-card.png" srcset="img/og-card.png 1x, img/og-card.png 2x"><a href="https://example.com/">x</a><a href="#top">t</a>';
+  const html = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="css/base.css"><img src="img/og-card.png" srcset="img/og-card.png 1x, img/og-card.png 2x"><a href="https://example.com/">x</a><a href="#top">t</a>';
   const html404 = html.replace('href="css/base.css"', 'href="/portfolio-2026/css/base.css"');
   const make = (name, mutate) => {
     const dir = join(tmp, name);
@@ -119,6 +121,7 @@ function selfTest() {
   neg('no-index', (d) => rmSync(join(d, 'index.html')), 'FAIL missing index.html');
   neg('no-404', (d) => rmSync(join(d, '404.html')), 'FAIL missing 404.html');
   neg('no-og', (d) => rmSync(join(d, 'img/og-card.png')), 'FAIL missing img/og-card.png');
+  neg('charset-late', (d) => w(d, 'index.html', '<!doctype html><!--' + 'x'.repeat(1100) + '-->' + html.slice(15)), 'FAIL charset-late index.html');
   neg('no-noindex', (d) => w(d, 'index.html', html.replace('noindex, nofollow', 'index')), 'FAIL noindex index.html');
   neg('case-mismatch', (d) => w(d, 'css/base.css', '@font-face{src:url(../fonts/print/Pretendard-Regular.ttf)}'), 'FAIL ref-case');
   neg('missing-img', (d) => w(d, 'index.html', html + '<img src="img/nope.png">'), 'FAIL ref-missing img/nope.png');
