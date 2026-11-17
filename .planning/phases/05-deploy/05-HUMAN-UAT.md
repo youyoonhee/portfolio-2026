@@ -35,7 +35,8 @@ Steps:
 3. Record the Edge version (edge://version).
 
 expected: No layout break at either width; menu, zoom dialog and links all work. Note: the 05-04 headless automation produced `browser: Edg/157.0.4341.60` with 0 failing requests, so this item is the optional visual confirmation on the live URL.
-result: [pending]
+result: skipped (자동화 점검 완료)
+note: Edge headless automation (05-04, 05-06 live) produced browser Edg/157.0.4341.60 with 0 failing requests; no visual desktop check by the user.
 
 ### 3. iOS Safari 실기기
 Fields: device model, iOS version, date, pass/fail per item.
@@ -55,7 +56,10 @@ Items:
 Gap rule: 기기가 없으면 gap(기기 없음)으로 기록한다. 이 경우 Colophon은 `iOS Safari · 실기기 확인 전` 표기를 유지하며, iOS는 테스트했다고 주장하지 않는다.
 
 expected: Every item passes on a real iPhone/iPad, or the missing device is written down as a gap.
-result: [pending]
+result: gap (기기 없음)
+reply: "기기없음" (user, 2026-11-17)
+items 1-10: not tested (no device). Item 10 (messenger preview, KakaoTalk scrape) is also untested.
+note: Colophon keeps `iOS Safari · 실기기 확인 전`; iOS is not claimed tested.
 
 ### 4. 최종 공개 확인
 Steps:
@@ -71,8 +75,13 @@ result: [pending]
 total: 4
 passed: 0
 issues: 0
-pending: 4
-skipped: 0
+pending: 2
+skipped: 1
 blocked: 0
+gaps: 1
 
 ## Gaps
+
+- iOS Safari real device (test 3): no device, all items 1-10 untested (gap). Colophon shows `iOS Safari · 실기기 확인 전`.
+- Messenger link preview (test 3 item 10): untested, KakaoTalk scrape success and OG preview unconfirmed.
+- Edge visual check (test 2): skipped, covered by headless automation only.
