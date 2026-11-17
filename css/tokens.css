@@ -60,8 +60,9 @@
     --orb-dur: 2000ms;
     --orb-stagger: 500ms;
     /* user request: slow opacity fade, 3.5s in total; last circle ends at orb-dur + 3 x orb-stagger = 3500ms.
-       the text starts right as the last circle has fully appeared */
-    --cover-text-start: 3500ms;
+       the circles ease out, so the last one looks complete at about 3.0s (about 90% opaque);
+       the text starts there, with no visible pause after the circles (user request) */
+    --cover-text-start: 3000ms;
     --color-overlay: rgb(17 24 39 / 0.32);
     --color-overlay-strong: rgb(17 24 39 / 0.88);
 
