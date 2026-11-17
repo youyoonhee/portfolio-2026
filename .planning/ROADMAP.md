@@ -235,7 +235,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. 디자인 시스템과 반응형 + PDF spike | 6/6 | Complete    | 2026-11-11 |
 | 3. 인터랙션과 제출용 PDF | 5/5 | Complete    | 2026-11-12 |
 | 4. 스크린샷 통합 | 7/7 | Complete    | 2026-11-16 |
-| 5. 검증과 배포 | 7/7 | Complete   | 2026-11-17 |
+| 5. 검증과 배포 | 7/7 | Complete    | 2026-11-17 |
 
 ## Notes
 
