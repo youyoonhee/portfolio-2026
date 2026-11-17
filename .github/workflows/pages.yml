@@ -32,8 +32,6 @@ jobs:
         run: node tools/check-repo.mjs --history
       - name: Content checks
         run: node tools/check-content.mjs
-      - name: Colophon record check
-        run: node tools/colophon-sync.mjs --check
       - name: Stage allowlisted files
         run: node tools/stage-pages.mjs dist/site
       - name: Verify artifact allowlist

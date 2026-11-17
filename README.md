@@ -35,7 +35,6 @@ http://127.0.0.1:3000 에서 확인합니다. `file://`로 열면 module 스크�
 | `npm run check:links` | 링크 검사 (`npm run serve`를 켜 둔 상태에서) |
 | `npm run check:preview` | OG/미리보기 메타 |
 | `npm run check:artifact` | 배포 산출물(`dist/site`) 검사 |
-| `npm run colophon:check` | 사이트 Colophon 수치가 `tools/measurements.json`과 일치하는지 |
 | `npm run check:source` | 로컬 전용. 원본 대조 검사 |
 
 ## 제출용 PDF
@@ -57,4 +56,3 @@ npm run pdf
 
 - GitHub Actions: push 시에는 검증만 하고, 수동 실행(workflow_dispatch)을 할 때만 허용 목록으로 만든 `dist/site`를 게시합니다.
 - 검색 노출 제어는 `noindex` 메타가 담당합니다. `robots.txt`는 프로젝트 하위 경로에서 힌트일 뿐이라 색인을 막는다고 보지 않습니다.
-- Colophon의 측정 수치는 `tools/measurements.json`에서 `npm run colophon`으로 반영합니다. 손으로 쓰지 않습니다.

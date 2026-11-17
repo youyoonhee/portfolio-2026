@@ -290,18 +290,6 @@ try {
     await scrollToY(page, 0);
     await sleep(300);
     report('spy none at top', (await cur()).length === 0);
-    await goTo('#colophon');
-    report('spy colophon clears', (await cur()).length === 0, (await cur()).join());
-  }));
-
-  await scenario('colophon', browser, url, () => withPage(browser, url, 375, 812, {}, async (page) => {
-    const r = await page.evaluate(() => ({
-      h: document.querySelector('body > footer a[href="#colophon"]')?.getBoundingClientRect().height ?? 0,
-      sw: document.documentElement.scrollWidth,
-      iw: window.innerWidth,
-    }));
-    report('colophon footer link height', r.h >= 44, String(r.h));
-    report('colophon no horizontal overflow', r.sw <= r.iw, `${r.sw}/${r.iw}`);
   }));
 
   // Contact cat: below the "Contact." line at 375, sharing a line with it at 1440
