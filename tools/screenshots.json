@@ -63,6 +63,32 @@
       "alt": "피치 앱 시작 화면, 마이데이터 등록 안내와 분야별 메뉴",
       "status": "approved",
       "noSensitive": true
+    },
+    "gi-calculator": {
+      "crop": {
+        "x": 0,
+        "y": 27,
+        "w": 1896,
+        "h": 840
+      },
+      "masks": [],
+      "alt": "하나손해보험 다이렉트 자동차보험 상품소개 화면",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "gi-event": {
+      "crop": null,
+      "masks": [],
+      "alt": "하나손해보험·하나카드 자동차보험 캐시백 이벤트 화면",
+      "status": "approved",
+      "noSensitive": true
+    },
+    "gi-oneday": {
+      "crop": null,
+      "masks": [],
+      "alt": "원데이자동차보험 앱 가입 안내 첫 화면",
+      "status": "approved",
+      "noSensitive": true
     }
   }
 }
