@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5 (검증과 배포) — EXECUTING
 Plan: 5 of 7
 Status: Ready to execute
-Last activity: 2026-11-16
+Last activity: 2026-11-17 - Completed quick task 261117-fxc: 케이엔큐레이션 프로젝트 소개 문구 반영
 
 Progress: [█████████░] 90%
 
@@ -93,6 +93,12 @@ None yet.
 - 링크 생존 확인(ADDY 소개서, EXAONE 기사, 운영 중 서비스 URL)과 퍼블리싱 포인트 내용은 Phase 1에서 사용자 확인 필요
 - 스크린샷은 사용자가 `_screenshots/`에 넣어 줄 예정 — Phase 4만 이를 기다린다. 공개 범위(NDA, 하나손해보험·관리자 화면)도 그때 확인
 - 프로젝트별 기간이 따로 없으면 재직 기간으로 표기 (Q5)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261117-fxc | 케이엔큐레이션 프로젝트 소개 문구 반영, 로드필·링크알바 삭제 | 2026-11-17 | 1a8e109 | [261117-fxc-kn-curation-project-intros](./quick/261117-fxc-kn-curation-project-intros/) |
 
 ## Deferred Items
 
