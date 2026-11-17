@@ -18,6 +18,8 @@ Deviation (deploy 1 defect): live Nu on index reported 1 error (meta charset aft
 
 Re-deploy (2026-11-17): user approval "approved: redeploy" (fresh chat approval); run 44019615286 on head b995282, build=success deploy=success; live 200. Live checks re-run, outputs overwrite dist/live/*: preview URL mode PASS, network Chrome/157.0.8103.78 0 failing + probe-404 OK, Edge Edg/157.0.4341.60 0 failing, linkinator 259 links 0 non-OK (no recheck needed), Nu index 0 errors, Nu nested 404 0 errors, robots 2 lines, noindex 1 on index and 404, forbidden paths 404 x4, live phone scan clean (2 files). Lighthouse 13.6.0 mobile x3: performance 83/73/84 (median 83), accessibility 100, best-practices 100, seo 63 (median 63); is-crawlable score 0 in all runs (expected, noindex).
 
+Deploy 2 (05-07 Task 3, 2026-11-17): user approval "approved: deploy 2"; push b995282..f38d19b; dispatch run 44025774302 on head f38d19b, build=success deploy=success. Live checks (dist/live-final): colophon-sync --check passes (live Colophon equals record), preview PASS, network Chrome/157.0.8103.78 0 failing + probe-404 OK, linkinator 73 links 0 non-OK, Nu index 0 errors (equals record htmlErrors 0), Nu nested 404 0 errors, noindex 1. Final phone scans: tree 408 files clean, history 694 blobs clean, staged artifact 257 files clean, live HTML 4 files clean. Lighthouse not re-run: scores are from the deploy-1 page (re-deploy 44019615286, pre-fill); deploy 2 changed only the Colophon rows (+ tools/colophon-sync.mjs self-test fix).
+
 ## Tests
 
 ### 1. og-card.png 확인 (첫 공유 전)
@@ -68,7 +70,8 @@ Steps:
 3. Only then share the link.
 
 expected: The live site opens without errors and the Colophon shows measured values. The link is shared only after this check.
-result: [pending]
+result: [pending user confirmation]
+note: deploy 2 is live and verified (see Deploy 2 above); awaiting user final check.
 
 ## Summary
 
