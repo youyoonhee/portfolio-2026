@@ -108,9 +108,10 @@ if (fixture) {
     `type3 ${m.type3}, FontFile2 ${m.fontFile2}`);
   const boxOk = mediaBoxes.length > 0 && mediaBoxes.every((b) => {
     const [, , w, h] = b.replace(/[\[\]]/g, '').trim().split(/\s+/).map(Number);
-    return w >= 594 && w <= 596 && h >= 841 && h <= 843;
+    // 16:9 slides of the desktop screen design (quick 261122-s7k): 1440 x 810 CSS px = 1080 x 607.5 pt
+    return Math.abs(w - 1080) <= 1 && Math.abs(h - 607.5) <= 1;
   });
-  assert('page size A4 portrait', boxOk, mediaBoxes.join(' | '));
+  assert('page size 16:9 slide (1080 x 607.5 pt)', boxOk, mediaBoxes.join(' | '));
   const missing = manifest.links.filter((l) => !uris.includes(l));
   assert('links clickable', missing.length === 0 && m.mailtoCount >= 1,
     `${manifest.links.length - missing.length}/${manifest.links.length} external, mailto ${m.mailtoCount}`);
@@ -193,16 +194,30 @@ if (flag('--text') && !fixture) {
   if (flag('--page-plan')) {
     const sp = pageTexts.map(strip);
     const first = (needle) => { const i = sp.findIndex((t) => t.includes(strip(needle))); return i < 0 ? 0 : i + 1; };
-    const kw = manifest.keywords.map((k) => first(k.title));
     const hero = manifest.hero.lines.map((l) => first(l));
-    // 2026-11-22: four keyword steps, each a top line and a word, all on page 1 with the cover
+    // slides (quick 261122-s7k): the cover alone on page 1, then one keyword step per page (top line and word together)
     const kwLead = manifest.keywords.map((k) => first(k.lead));
-    assert('page plan: cover and the four keyword steps on page 1', [...hero, ...kwLead, ...kw].every((p) => p === 1), `pages ${[...hero, ...kwLead, ...kw].join(',')}`);
+    assert('page plan: cover on page 1', hero.every((p) => p === 1), `pages ${hero.join(',')}`);
+    // a step's word can also occur earlier (the cover intro holds "반응형 웹"), so each step is checked on its own page
+    const kwWant = manifest.keywords.map((_, i) => i + 2);
+    // per step: word, top line and counter "(n/4)" on page n + 1 (W/L/C flags, no text printed)
+    const kwFlags = manifest.keywords.map((k, i) => {
+      const t = sp[kwWant[i] - 1] || '';
+      return [t.includes(strip(k.title)), t.includes(strip(k.lead)), t.includes(`(${i + 1}/${manifest.keywords.length})`)];
+    });
+    const kwOn = kwFlags.map((f) => f.every(Boolean));
+    assert('page plan: one keyword step per page from page 2', kwOn.every(Boolean) && kwLead.every((p, i) => p === kwWant[i]),
+      `${kwFlags.map((f, i) => `p${kwWant[i]} ${f.map((x, j) => (x ? 'WLC'[j] : '-')).join('')}`).join(' ')}; top lines first on ${kwLead.join(',')}`);
     const sk = first(manifest.skillsSection.title); const ca = first(manifest.careerSection.title);
-    // the career list is gone (2026-11-17): skills fill page 2, the career heading opens the GI Data page
+    // skills on the page after the last step; the career heading opens the first company's page
     const co = manifest.companies.map((c) => first(c.name + '.'));
-    assert('page plan: skills on page 2, career heading with the first company', sk === 2 && ca === 3 && co[0] === ca, `pages ${sk},${ca},${co[0]}`);
-    assert('page plan: companies in order from page 3', co[0] === 3 && co.every((p, i) => p >= 3 && (i === 0 || p >= co[i - 1])), `pages ${co.join(',')}`);
+    const skWant = kwWant[kwWant.length - 1] + 1;
+    assert('page plan: skills after the keywords, career heading with the first company',
+      sk === skWant && ca === sk + 1 && co[0] === ca, `pages ${sk},${ca},${co[0]}`);
+    // every company opens its own page, in order
+    assert('page plan: companies in order, each on a new page', co[0] === ca && co.every((p, i) => i === 0 || p > co[i - 1]),
+      `pages ${co.join(',')}`);
+    console.log(`page plan: cover 1, keywords ${kwWant.join(',')}, skills ${sk}, career ${ca}, companies ${co.join(',')}, pages ${sp.length}`);
     const ct = sp.map((t, i) => (t.includes(strip(manifest.contact.title)) ? i + 1 : 0)).filter(Boolean);
     assert('page plan: contact last', ct.length === 1 && ct[0] === sp.length, `pages ${ct.join(',')}`);
   }

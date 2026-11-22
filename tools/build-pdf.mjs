@@ -1,4 +1,6 @@
-// Submission PDF builder: renders the same index.html + print CSS with installed Chrome.
+// Submission PDF builder: renders index.html with installed Chrome as 16:9 slides of the DESKTOP SCREEN design
+// (quick 261122-s7k): a 1440x810 viewport, screen media, and tools/pdf-slides.css injected at build time under
+// html.pdf-slides (the site never loads that file; css/print.css stays for a browser's own Ctrl+P).
 // The phone number comes from the gitignored private/contact.json and is injected into the page DOM
 // at build time only. It is never logged: every message that leaves this process goes through redact().
 // Screenshots go in as JPEG (DCT passthrough, small). If the PDF is over SOFT bytes the JPEG quality is
@@ -22,8 +24,11 @@ const CONTACT = process.env.PDF_CONTACT_FILE ? resolve(process.env.PDF_CONTACT_F
 
 const SOFT = Number(process.env.PDF_SOFT_BYTES || 5000000); // upload target (decimal MB)
 const HARD = Number(process.env.PDF_HARD_BYTES || 10000000); // at or above this the build fails
-// measured: 13 synthetic images, 04-05 (node tools/check-shots-pdf.mjs --measure)
-const DEFAULT_MAX_PAGES = 8;
+// slides: cover, 4 keyword steps, skills, the companies (a long one runs over two slides), contact = 12 today
+const DEFAULT_MAX_PAGES = 16;
+// one slide in CSS px; the page size itself comes from @page in tools/pdf-slides.css (1440px x 810px = 1080 x 607.5 pt)
+const SLIDE = { width: 1440, height: 810 };
+const SLIDES_CSS = join(ROOT, 'tools', 'pdf-slides.css');
 const MAX_PAGES = process.env.PDF_MAX_PAGES === undefined ? DEFAULT_MAX_PAGES : Number(process.env.PDF_MAX_PAGES);
 // D-14: lower the quality first, then the width. quality null keeps the published JPEG files as they are.
 const STEPS = [
@@ -172,9 +177,21 @@ async function applyImages(sources) {
 async function renderStep(browser, server, step) {
   const page = await browser.newPage();
   try {
+    // reduced motion: the cover entrance and the keyword scroll switch stay off, so every final state is drawn
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    await page.setViewport({ ...SLIDE, deviceScaleFactor: 1 });
     await page.goto(server.url, { waitUntil: 'networkidle0' });
-    await page.emulateMediaType('print');
+    // the screen design, not print.css: screen media while printing, plus the slide rules
+    await page.emulateMediaType('screen');
+    await page.evaluate(() => document.documentElement.classList.add('pdf-slides'));
+    await page.addStyleTag({ path: SLIDES_CSS });
+    // every image loads now (no lazy loading), and the TrueType faces are in before any measuring
+    await page.evaluate(async () => {
+      document.querySelectorAll('img[loading]').forEach((img) => img.setAttribute('loading', 'eager'));
+      await Promise.all([...document.images].map((img) => (img.complete ? null : img.decode().catch(() => {}))));
+      await Promise.all([400, 600].map((w) => document.fonts.load(`${w} 16px "Pretendard Print"`)));
+      await document.fonts.ready;
+    });
     const picks = await page.evaluate(pickImages, { web: step.web, app: step.app });
     // Skia only passes a JPEG through (DCTDecode) when it is drawn whole. A CSS-cropped image (object-fit: cover on a
     // long screen) would be re-encoded as Flate and blow up the size, so the crop is done here and the frame ratio fits.
@@ -204,6 +221,11 @@ async function renderStep(browser, server, step) {
     if (!injected) throw new Error('data-slot="phone" not found in index.html');
     const pdf = await page.pdf({
       preferCSSPageSize: true,
+      // the paper size must be given here too: Chrome evaluates media queries (and vw) against it, not against
+      // @page, so without it the 1440 layout would be laid out at Letter width (2-column skills, a narrow stage)
+      width: `${SLIDE.width}px`,
+      height: `${SLIDE.height}px`,
+      scale: 1,
       printBackground: true,
       tagged: true,
       outline: true,
@@ -249,10 +271,11 @@ if (!ok) {
   rmSync(OUT, { force: true });
   process.exitCode = 1;
 } else {
+  // --min-page-chars 20: a keyword slide holds only a label, a top line, the counter and one word (about 35 chars)
   const r = spawnSync(
     process.execPath,
     [
-      'tools/pdf-report.mjs', OUT, '--text', '--expect-phone', '--min-page-chars', '80', '--page-plan',
+      'tools/pdf-report.mjs', OUT, '--text', '--expect-phone', '--min-page-chars', '20', '--page-plan',
       '--max-bytes', String(SOFT), '--hard-bytes', String(HARD), '--expect-images', String(imageCount), '--max-pages', String(MAX_PAGES),
     ],
     { stdio: 'inherit', cwd: ROOT }

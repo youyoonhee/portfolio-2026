@@ -45,6 +45,8 @@ npm run pdf
 
 `tools/contact.example.json`을 `private/contact.json`으로 복사해서 값을 채운 뒤 실행합니다. `private/`, `*.pdf`, `dist/`는 gitignore 대상입니다. 연락처는 PDF를 만들 때만 주입하며 저장소와 웹 사이트에는 들어가지 않습니다.
 
+제출용 PDF는 데스크톱 화면 디자인 그대로, 1440×810(16:9) 슬라이드로 만듭니다. `npm run pdf`가 1440px 화면 CSS로 페이지를 그리고, 빌드할 때만 `tools/pdf-slides.css`를 끼워 넣어 커버 1장, 키워드 단계별 4장, 스킬, 회사별 경력, 연락처 순으로 나눕니다. 글자는 이미지가 아니라 텍스트로 남아서 선택·검색이 되고 링크도 눌립니다. `tools/pdf-slides.css`는 배포 산출물에 들어가지 않습니다. `css/print.css`는 브라우저에서 직접 인쇄(Ctrl+P)할 때를 위해 그대로 둡니다.
+
 ## 스크린샷 추가 규칙
 
 1. 원본을 `_screenshots/<id>/`에 둡니다 (gitignore, 저장소에 올리지 않음).

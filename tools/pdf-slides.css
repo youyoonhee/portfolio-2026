@@ -1,0 +1,307 @@
+/* Submission PDF, slide mode (quick 261122-s7k). Injected by tools/build-pdf.mjs at build time only, never linked
+   from index.html and never published (tools/ is outside the stage-pages allowlist). The page is laid out with the
+   SCREEN stylesheets at 1440px and cut into 1440x810 (16:9) pages; everything here sits under html.pdf-slides.
+   Unlayered on purpose: it wins over every @layer rule of the site. */
+
+@page {
+  size: 1440px 810px;
+  margin: 0;
+}
+
+html.pdf-slides {
+  /* TrueType faces only (fonts-print.css): woff2 would reach the PDF as Type3 */
+  --font-sans: "Pretendard Print", sans-serif;
+  /* one slide */
+  --slide-h: 810px;
+  /* top and bottom room on card pages, so cards never touch the page edge */
+  --slide-pad: 56px;
+  scroll-padding-top: 0;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+
+  /* ---- chrome and motion ------------------------------------------------ */
+  .site-header,
+  .skip-link,
+  .nav-toggle,
+  .site-nav,
+  .nav-overlay,
+  .shot-dialog {
+    display: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* nothing may be captured in a pre-entry state (html.js opacity 0, rises) */
+  .cover-orbs span,
+  .cover-line,
+  .cover-intro,
+  .keyword-block,
+  .keyword-lead,
+  .keyword-dial,
+  .keyword-title {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  body {
+    padding-block-start: 0;
+  }
+
+  /* ---- page 1: the cover, exactly one slide ---------------------------- */
+  .cover {
+    box-sizing: border-box;
+    min-block-size: var(--slide-h);
+    block-size: var(--slide-h);
+    break-after: page;
+  }
+
+  /* the circles overflow the band; without containment Chrome fragments them at the page edge while printing
+     and they come out shifted and squared off. strict containment keeps them whole and clipped to the band */
+  .cover-orbs {
+    contain: strict;
+  }
+
+  /* ---- pages 2-5: one keyword step per slide, the desktop dial at that step ----
+     Values are the screen switch's at 1440x810 (layout.css, keywords[data-switch="on"]):
+     band max(min(48svh, 28vw), 260px, 40svh) = 388.8px, line min(band * 0.24, 140px) = 93.312px,
+     disc max(94vw, 3 * band) = 1353.6px, the stage top padding header + space-lg = 96px. */
+  .keywords {
+    padding-block: 0;
+    break-before: page;
+  }
+
+  .keywords-stage {
+    --band: 388.8px;
+    --line: 93.312px;
+    --count-h: 96px;
+    --count-size: 1.125rem;
+    --disc: 1353.6px;
+    --stage-top: 96px;
+    --eyebrow-h: 19.6px;
+    position: relative;
+    display: block;
+    /* full bleed like the screen stage: the circle runs to the page edges */
+    inline-size: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
+
+  /* the shared band and SCROLL DOWN belong to the scroll switch; each step draws its own circle */
+  .keywords-circle,
+  .keywords-scroll {
+    display: none !important;
+  }
+
+  /* the real eyebrow sits on the first step's slide; the other steps repeat it as generated text */
+  .keywords-stage > .eyebrow {
+    position: absolute;
+    inset-block-start: var(--stage-top);
+    inset-inline: 0;
+    margin: 0;
+    z-index: 1;
+  }
+
+  .keyword-block {
+    box-sizing: border-box;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr);
+    grid-template-rows: var(--eyebrow-h) minmax(0, 1fr) var(--count-h) var(--band);
+    justify-items: center;
+    gap: 0;
+    justify-self: stretch;
+    block-size: var(--slide-h);
+    padding: var(--stage-top) 0 0;
+    overflow: clip;
+    color: var(--color-bg);
+    break-before: page;
+    break-inside: avoid;
+
+    /* steps 2-4 repeat the section label in the same place, as the sticky stage does on screen */
+    & + & {
+      &::before,
+      &::after {
+        grid-row: 1;
+        font-size: var(--text-label);
+        font-weight: var(--weight-semibold);
+        line-height: 1.4;
+        letter-spacing: 0.04em;
+        white-space: pre;
+      }
+
+      &::before {
+        content: "01";
+        grid-column: 2;
+        color: var(--color-accent);
+      }
+
+      &::after {
+        content: " / Keywords";
+        grid-column: 3;
+        color: var(--color-ink-3);
+      }
+    }
+  }
+
+  .keywords-circle + .keyword-block {
+    break-before: auto;
+  }
+
+  .keyword-lead {
+    grid-area: 2 / 1 / 3 / -1;
+    align-self: center;
+    max-inline-size: 16em;
+    padding-inline: var(--gutter);
+    font-size: 52px;
+    line-height: 1.3;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+
+    &:not(:has(a)) {
+      max-inline-size: 11em;
+    }
+
+    a {
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.16em;
+    }
+  }
+
+  /* counter, thin line and the white word on the sage half-circle, at rest (0deg) */
+  .keyword-dial {
+    grid-area: 3 / 1 / 5 / -1;
+    position: relative;
+    isolation: isolate;
+    /* the disc runs far past the page; contained, it is clipped to the slide instead of being fragmented
+       (uncontained, Chrome slices it at the page edge and prints a squashed, flat-sided shape) */
+    contain: strict;
+    overflow: clip;
+    align-self: stretch;
+    justify-self: stretch;
+    display: grid;
+    grid-template-rows: var(--count-h) minmax(0, 1fr);
+    justify-items: center;
+    gap: 0;
+
+    &::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset-block-start: var(--count-h);
+      inset-inline-start: calc(50% - var(--disc) / 2);
+      inline-size: var(--disc);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--color-sage-deep);
+    }
+  }
+
+  .keyword-count {
+    display: block;
+    grid-row: 1;
+    align-self: start;
+    margin: 0;
+    font-size: var(--count-size);
+    /* no tabular-nums here: Chrome writes the tnum digit glyphs without a Unicode mapping, so "(1/4)" would extract as "(/)" */
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+
+  .keyword-line {
+    display: block;
+    position: absolute;
+    inset-block-start: calc(var(--count-size) * 1.6 + var(--space-sm));
+    inset-inline-start: calc(50% - 0.5px);
+    inline-size: 1px;
+    block-size: calc(var(--count-h) - var(--count-size) * 1.6 - var(--space-sm) + var(--line));
+    background: linear-gradient(
+      to bottom,
+      var(--color-ink) 0 calc(var(--count-h) - var(--count-size) * 1.6 - var(--space-sm)),
+      var(--color-bg) 0
+    );
+  }
+
+  .keyword-title {
+    grid-row: 2;
+    align-self: center;
+    margin-block-start: calc(var(--line) / 2);
+    padding-inline: var(--gutter);
+    font-size: 64px;
+  }
+
+  /* ---- skills: one slide ---------------------------------------------- */
+  #skills {
+    break-before: page;
+  }
+
+  /* ---- career: every company opens a slide; the heading shares the first company's slide.
+     Cards keep the 3-column grid and never split; a long company runs on, and every page piece keeps
+     the top and bottom room (box-decoration-break: clone). */
+  #career {
+    break-before: page;
+    break-after: avoid;
+    padding-block: var(--slide-pad) 0;
+  }
+
+  .company {
+    break-before: page;
+    padding-block: var(--slide-pad);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    border-block-start: 0;
+  }
+
+  #career + .company {
+    break-before: avoid;
+    padding-block-start: var(--space-xl);
+  }
+
+  .company > h2,
+  .company > .period,
+  .company > .company-desc {
+    break-after: avoid;
+  }
+
+  .project {
+    break-inside: avoid;
+  }
+
+  /* ---- contact and footer: the last slide --------------------------------- */
+  #contact {
+    break-before: page;
+    break-inside: avoid;
+    margin-block: var(--space-3xl);
+  }
+
+  body > footer {
+    break-before: avoid;
+    break-inside: avoid;
+  }
+
+  /* injected phone (build only): label, then an accent underlined tel link, like the email above it */
+  .contact-phone:not([hidden]) {
+    margin-block-start: var(--space-lg);
+  }
+
+  .contact-phone-label {
+    display: block;
+    font-size: var(--text-label);
+    font-weight: var(--weight-semibold);
+    color: var(--color-ink-3);
+  }
+
+  .contact-phone a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    color: var(--color-accent);
+    text-decoration: underline;
+    overflow-wrap: anywhere;
+  }
+}
