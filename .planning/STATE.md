@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-22 - Completed quick task 261122-q6e: Keywords 세이지 반원 4단계 다이얼
+Last activity: 2026-11-22 - Completed quick task 261122-s7k: 제출용 PDF를 웹 화면 16:9 슬라이드로
 
 Progress: [██████████] 100%
 
@@ -110,6 +110,7 @@ None yet.
 | 261122-ohp | 프로젝트 제목 띄어쓰기 6건, 피치 제목에서 "앱", 피치·ADDY 담당 업무에서 "현재 운영 종료" 삭제 | 2026-11-22 | 4de8761, e236a20 | [261122-ohp-project-title-spacing-and-peach-text](./quick/261122-ohp-project-title-spacing-and-peach-text/) |
 | 261122-ozp | 첫 화면 이메일 삭제(Contact에는 유지), 첫 화면 소개 문구 1.125rem(18px) | 2026-11-22 | 50ca1ff | [261122-ozp-cover-email-removal-and-intro-size](./quick/261122-ozp-cover-email-removal-and-intro-size/) |
 | 261122-q6e | Keywords를 세이지 반원 4단계 다이얼로(스크롤 전환, 프로젝트명 링크), 첫 화면 소개 "반응형 웹/앱 퍼블리셔 유윤희 입니다." | 2026-11-22 | c791ae0 | [261122-q6e-keywords-half-circle-redesign](./quick/261122-q6e-keywords-half-circle-redesign/) |
+| 261122-s7k | 제출용 PDF를 PC 웹 화면 디자인 그대로 16:9 슬라이드 12장으로(글자·링크 유지) | 2026-11-22 | ba604a8 | [261122-s7k-pdf-as-web-screen-slides](./quick/261122-s7k-pdf-as-web-screen-slides/) |
 
 ## Deferred Items
 
