@@ -301,6 +301,19 @@ function checkCompanies() {
     if (!h2 || textIn(h2) !== `${c.name}.`) return fail('companies', `h2 mismatch for ${c.id}`);
     const period = elsIn(sec, 'p').find((p) => hasClass(p, 'period'));
     if (!period || JSON.stringify(timesOf(period)) !== JSON.stringify([c.from, c.to])) return fail('companies', `period mismatch for ${c.id}`);
+    // the company line (p.company-desc) sits right after the period; user-provided lines need an allowlist reason
+    const sibs = sec.kids.filter((k) => isEl(k));
+    const desc = sibs[sibs.indexOf(period) + 1];
+    const descs = elsIn(sec, 'p').filter((p) => hasClass(p, 'company-desc'));
+    if (c.description) {
+      if (!desc || desc.tag !== 'p' || !hasClass(desc, 'company-desc') || descs.length !== 1) return fail('companies', `p.company-desc must follow the period in ${c.id}`);
+      if (normalize(textIn(desc)) !== normalize(c.description)) return fail('companies', `company-desc text differs for ${c.id}`);
+      if (c.descriptionNote) {
+        const allowed = (manifest.uiAllowlist || []).includes(c.description);
+        const reason = (manifest.uiAllowlistReasons || {})[c.description];
+        if (!allowed || reason !== c.descriptionNote) return fail('companies', `user-provided company-desc for ${c.id} needs a uiAllowlist entry with reason "${c.descriptionNote}"`);
+      }
+    } else if (descs.length) return fail('companies', `unexpected p.company-desc in ${c.id}`);
     const own = textNodesIn(sec);
     for (const other of manifest.companies) {
       if (!other.description) continue;
@@ -356,7 +369,9 @@ function checkProjects() {
     if (pm.nameNote) {
       const reason = (manifest.uiAllowlistReasons || {})[pm.name];
       const allowed = (manifest.uiAllowlist || []).includes(pm.name);
-      if (!allowed || reason !== 'user-provided 2026-11-11') return f('renamed title needs uiAllowlist entry with reason "user-provided 2026-11-11"');
+      // the note starts with the reason, e.g. "user-provided 2026-11-22 (D-13 ...)"
+      const want = pm.nameNote.replace(/\s*\(.*\)\s*$/, '');
+      if (!allowed || reason !== want) return f(`renamed title needs uiAllowlist entry with reason "${want}"`);
     }
     if (pm.descriptionNote) {
       const reason = (manifest.uiAllowlistReasons || {})[pm.description];

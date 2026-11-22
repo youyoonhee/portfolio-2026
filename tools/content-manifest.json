@@ -59,7 +59,10 @@
     "반응형 웹",
     "인터랙션",
     "AI 활용",
-    "하나손해보험 보험상품 산출기, 상품소개 페이지",
+    "보험상품 산출기, 상품소개 페이지",
+    "하나손해보험 웹/앱 유지보수",
+    "광고 플랫폼, 이커머스 프로모션 구축 및 유지보수",
+    "교보생명 금융 앱 구축",
     "소개",
     "복용약 알림 어플",
     "교육 상담 예약",
@@ -84,7 +87,10 @@
     "반응형 웹": "user-provided 2026-11-11",
     "인터랙션": "user-provided 2026-11-11",
     "AI 활용": "user-provided 2026-11-11",
-    "하나손해보험 보험상품 산출기, 상품소개 페이지": "user-provided 2026-11-11",
+    "보험상품 산출기, 상품소개 페이지": "user-provided 2026-11-22",
+    "하나손해보험 웹/앱 유지보수": "user-provided 2026-11-22",
+    "광고 플랫폼, 이커머스 프로모션 구축 및 유지보수": "user-provided 2026-11-22",
+    "교보생명 금융 앱 구축": "user-provided 2026-11-22",
     "소개": "UI structural label: 케이엔큐레이션 project intro row, user-provided 2026-11-17",
     "복용약 알림 어플": "user-provided 2026-11-17",
     "교육 상담 예약": "user-provided 2026-11-17",
@@ -212,7 +218,8 @@
       "name": "지아이데이타",
       "from": "2024-09",
       "to": "2026-09",
-      "description": null
+      "description": "하나손해보험 웹/앱 유지보수",
+      "descriptionNote": "user-provided 2026-11-22"
     },
     {
       "id": "kn-curation",
@@ -226,14 +233,16 @@
       "name": "비스톤스",
       "from": "2022-01",
       "to": "2023-07",
-      "description": null
+      "description": "광고 플랫폼, 이커머스 프로모션 구축 및 유지보수",
+      "descriptionNote": "user-provided 2026-11-22"
     },
     {
       "id": "abbey-road",
       "name": "애비로드",
       "from": "2021-08",
       "to": "2021-12",
-      "description": null
+      "description": "교보생명 금융 앱 구축",
+      "descriptionNote": "user-provided 2026-11-22"
     }
   ],
   "statusLabels": {
@@ -248,8 +257,8 @@
     {
       "id": "gi-calculator",
       "company": "gi-data",
-      "name": "하나손해보험 보험상품 산출기, 상품소개 페이지",
-      "nameNote": "user-provided 2026-11-11 (D-13)",
+      "name": "보험상품 산출기, 상품소개 페이지",
+      "nameNote": "user-provided 2026-11-22 (D-13 title shortened, 하나손해보험 now in the company line)",
       "platform": "web",
       "description": "웹/앱 모두 화면 유지보수",
       "contribution": 100,
