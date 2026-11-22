@@ -31,3 +31,10 @@ User request (2026-11-22):
 - check:ui: 0
 - check:layout: 0
 - pdf: 0, 7 pages, 586,263 bytes
+
+## Follow-up (same day, commit e236a20)
+- **ADDY role line:** dropped "· 현재 운영 종료". The phrase is now off the site, so its sourceCoverage entry is `excluded` (reason: 2026-11-22 사용자 개정).
+- **Calculator title:** now "하나손해보험 보험상품 산출기, 상품소개 페이지".
+- **Verification:**
+  - check, check:source (site 56 / excluded 24 / unmapped 0), check:ui and check:layout: 0
+  - pdf: 0, 7 pages
