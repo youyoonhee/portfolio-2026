@@ -60,12 +60,13 @@
     "반응형 웹",
     "인터랙션",
     "AI 활용",
-    "하나손해보험 보험상품산출기, 상품소개페이지",
+    "하나손해보험 보험 상품 산출기, 상품 소개 페이지",
     "소개",
     "복용약 알림 어플",
     "교육 상담 예약",
     "화장품 브랜드 소개",
-    "재활용 친환경 사업 소개"
+    "재활용 친환경 사업 소개",
+    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’"
   ],
   "uiAllowlistReasons": {
     "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)",
@@ -73,13 +74,14 @@
     "반응형 웹": "user-provided 2026-11-11",
     "인터랙션": "user-provided 2026-11-11",
     "AI 활용": "user-provided 2026-11-11",
-    "하나손해보험 보험상품산출기, 상품소개페이지": "user-provided 2026-11-11",
+    "하나손해보험 보험 상품 산출기, 상품 소개 페이지": "user-provided 2026-11-11",
     "소개": "UI structural label: 케이엔큐레이션 project intro row, user-provided 2026-11-17",
     "복용약 알림 어플": "user-provided 2026-11-17",
     "교육 상담 예약": "user-provided 2026-11-17",
     "화장품 브랜드 소개": "user-provided 2026-11-17",
     "재활용 친환경 사업 소개": "user-provided 2026-11-17",
-    "No image": "UI structural label: placeholder for the project without a screenshot, user-provided 2026-11-17"
+    "No image": "UI structural label: placeholder for the project without a screenshot, user-provided 2026-11-17",
+    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’": "user-provided 2026-11-22: source title with '앱' removed"
   },
   "forbiddenText": [
     "Phone",
@@ -225,7 +227,7 @@
     {
       "id": "gi-calculator",
       "company": "gi-data",
-      "name": "하나손해보험 보험상품산출기, 상품소개페이지",
+      "name": "하나손해보험 보험 상품 산출기, 상품 소개 페이지",
       "nameNote": "user-provided 2026-11-11 (D-13)",
       "platform": "web",
       "description": "웹/앱 모두 화면 유지보수",
@@ -238,7 +240,7 @@
     {
       "id": "gi-event",
       "company": "gi-data",
-      "name": "이벤트페이지등록",
+      "name": "이벤트 페이지 등록",
       "platform": "web",
       "description": "관리자 페이지 연동으로 이벤트 관리",
       "contribution": 100,
@@ -250,9 +252,9 @@
     {
       "id": "gi-oneday",
       "company": "gi-data",
-      "name": "원데이보험앱화면리뉴얼",
+      "name": "원데이보험앱 화면 리뉴얼",
       "platform": "app",
-      "description": "메인인트로, 상품소개페이지 리뉴얼 담당",
+      "description": "메인 인트로, 상품 소개 페이지 리뉴얼 담당",
       "contribution": 100,
       "contributionContext": null,
       "status": "live",
@@ -343,7 +345,7 @@
     {
       "id": "bs-addy",
       "company": "bistones",
-      "name": "CJ종합광고운영플랫폼 ‘ADDY’",
+      "name": "CJ 종합광고운영플랫폼 ‘ADDY’",
       "platform": "web",
       "description": "웹사이트 반응형 구축 · 현재 운영 종료",
       "contribution": 70,
@@ -356,7 +358,7 @@
     {
       "id": "bs-samsung",
       "company": "bistones",
-      "name": "삼성E스토어기획전프로모션",
+      "name": "삼성 E스토어 기획전 프로모션",
       "platform": "web",
       "description": "기획전 프로모션 구축 / 유지보수",
       "contribution": 50,
@@ -371,9 +373,9 @@
     {
       "id": "ab-peach",
       "company": "abbey-road",
-      "name": "교보생명 금융 마이데이터 서비스 앱 ‘피치(Peach)’",
+      "name": "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’",
       "platform": "app",
-      "description": "앱 구축 프로젝트에서 화면의 초기 설계 작업을 담당 · 현재 운영 종료",
+      "description": "앱 구축 프로젝트에서 화면의 초기 설계 작업을 담당",
       "contribution": 30,
       "contributionContext": null,
       "status": "closed",
@@ -534,7 +536,8 @@
     },
     {
       "text": "교보생명금융마이데이터서비스앱‘피치(Peach)’",
-      "status": "site"
+      "status": "excluded",
+      "reason": "2026-11-22 사용자 개정: 제목에서 '앱' 삭제"
     },
     {
       "text": "앱 구축 프로젝트에서 화면의 초기 설계 작업을 담당",
