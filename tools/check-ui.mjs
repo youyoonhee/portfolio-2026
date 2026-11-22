@@ -1,6 +1,6 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-steps|keyword-links|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback|skills-slider]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-steps|keyword-links|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback|skills-slider|skills-touch|keyword-touch]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -89,7 +89,8 @@ async function newPage(browser, url, vw, vh, opts = {}) {
   }
   if (opts.noJs) await page.setJavaScriptEnabled(false);
   if (opts.reduce) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-  await page.setViewport({ width: vw, height: vh });
+  // touch: a phone-like viewport whose page.touchscreen drags really scroll (quick 261122-tgl)
+  await page.setViewport({ width: vw, height: vh, ...(opts.touch ? { hasTouch: true, isMobile: true } : {}) });
   await page.goto(url, { waitUntil: 'load' });
   await sleep(150);
   return { page, ctx };
@@ -184,7 +185,16 @@ try {
     await page.keyboard.press('Enter');
     await sleep(350);
     await page.click('.site-nav a[href="#career"]');
-    await sleep(900);
+    // the smooth scroll runs longer since the phone keyword track grew (0.7 screen per step, quick 261122-tgl):
+    // wait until scrollY has stopped changing for 600ms (a frame gap of up to ~400ms can occur mid-scroll while
+    // the screenshots decode) instead of a fixed 900ms
+    await sleep(300);
+    for (let i = 0, last = -1, same = 0; i < 40 && same < 6; i++) {
+      await sleep(100);
+      const y = await page.evaluate(() => Math.round(scrollY));
+      same = y === last ? same + 1 : 0;
+      last = y;
+    }
     const nav = await page.evaluate(() => ({
       top: document.querySelector('#career').getBoundingClientRect().top,
       hd: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')),
@@ -1143,6 +1153,174 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       report(`${P} reduced motion: instant scroll`, a.cur === 3 && a.full === 1, JSON.stringify([a.cur, a.full]));
     });
   });
+
+  /* quick 261122-tgl: calmer touch on phones. Real touch drags (page.touchscreen on a hasTouch viewport) */
+  const drag = async (page, x, y, dx, dy, { steps = 4, gap = 16, hold = 0 } = {}) => {
+    await page.touchscreen.touchStart(x, y);
+    for (let i = 1; i <= steps; i++) {
+      await page.touchscreen.touchMove(x + (dx * i) / steps, y + (dy * i) / steps);
+      await sleep(gap);
+    }
+    if (hold) await sleep(hold);
+    await page.touchscreen.touchEnd();
+  };
+
+  // Tech stack slider: a small drift snaps back and keeps the dot, a full swipe moves exactly one card
+  await scenario('skills-touch', browser, url, () => withPage(browser, url, 375, 812, { touch: true }, async (page) => {
+    const P = 'skills-touch 375';
+    await page.evaluate(() => document.querySelector('#skills').scrollIntoView({ behavior: 'instant' }));
+    await sleep(300);
+    const box = await page.evaluate(() => {
+      const l = document.querySelector('dl.skills');
+      const r = l.getBoundingClientRect();
+      const cs = getComputedStyle(l.children[0]);
+      return { x: r.left, y: r.top + 60, w: r.width, stride: l.children[1].getBoundingClientRect().left - l.children[0].getBoundingClientRect().left, stop: cs.scrollSnapStop, ta: getComputedStyle(l).touchAction };
+    });
+    report(`${P} snap-stop always, touch-action pan-x pan-y`, box.stop === 'always' && box.ta === 'pan-x pan-y', JSON.stringify([box.stop, box.ta]));
+    const st = () => page.evaluate((stride) => {
+      const l = document.querySelector('dl.skills');
+      return { pos: Math.round((l.scrollLeft / stride) * 100) / 100, cur: [...document.querySelectorAll('.skills-dots button')].findIndex((b) => b.getAttribute('aria-current') === 'true') };
+    }, box.stride);
+    const near = (pos, i) => Math.abs(pos - i) < 0.03;
+    const setCard = async (i) => {
+      await page.evaluate((x) => { document.querySelector('dl.skills').scrollLeft = x; }, box.stride * i);
+      await sleep(500);
+    };
+    // a slow drift of 20% of the card (to the next card and back the other way), held, then let go without a flick
+    for (const [from, sign] of [[1, 1], [1, -1]]) {
+      await setCard(from);
+      const dir = sign > 0 ? 'left' : 'right';
+      await page.touchscreen.touchStart(box.x + box.w / 2, box.y);
+      const curs = [];
+      for (let i = 1; i <= 10; i++) {
+        await page.touchscreen.touchMove(box.x + box.w / 2 - sign * i * box.w * 0.02, box.y);
+        await sleep(30);
+        curs.push((await st()).cur);
+      }
+      const held = await st();
+      await sleep(300);
+      await page.touchscreen.touchEnd();
+      await sleep(900);
+      const end = await st();
+      report(`${P} 20% drift ${dir} from card ${from + 1}: snaps back, dot never changes`,
+        Math.abs(held.pos - from) > 0.08 && Math.abs(held.pos - from) < 0.25 && near(end.pos, from) && end.cur === from && curs.every((c) => c === from),
+        JSON.stringify({ held: held.pos, end, curs: [...new Set(curs)] }));
+    }
+    // a full, quick swipe (90% of the card, flicked) moves exactly one card, both ways
+    for (const [from, sign] of [[0, 1], [1, 1], [2, 1], [3, -1], [2, -1]]) {
+      await setCard(from);
+      await drag(page, box.x + box.w / 2 + sign * box.w * 0.45, box.y, -sign * box.w * 0.9, 0, { steps: 3 });
+      await sleep(1400);
+      const end = await st();
+      report(`${P} full swipe ${sign > 0 ? 'left' : 'right'} from card ${from + 1}: exactly one card, dot follows`, near(end.pos, from + sign) && end.cur === from + sign, JSON.stringify(end));
+    }
+    // a mostly vertical drag that starts on the slider scrolls the page, not the slider
+    await setCard(1);
+    const y0 = await page.evaluate(() => scrollY);
+    await drag(page, box.x + box.w / 2, box.y + 40, -20, -160, { steps: 8 });
+    await sleep(1000);
+    const v = await st();
+    const y1 = await page.evaluate(() => scrollY);
+    report(`${P} vertical drag on the slider scrolls the page, the card stays`, y1 - y0 > 80 && near(v.pos, 1) && v.cur === 1, JSON.stringify({ dy: y1 - y0, ...v }));
+  }));
+
+  // Keyword dial: hysteresis around each boundary, one switch for a scroll well past it, and at rest the counter
+  // matches the position. 375x812 with touch; one step is 0.7 of the screen there
+  await scenario('keyword-touch', browser, url, () => withPage(browser, url, 375, 812, { touch: true }, async (page) => {
+    const P = 'keyword-touch 375';
+    const t = await trackInfo(page);
+    const slot = (t.h - t.stageH) / 4;
+    report(`${P} step length 0.7 screen`, Math.abs(slot - 0.7 * t.vh) <= 2, `${slot.toFixed(1)} vs ${(0.7 * t.vh).toFixed(1)}`);
+    await page.evaluate(() => {
+      window.__kwLog = [];
+      new MutationObserver(() => window.__kwLog.push(document.querySelector('#keywords').dataset.active))
+        .observe(document.querySelector('#keywords'), { attributes: true, attributeFilter: ['data-active'] });
+    });
+    const now = () => page.evaluate((top, slot) => ({ p: (scrollY - top) / slot, act: Number(document.querySelector('#keywords').dataset.active) }), t.top, slot);
+    const log = () => page.evaluate(() => window.__kwLog.splice(0));
+    const X = 187;
+    const Y = 520;
+    // put the scroll at progress p and let it settle
+    const park = async (p) => {
+      await scrollToY(page, t.top + slot * p);
+      await sleep(400);
+      await log();
+    };
+    for (const b of [1, 2, 3]) {
+      for (const [start, label] of [[b - 0.1, 'from above'], [b + 0.1, 'from below']]) {
+        await park(start);
+        const s0 = await now();
+        // hold the finger and rock it by 5% of a step either side of the boundary, a few times
+        await page.touchscreen.touchStart(X, Y);
+        let y = Y;
+        // the first move takes up the touch slop; move on past the boundary from there
+        const unit = slot * 0.05;
+        const ps = [];
+        y -= 12;
+        await page.touchscreen.touchMove(X, y);
+        await sleep(40);
+        for (let k = 0; k < 6; k++) {
+          // fixed finger positions: boundary - 5% and boundary + 5%, alternating
+          for (const off of [-0.05, 0.05]) {
+            const cur = (await now()).p;
+            const dy = (b + off - cur) * slot;
+            y -= dy;
+            await page.touchscreen.touchMove(X, y);
+            await sleep(40);
+            ps.push((await now()).p);
+          }
+        }
+        const rocked = await log();
+        const s1 = await now();
+        const lo = Math.min(...ps) - b;
+        const hi = Math.max(...ps) - b;
+        report(`${P} boundary ${b} ${label}: rocking ±5% of a step keeps step ${s0.act + 1}`,
+          rocked.length === 0 && s1.act === s0.act && lo < -0.02 && hi > 0.02 && lo > -0.1 && hi < 0.1,
+          JSON.stringify({ act: [s0.act, s1.act], changes: rocked, range: [lo.toFixed(3), hi.toFixed(3)] }));
+        // now well past the boundary in the direction away from the start: exactly one switch
+        const far = start < b ? b + 0.5 : b - 0.5;
+        for (let k = 1; k <= 4; k++) {
+          const cur = (await now()).p;
+          y -= ((cur + (far - cur) / (5 - k)) - cur) * slot;
+          await page.touchscreen.touchMove(X, y);
+          await sleep(40);
+        }
+        const passed = await log();
+        const s2 = await now();
+        const want = start < b ? b : b - 1;
+        report(`${P} boundary ${b} ${label}: a scroll well past switches once, to step ${want + 1}`,
+          passed.length === 1 && passed[0] === String(want) && s2.act === want, JSON.stringify({ changes: passed, p: s2.p.toFixed(2) }));
+        await sleep(200);
+        await page.touchscreen.touchEnd();
+        await sleep(300);
+        await log();
+      }
+    }
+    // let go inside the margin (no flick): when the scroll is at rest the counter equals the step for the position
+    for (const [start, stop] of [[0.5, 1.07], [1.5, 0.94], [1.5, 2.06], [2.5, 1.95], [2.5, 3.08], [3.5, 2.93]]) {
+      await park(start);
+      await page.touchscreen.touchStart(X, Y);
+      let y = Y - 12;
+      await page.touchscreen.touchMove(X, y);
+      await sleep(40);
+      for (let k = 0; k < 3; k++) {
+        const cur = (await now()).p;
+        y -= (stop - cur) * slot / (3 - k);
+        await page.touchscreen.touchMove(X, y);
+        await sleep(40);
+      }
+      const held = await now();
+      await sleep(250);
+      await page.touchscreen.touchEnd();
+      await sleep(900);
+      const s = await kwState(page);
+      const rest = await now();
+      const want = Math.min(3, Math.max(0, Math.floor(rest.p)));
+      report(`${P} at rest at ${rest.p.toFixed(2)} (from ${start}): step ${want + 1}, counter (${want + 1}/4)`,
+        rest.act === want && s.count === `(${want + 1}/4)` && Math.abs(held.p - stop) < 0.04,
+        JSON.stringify({ held: held.p.toFixed(3), heldAct: held.act, rest: rest.p.toFixed(3), act: rest.act, count: s.count }));
+    }
+  }));
 
   await scenario('shot-fallback', browser, url, async () => {
     const ctx = await browser.createBrowserContext();

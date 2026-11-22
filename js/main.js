@@ -3,6 +3,17 @@
 const root = document.documentElement;
 root.classList.add('js');
 
+// "the scroll has come to rest": scrollend where supported, otherwise a short quiet period after the last scroll event
+const SETTLE_EVENT = 'onscrollend' in window ? 'scrollend' : 'scroll';
+const SETTLE_MS = 120;
+function debounce(fn, ms) {
+  let t = 0;
+  return () => {
+    clearTimeout(t);
+    t = setTimeout(fn, ms);
+  };
+}
+
 function init() {
   const header = document.querySelector('.site-header');
   const toggle = document.querySelector('.nav-toggle');
@@ -133,38 +144,77 @@ function init() {
 
   for (const s of document.querySelectorAll('main > section[id]')) observer.observe(s);
 
-  /* keyword switch: sticky stage + scroll position drives data-state only (scroll is never intercepted) */
+  /* keyword switch: sticky stage + scroll position drives data-state only (scroll is never intercepted).
+     Quick 261122-tgl, calmer on touch: a boundary must be passed by KW_MARGIN of a step before the step changes
+     (both directions, so momentum jitter around a boundary does not flip it), a switch holds for KW_DWELL ms
+     unless the scroll has moved more than a whole step since, and when the scroll comes to rest the step is set
+     straight from the position. The slot is measured at layout time (svh track, ResizeObserver), never per scroll,
+     so the mobile address bar showing or hiding does not move the mapping. */
   const kw = document.querySelector('#keywords');
   const kwStage = kw.querySelector('.keywords-stage');
   const kwBlocks = [...kw.querySelectorAll('.keyword-block')];
   // every width (2026-11-22); short viewports and reduced motion keep the static, all-visible state
   const mqSwitch = matchMedia('screen and (min-height: 500px) and (prefers-reduced-motion: no-preference)');
+  const KW_MARGIN = 0.15;
+  const KW_DWELL = 350;
 
-  const slotSize = () => (kw.offsetHeight - kwStage.offsetHeight) / kwBlocks.length;
-  const scrollIndex = () => {
-    const i = Math.floor(-kw.getBoundingClientRect().top / slotSize());
-    return Math.min(Math.max(Number.isFinite(i) ? i : 0, 0), kwBlocks.length - 1);
+  let kwSlot = 0;
+  const measure = () => {
+    kwSlot = (kw.offsetHeight - kwStage.offsetHeight) / kwBlocks.length;
+  };
+  const clampStep = (i) => Math.min(Math.max(Number.isFinite(i) ? i : 0, 0), kwBlocks.length - 1);
+  // progress through the track in steps (0 at the top of step 1, 4 at the end of step 4)
+  const progress = () => (kwSlot > 0 ? -kw.getBoundingClientRect().top / kwSlot : 0);
+  const scrollIndex = () => clampStep(Math.floor(progress()));
+  // the step for progress p, given the step k shown now: crossing a boundary needs KW_MARGIN extra
+  const stepFor = (p, k) => {
+    const raw = clampStep(Math.floor(p));
+    if (k < 0 || raw === k) return raw;
+    return raw > k ? clampStep(Math.max(k, Math.floor(p - KW_MARGIN))) : clampStep(Math.min(k, Math.floor(p + KW_MARGIN)));
   };
 
   let kwIndex = -1;
+  let switchedAt = -Infinity;
+  let switchedP = 0;
+  let dwellTimer = 0;
   function setActive(i) {
     if (i === kwIndex) return;
     kwIndex = i;
+    switchedAt = performance.now();
+    switchedP = progress();
     kw.dataset.active = String(i);
     kwBlocks.forEach((b, n) => {
       b.dataset.state = n < i ? 'past' : n > i ? 'next' : 'active';
     });
   }
 
+  function onKwFrame() {
+    kwTicking = false;
+    const p = progress();
+    const next = stepFor(p, kwIndex);
+    if (next === kwIndex) return;
+    const wait = KW_DWELL - (performance.now() - switchedAt);
+    if (wait > 0 && Math.abs(p - switchedP) <= 1) {
+      // too soon after the last switch: look again when the hold is over (or when the scroll settles)
+      clearTimeout(dwellTimer);
+      dwellTimer = setTimeout(onKwScroll, wait);
+      return;
+    }
+    setActive(next);
+  }
+
   let kwTicking = false;
   const onKwScroll = () => {
     if (kwTicking) return;
     kwTicking = true;
-    requestAnimationFrame(() => {
-      kwTicking = false;
-      setActive(scrollIndex());
-    });
+    requestAnimationFrame(onKwFrame);
   };
+  // at rest the shown step always matches the position
+  const onKwSettle = () => {
+    clearTimeout(dwellTimer);
+    setActive(scrollIndex());
+  };
+  const onKwSettleEvent = SETTLE_EVENT === 'scrollend' ? onKwSettle : debounce(onKwSettle, SETTLE_MS);
 
   /* a top-line link in a hidden step gets Tab focus; bring that step in (instant, whatever scroll-behavior says) */
   const onKwFocus = (e) => {
@@ -172,29 +222,41 @@ function init() {
     if (!block) return;
     const i = kwBlocks.indexOf(block);
     if (i !== scrollIndex()) {
-      window.scrollTo({ top: window.scrollY + kw.getBoundingClientRect().top + (i + 0.5) * slotSize(), behavior: 'instant' });
+      window.scrollTo({ top: window.scrollY + kw.getBoundingClientRect().top + (i + 0.5) * kwSlot, behavior: 'instant' });
     }
     setActive(i);
   };
 
   let kwObserver = null;
+  let kwResize = null;
   function enableSwitch() {
     // the tall switch layout must exist before the first index is computed
     kw.dataset.switch = 'on';
-    void kw.offsetHeight;
+    measure();
     kwIndex = -1;
     setActive(scrollIndex());
     window.addEventListener('scroll', onKwScroll, { passive: true });
+    window.addEventListener(SETTLE_EVENT, onKwSettleEvent, { passive: true });
     kw.addEventListener('focusin', onKwFocus);
-    kwObserver = new IntersectionObserver(() => setActive(scrollIndex()));
+    kwObserver = new IntersectionObserver(onKwSettle);
     kwObserver.observe(kw);
+    kwResize = new ResizeObserver(() => {
+      measure();
+      onKwSettle();
+    });
+    kwResize.observe(kw);
+    kwResize.observe(kwStage);
   }
 
   function disableSwitch() {
     window.removeEventListener('scroll', onKwScroll);
+    window.removeEventListener(SETTLE_EVENT, onKwSettleEvent);
     kw.removeEventListener('focusin', onKwFocus);
     if (kwObserver) kwObserver.disconnect();
+    if (kwResize) kwResize.disconnect();
     kwObserver = null;
+    kwResize = null;
+    clearTimeout(dwellTimer);
     kwIndex = -1;
     delete kw.dataset.switch;
     delete kw.dataset.active;
@@ -214,8 +276,14 @@ function initSkillsSlider(mqReduce) {
   if (!list) return;
   const cards = [...list.children];
   const mq = matchMedia('(width < 640px)');
+  // a dot changes only once its card is clearly in view (60%): mid-swipe the old dot stays until the new card
+  // has mostly arrived, and a small drift that snaps back never touches it (quick 261122-tgl)
+  const IN_VIEW = 0.6;
   let dots = null;
-  let raf = 0;
+  let io = null;
+  let shown = -1;
+  let target = -1; // set by a dot tap: cards passed on the way there do not light their dots
+  let targetTimer = 0;
 
   const current = () => {
     const x = list.scrollLeft;
@@ -225,15 +293,35 @@ function initSkillsSlider(mqReduce) {
     });
     return best;
   };
-  const sync = () => {
-    raf = 0;
-    const cur = current();
+  const show = (cur) => {
+    if (!dots || cur === shown) return;
+    shown = cur;
     dots.querySelectorAll('button').forEach((b, i) => {
       if (i === cur) b.setAttribute('aria-current', 'true');
       else b.removeAttribute('aria-current');
     });
   };
-  const onScroll = () => { if (!raf) raf = requestAnimationFrame(sync); };
+  const clearTarget = () => {
+    target = -1;
+    clearTimeout(targetTimer);
+  };
+  const onSeen = (entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting || e.intersectionRatio < IN_VIEW) continue;
+      const i = cards.indexOf(e.target);
+      if (target > -1 && i !== target) continue;
+      if (i === target) clearTarget();
+      show(i);
+    }
+  };
+  // settled: whatever the observer saw, the dot matches the card the scroll came to rest on
+  const onSettle = () => {
+    clearTarget();
+    show(current());
+  };
+
+  // scrollend where it exists; elsewhere (iOS Safari before 26) a scroll that has been quiet for SETTLE_MS
+  const onSettleEvent = SETTLE_EVENT === 'scrollend' ? onSettle : debounce(onSettle, SETTLE_MS);
 
   const enable = () => {
     if (dots) return;
@@ -247,17 +335,28 @@ function initSkillsSlider(mqReduce) {
       b.type = 'button';
       b.setAttribute('aria-label', `${card.querySelector('dt').textContent} 보기`);
       b.addEventListener('click', () => {
+        clearTarget();
+        target = i;
+        // safety net if no scrollend arrives (already there, or an interrupted smooth scroll)
+        targetTimer = setTimeout(onSettle, 1200);
+        show(i);
         list.scrollTo({ left: card.offsetLeft - list.offsetLeft, behavior: mqReduce.matches ? 'auto' : 'smooth' });
       });
       dots.append(b);
     });
     list.after(dots);
-    list.addEventListener('scroll', onScroll, { passive: true });
-    sync();
+    shown = -1;
+    show(current());
+    io = new IntersectionObserver(onSeen, { root: list, threshold: IN_VIEW });
+    for (const c of cards) io.observe(c);
+    list.addEventListener(SETTLE_EVENT, onSettleEvent, { passive: true });
   };
   const disable = () => {
     if (!dots) return;
-    list.removeEventListener('scroll', onScroll);
+    clearTarget();
+    if (io) io.disconnect();
+    io = null;
+    list.removeEventListener(SETTLE_EVENT, onSettleEvent);
     list.removeAttribute('tabindex');
     list.removeAttribute('role');
     list.removeAttribute('aria-label');

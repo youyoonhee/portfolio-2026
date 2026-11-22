@@ -178,6 +178,11 @@
       block-size: calc(100svh + 4 * 50svh);
       padding-block: 0;
 
+      /* quick 261122-tgl: phones get more track per step (0.7 screen), so one flick does not pass two steps */
+      @media (width < 640px) {
+        block-size: calc(100svh + 4 * 70svh);
+      }
+
       .keywords-stage {
         --band: max(min(48svh, 28vw), 260px, 40svh);
         --line: min(calc(var(--band) * 0.24), 140px);
@@ -366,6 +371,8 @@
       overflow-x: auto;
       overscroll-behavior-x: contain;
       scroll-snap-type: x mandatory;
+      /* quick 261122-tgl: the browser picks the dominant axis, so a vertical page scroll that starts here stays vertical */
+      touch-action: pan-x pan-y;
       scrollbar-width: none;
 
       &::-webkit-scrollbar {
@@ -374,6 +381,8 @@
 
       & > div {
         scroll-snap-align: start;
+        /* one swipe moves at most one card */
+        scroll-snap-stop: always;
       }
     }
 
