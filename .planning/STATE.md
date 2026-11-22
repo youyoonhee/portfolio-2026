@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-22 - Completed quick task 261122-s7k: 제출용 PDF를 웹 화면 16:9 슬라이드로
+Last activity: 2026-11-22 - Completed quick task 261122-tgl: 모바일 터치 임계값, 회사 설명 문구
 
 Progress: [██████████] 100%
 
@@ -111,6 +111,7 @@ None yet.
 | 261122-ozp | 첫 화면 이메일 삭제(Contact에는 유지), 첫 화면 소개 문구 1.125rem(18px) | 2026-11-22 | 50ca1ff | [261122-ozp-cover-email-removal-and-intro-size](./quick/261122-ozp-cover-email-removal-and-intro-size/) |
 | 261122-q6e | Keywords를 세이지 반원 4단계 다이얼로(스크롤 전환, 프로젝트명 링크), 첫 화면 소개 "반응형 웹/앱 퍼블리셔 유윤희 입니다." | 2026-11-22 | c791ae0 | [261122-q6e-keywords-half-circle-redesign](./quick/261122-q6e-keywords-half-circle-redesign/) |
 | 261122-s7k | 제출용 PDF를 PC 웹 화면 디자인 그대로 16:9 슬라이드 12장으로(글자·링크 유지) | 2026-11-22 | ba604a8 | [261122-s7k-pdf-as-web-screen-slides](./quick/261122-s7k-pdf-as-web-screen-slides/) |
+| 261122-tgl | 모바일 슬라이더·Keywords 다이얼 터치 임계값(15% 히스테리시스, 350ms, 휴대폰 0.7화면/단계), 지아이데이타·비스톤스·애비로드 설명 문구, 프로젝트명 수정 | 2026-11-22 | e53a828, 005db72 | [261122-tgl-mobile-touch-thresholds-and-company-desc](./quick/261122-tgl-mobile-touch-thresholds-and-company-desc/) |
 
 ## Deferred Items
 
