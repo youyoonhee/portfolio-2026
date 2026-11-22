@@ -60,7 +60,7 @@
     "반응형 웹",
     "인터랙션",
     "AI 활용",
-    "하나손해보험 보험 상품 산출기, 상품 소개 페이지",
+    "하나손해보험 보험상품 산출기, 상품소개 페이지",
     "소개",
     "복용약 알림 어플",
     "교육 상담 예약",
@@ -74,7 +74,7 @@
     "반응형 웹": "user-provided 2026-11-11",
     "인터랙션": "user-provided 2026-11-11",
     "AI 활용": "user-provided 2026-11-11",
-    "하나손해보험 보험 상품 산출기, 상품 소개 페이지": "user-provided 2026-11-11",
+    "하나손해보험 보험상품 산출기, 상품소개 페이지": "user-provided 2026-11-11",
     "소개": "UI structural label: 케이엔큐레이션 project intro row, user-provided 2026-11-17",
     "복용약 알림 어플": "user-provided 2026-11-17",
     "교육 상담 예약": "user-provided 2026-11-17",
@@ -227,7 +227,7 @@
     {
       "id": "gi-calculator",
       "company": "gi-data",
-      "name": "하나손해보험 보험 상품 산출기, 상품 소개 페이지",
+      "name": "하나손해보험 보험상품 산출기, 상품소개 페이지",
       "nameNote": "user-provided 2026-11-11 (D-13)",
       "platform": "web",
       "description": "웹/앱 모두 화면 유지보수",
@@ -347,7 +347,7 @@
       "company": "bistones",
       "name": "CJ 종합광고운영플랫폼 ‘ADDY’",
       "platform": "web",
-      "description": "웹사이트 반응형 구축 · 현재 운영 종료",
+      "description": "웹사이트 반응형 구축",
       "contribution": 70,
       "contributionContext": null,
       "status": "closed",
@@ -545,7 +545,8 @@
     },
     {
       "text": "현재 운영 종료",
-      "status": "site"
+      "status": "excluded",
+      "reason": "2026-11-22 사용자 개정: 피치·ADDY 담당 업무에서 삭제"
     },
     {
       "text": "CJ종합광고운영플랫폼‘ADDY’",
