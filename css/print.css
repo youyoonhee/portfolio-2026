@@ -249,8 +249,7 @@
     .keyword-title,
     .keyword-list,
     .cover-line,
-    .cover-intro,
-    .cover-mail {
+    .cover-intro {
       opacity: 1 !important;
       visibility: visible !important;
     }

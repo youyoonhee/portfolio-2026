@@ -12,11 +12,10 @@ const PAIRS = [ // [fg, bg, min, why]
   ['color-ink', 'color-bg', 4.5], ['color-ink-2', 'color-bg', 4.5], ['color-ink-2', 'color-surface', 4.5],
   ['color-ink-3', 'color-bg', 4.5], ['color-ink-3', 'color-surface', 4.5], ['color-ink-3', 'color-accent-tint', 4.5],
   ['color-ink', 'color-cover-bg', 4.5], ['color-ink-2', 'color-cover-bg', 4.5], ['color-ink-3', 'color-cover-bg', 4.5], ['color-accent', 'color-cover-bg', 4.5],
-  // circles that pass behind cover text (intro in ink-2, mail link in accent-strong); gold sits behind them too
-  ['color-ink-2', 'color-gold', 4.5], ['color-accent-strong', 'color-gold', 4.5],
-  ['color-ink-2', 'color-orb-2', 4.5], ['color-accent-strong', 'color-orb-2', 4.5],
-  ['color-ink-2', 'color-sage-soft', 4.5], ['color-accent-strong', 'color-sage-soft', 4.5],
-  ['color-accent-strong', 'color-cover-bg', 4.5],
+  // circles that pass behind the cover intro (ink-2); gold sits behind it too
+  ['color-ink-2', 'color-gold', 4.5],
+  ['color-ink-2', 'color-orb-2', 4.5],
+  ['color-ink-2', 'color-sage-soft', 4.5],
   ['color-accent', 'color-bg', 3, 'focus ring'], ['color-line-strong', 'color-bg', 3, 'non-text'],
 ];
 let bad = 0;

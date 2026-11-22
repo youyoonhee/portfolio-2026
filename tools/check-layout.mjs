@@ -197,7 +197,7 @@ try {
     // tap targets
     const tap = await evalJs(`(() => {
       const bad = [];
-      document.querySelectorAll('.site-nav a, .keyword-list a, .links a, .cover-mail a, .contact-list a').forEach((a) => {
+      document.querySelectorAll('.site-nav a, .keyword-list a, .links a, .contact-list a').forEach((a) => {
         const r = a.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
         const min = a.closest('.keyword-list') ? 48 : 44;

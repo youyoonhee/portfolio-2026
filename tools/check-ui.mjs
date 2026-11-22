@@ -133,7 +133,12 @@ try {
     const a2 = await active(page);
     await tab(page);
     const a3 = await active(page);
-    report(`${P} 2 tab order`, a1.cls.includes('skip-link') && a2.cls.includes('nav-toggle') && a3.href.startsWith('mailto:'), `${a1.cls}|${a2.cls}|${a3.tag}`);
+    // the cover has no link (email lives in #contact), so the third stop is the first link in main
+    const firstInMain = await page.evaluate(() => document.querySelector('main a[href]')?.getAttribute('href') || '');
+    report(`${P} 2 tab order`, a1.cls.includes('skip-link') && a2.cls.includes('nav-toggle') && a3.tag === 'a' && a3.href === firstInMain, `${a1.cls}|${a2.cls}|${a3.tag} ${a3.href}`);
+    // that link sits below the fold; return to the top so the menu steps start where they always did
+    await page.evaluate(() => document.activeElement.blur());
+    await scrollToY(page, 0);
 
     await page.focus('.nav-toggle');
     await page.keyboard.press('Enter');
@@ -258,13 +263,14 @@ try {
     report('skip 2 Enter focuses main', m.tag === 'main' && m.id === 'main');
     await tab(page);
     const n = await active(page);
-    report('skip 3 next tab is first link in main', n.href.startsWith('mailto:'), n.tag);
+    const firstInMain = await page.evaluate(() => document.querySelector('main a[href]')?.getAttribute('href') || '');
+    report('skip 3 next tab is first link in main', n.tag === 'a' && n.href !== '' && n.href === firstInMain, `${n.tag} ${n.href} vs ${firstInMain}`);
   }));
 
   await scenario('focus-ring', browser, url, async () => {
     for (const [vw, vh, ringSel] of [[375, 812, '.nav-toggle'], [1440, 900, '.site-nav a[href="#keywords"]']]) {
       await withPage(browser, url, vw, vh, {}, async (page) => {
-        const targets = ['.skip-link', ringSel, '.cover-mail a'];
+        const targets = ['.skip-link', ringSel, '.contact-list a'];
         for (const sel of targets) {
           await page.focus(sel);
           // page.focus is not keyboard modality; prime it with a key press on a neutral step
@@ -376,18 +382,18 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       });
       report('cover 1 three lines, entrance started', first.n === 3 && first.op3 < 1, `${first.n} ${first.op3}`);
       await sleep(9000);
-      const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')].map((e) => {
+      const end = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .cover-intro')].map((e) => {
         const c = getComputedStyle(e);
         return [c.opacity, c.transform];
       }));
-      report('cover 2 final state visible', end.length === 5 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
+      report('cover 2 final state visible', end.length === 4 && end.every(([o, t]) => o === '1' && (t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')), JSON.stringify(end));
       const delays = await page.evaluate(() => [...document.querySelectorAll('.cover-line')].map((e) => getComputedStyle(e).animationDelay));
       report('cover 3 stagger 2.5, 3.5, 4s (first line one step early)', delays.join() === '2.5s,3.5s,4s', delays.join());
       // "Publishing," starts one step early so it is already showing as the last circle completes;
       // it must begin after the last circle has started and be showing before that circle ends
       const orbSeen = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')]
         .map((e) => { const t = e.getAnimations()[0]?.effect.getComputedTiming(); return t ? t.delay + t.duration * 0.75 : Infinity; })));
-      const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro, .cover-mail')]
+      const textStart = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.cover-line, .cover-intro')]
         .map((e) => e.getAnimations()[0]?.effect.getComputedTiming().delay ?? 0)));
       const orbFirst = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.cover-orbs span')].map((e) => e.getAnimations()[0]?.effect.getComputedTiming().delay ?? 0)));
       report('cover 6 first text starts while the last circle completes (after it starts, before it looks complete)', textStart > orbFirst && textStart <= orbSeen, `${orbFirst} < ${textStart} <= ${orbSeen}`);
@@ -398,8 +404,8 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     try {
       await page2.setViewport({ width: 1440, height: 900 });
       await page2.goto(url, { waitUntil: 'domcontentloaded' });
-      const vis = await cs(page2, '.cover-mail a', 'visibility');
-      report('cover 5 mail link visible during entrance', vis === 'visible', vis);
+      const vis = await cs(page2, '.cover-intro', 'visibility');
+      report('cover 5 intro not visibility-hidden during entrance', vis === 'visible', vis);
     } finally { await ctx2.close().catch(() => {}); }
   });
 
@@ -421,7 +427,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
           });
           const bad = [];
           let hits = 0;
-          for (const sel of ['.cover-sub', '.cover h1', '.cover-intro', '.cover-mail a']) {
+          for (const sel of ['.cover-sub', '.cover h1', '.cover-intro']) {
             const el = document.querySelector(sel);
             const fg = rgb(getComputedStyle(el).color);
             const min = sel === '.cover h1' ? 3 : 4.5;
@@ -452,9 +458,9 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       await page.screenshot({ path: join(OUT, 'cover-1440-mid.png') });
     } finally { await ctx.close().catch(() => {}); }
     await withPage(browser, url, 1440, 900, { reduce: true }, async (page) => {
-      const st = await page.evaluate(() => [...document.querySelectorAll('.cover-orbs span, .cover-line, .cover-intro, .cover-mail')]
+      const st = await page.evaluate(() => [...document.querySelectorAll('.cover-orbs span, .cover-line, .cover-intro')]
         .map((e) => [getComputedStyle(e).opacity, e.getAnimations().length]));
-      report('cover-orbs reduced: no animation, all opacity 1', st.length === 9 && st.every(([o, a]) => o === '1' && a === 0), JSON.stringify(st));
+      report('cover-orbs reduced: no animation, all opacity 1', st.length === 8 && st.every(([o, a]) => o === '1' && a === 0), JSON.stringify(st));
     });
   });
 
@@ -508,7 +514,8 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const P = 'keyword-focus';
     const hh = await headerH(page);
     const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-list a')].map((a) => a.getAttribute('href')));
-    await page.focus('.cover-mail a');
+    // #main (tabindex -1) sits right before the first keyword link in tab order
+    await page.focus('#main');
     for (let i = 0; i < 9; i++) {
       await tab(page);
       await sleep(150);

@@ -169,8 +169,8 @@ register('hero', () => {
   for (const key of ['subline', 'intro']) {
     if (!own.includes(m[key])) return fail('hero', `${key} text missing in cover`);
   }
-  const mail = elsIn(cover, 'a').find((e) => e.attrs.href === `mailto:${m.email}`);
-  if (!mail || textIn(mail) !== m.email) return fail('hero', 'mailto link missing or link text differs from address');
+  // the email lives only in #contact; the cover must not repeat it (user request 2026-11-22)
+  if (elsIn(cover, 'a').some((e) => /^mailto:/i.test(e.attrs.href || ''))) return fail('hero', 'section#cover must not contain a mailto link');
   pass('hero');
 });
 

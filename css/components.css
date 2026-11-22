@@ -327,7 +327,7 @@
 
   .cover-intro {
     max-inline-size: 28em;
-    font-size: var(--text-body);
+    font-size: 1.125rem;
     color: var(--color-ink-2);
     margin-inline: auto;
   }
@@ -385,18 +385,10 @@
       animation-delay: calc(var(--cover-text-start) - var(--orb-stagger));
     }
 
-    html.js .cover-intro,
-    html.js .cover-mail {
+    html.js .cover-intro {
       --rise: var(--space-md);
       animation: cover-rise var(--orb-dur) ease-out both;
-    }
-
-    html.js .cover-intro {
       animation-delay: calc(var(--cover-text-start) + 3 * var(--orb-stagger));
-    }
-
-    html.js .cover-mail {
-      animation-delay: calc(var(--cover-text-start) + 4 * var(--orb-stagger));
     }
   }
 
@@ -439,18 +431,6 @@
           transition-delay: var(--stagger-switch);
         }
       }
-    }
-  }
-
-  .cover-mail a {
-    display: inline-flex;
-    align-items: center;
-    min-block-size: 44px;
-    /* the deeper site green (the usual hover colour) keeps 4.5:1 over the circles behind it */
-    color: var(--color-accent-strong);
-
-    &:hover {
-      color: var(--color-ink);
     }
   }
 
