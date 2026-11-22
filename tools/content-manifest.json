@@ -8,7 +8,7 @@
       "expected."
     ],
     "subline": "Selected work / Career 2026",
-    "intro": "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다."
+    "intro": "반응형 웹/앱 퍼블리셔 유윤희 입니다."
   },
   "contact": {
     "eyebrow": "04 / Contact",
@@ -65,7 +65,18 @@
     "교육 상담 예약",
     "화장품 브랜드 소개",
     "재활용 친환경 사업 소개",
-    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’"
+    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’",
+    "SCROLL DOWN",
+    "Higher-Quality Service",
+    "FSD Cosmetic Website",
+    "EXAONE AI Website",
+    "Oneday Insurance App",
+    "화면 너머의 경험까지 섬세하게.",
+    "(1/4)",
+    "(2/4)",
+    "(3/4)",
+    "(4/4)",
+    "반응형 웹/앱 퍼블리셔 유윤희 입니다."
   ],
   "uiAllowlistReasons": {
     "메뉴": "UI structural label: hamburger accessible name (02-UI-SPEC Copywriting, 2026-11-11)",
@@ -80,7 +91,18 @@
     "화장품 브랜드 소개": "user-provided 2026-11-17",
     "재활용 친환경 사업 소개": "user-provided 2026-11-17",
     "No image": "UI structural label: placeholder for the project without a screenshot, user-provided 2026-11-17",
-    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’": "user-provided 2026-11-22: source title with '앱' removed"
+    "교보생명 금융 마이데이터 서비스 ‘피치(Peach)’": "user-provided 2026-11-22: source title with '앱' removed",
+    "SCROLL DOWN": "user-provided 2026-11-22",
+    "Higher-Quality Service": "user-provided 2026-11-22",
+    "FSD Cosmetic Website": "user-provided 2026-11-22",
+    "EXAONE AI Website": "user-provided 2026-11-22",
+    "Oneday Insurance App": "user-provided 2026-11-22",
+    "화면 너머의 경험까지 섬세하게.": "user-provided 2026-11-22",
+    "(1/4)": "user-provided 2026-11-22",
+    "(2/4)": "user-provided 2026-11-22",
+    "(3/4)": "user-provided 2026-11-22",
+    "(4/4)": "user-provided 2026-11-22",
+    "반응형 웹/앱 퍼블리셔 유윤희 입니다.": "user-provided 2026-11-22"
   },
   "forbiddenText": [
     "Phone",
@@ -393,6 +415,11 @@
     },
     {
       "text": "화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.",
+      "status": "excluded",
+      "reason": "2026-11-22 사용자 개정: 앞 문장은 Keywords 1단계 윗줄, 커버 소개는 사용자가 준 '반응형 웹/앱 퍼블리셔 유윤희 입니다.'로 교체"
+    },
+    {
+      "text": "화면 너머의 경험까지 섬세하게.",
       "status": "site"
     },
     {
@@ -748,32 +775,34 @@
   ],
   "keywords": [
     {
+      "lead": "화면 너머의 경험까지 섬세하게.",
+      "href": null,
+      "title": "Higher-Quality Service",
+      "lang": "en",
+      "note": "user-provided 2026-11-22"
+    },
+    {
+      "lead": "FSD Cosmetic Website",
+      "href": "#kn-fsd",
       "title": "반응형 웹",
-      "ids": [
-        "kn-wecankids",
-        "kn-fsd",
-        "kn-greenda"
-      ]
+      "note": "user-provided 2026-11-11"
     },
     {
+      "lead": "EXAONE AI Website",
+      "href": "#kn-universe",
       "title": "인터랙션",
-      "ids": [
-        "gi-oneday",
-        "kn-universe",
-        "kn-fsd"
-      ]
+      "note": "user-provided 2026-11-11"
     },
     {
+      "lead": "Oneday Insurance App",
+      "href": "#gi-oneday",
       "title": "AI 활용",
-      "ids": [
-        "gi-calculator",
-        "gi-oneday",
-        "kn-universe"
-      ]
+      "note": "user-provided 2026-11-11"
     }
   ],
   "keywordsSection": {
     "eyebrow": "01 / Keywords",
-    "title": "Keywords"
+    "title": "Keywords",
+    "scrollLabel": "SCROLL DOWN"
   }
 }

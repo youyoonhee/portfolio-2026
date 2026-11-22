@@ -11,7 +11,7 @@
     - 포인트 슬롯은 내용이 없는 동안 hidden 상태로 두고, 내용이 생기면 hidden을 지우고 문장 1~2개를 넣는다.
     - 스크린샷 슬롯은 Phase 4 전까지 비워 두고 보조기기에서 숨긴다.
     - 상태가 live이면 운영 중 배지를 두지 않는다. 링크가 없으면 상태·링크 묶음 자체를 생략하고, 링크가 있으면 묶음에 링크만 둔다. closed, article, unknown은 배지를 항상 둔다.
-    - 키워드 섹션(section#keywords)의 목록 링크는 이 article의 id로 이동한다.
+    - 키워드 섹션(section#keywords) 2~4단계의 윗줄 링크는 이 article의 id로 이동한다(2026-11-22 사용자 개정).
     - 외부 링크는 새 탭 링크 속성을 모두 갖고, 목적지가 드러나는 텍스트를 쓴다.
   -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -72,36 +72,48 @@
       <div class="cover-orbs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       <p class="cover-sub" lang="en">Selected work / Career 2026</p>
       <h1 id="cover-title" lang="en"><span class="cover-line">Publishing,</span> <span class="cover-line">beyond the</span> <span class="cover-line">expected.<img class="deco deco-cursor" src="img/deco/cursor.png" alt="" width="96" height="136" decoding="async"></span></h1>
-      <p class="cover-intro">화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.</p>
+      <p class="cover-intro">반응형 웹/앱 퍼블리셔 유윤희 입니다.</p>
     </section>
 
     <section id="keywords" class="keywords" aria-labelledby="keywords-title">
       <div class="keywords-stage">
         <p class="eyebrow" lang="en"><span class="eyebrow-num">01</span> / Keywords</p>
         <h2 id="keywords-title" class="visually-hidden" lang="en">Keywords</h2>
-        <div class="keyword-block">
-          <h3 class="keyword-title">반응형 웹</h3>
-          <ul class="keyword-list">
-            <li><a href="#kn-wecankids">위캔키즈클럽</a></li>
-            <li><a href="#kn-fsd">FSD 코스메틱</a></li>
-            <li><a href="#kn-greenda">그린다</a></li>
-          </ul>
+        <div class="keywords-circle">
+          <span class="keywords-disc" aria-hidden="true"></span>
+          <p class="keywords-scroll" lang="en" aria-hidden="true">SCROLL DOWN</p>
         </div>
         <div class="keyword-block">
-          <h3 class="keyword-title">인터랙션</h3>
-          <ul class="keyword-list">
-            <li><a href="#gi-oneday">원데이보험앱 화면 리뉴얼</a></li>
-            <li><a href="#kn-universe">universe</a></li>
-            <li><a href="#kn-fsd">FSD 코스메틱</a></li>
-          </ul>
+          <p class="keyword-lead">화면 너머의 경험까지 섬세하게.</p>
+          <div class="keyword-dial">
+            <p class="keyword-count" aria-hidden="true">(1/4)</p>
+            <span class="keyword-line" aria-hidden="true"></span>
+            <h3 class="keyword-title" lang="en">Higher-Quality Service</h3>
+          </div>
         </div>
         <div class="keyword-block">
-          <h3 class="keyword-title">AI 활용</h3>
-          <ul class="keyword-list">
-            <li><a href="#gi-calculator">하나손해보험 보험상품 산출기, 상품소개 페이지</a></li>
-            <li><a href="#gi-oneday">원데이보험앱 화면 리뉴얼</a></li>
-            <li><a href="#kn-universe">universe</a></li>
-          </ul>
+          <p class="keyword-lead"><a href="#kn-fsd" lang="en">FSD Cosmetic Website</a></p>
+          <div class="keyword-dial">
+            <p class="keyword-count" aria-hidden="true">(2/4)</p>
+            <span class="keyword-line" aria-hidden="true"></span>
+            <h3 class="keyword-title">반응형 웹</h3>
+          </div>
+        </div>
+        <div class="keyword-block">
+          <p class="keyword-lead"><a href="#kn-universe" lang="en">EXAONE AI Website</a></p>
+          <div class="keyword-dial">
+            <p class="keyword-count" aria-hidden="true">(3/4)</p>
+            <span class="keyword-line" aria-hidden="true"></span>
+            <h3 class="keyword-title">인터랙션</h3>
+          </div>
+        </div>
+        <div class="keyword-block">
+          <p class="keyword-lead"><a href="#gi-oneday" lang="en">Oneday Insurance App</a></p>
+          <div class="keyword-dial">
+            <p class="keyword-count" aria-hidden="true">(4/4)</p>
+            <span class="keyword-line" aria-hidden="true"></span>
+            <h3 class="keyword-title">AI 활용</h3>
+          </div>
         </div>
       </div>
     </section>

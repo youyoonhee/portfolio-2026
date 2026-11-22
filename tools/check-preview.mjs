@@ -73,9 +73,13 @@ export async function audit({ root, url }) {
   const meta = (key) => metas.find((m) => m.property === key || m.name === key)?.content;
 
   rec('title', title);
-  rec('description', intro !== undefined && meta('description') === intro);
+  // 2026-11-22 (user revision): the cover intro and the descriptions are different sentences now; the meta keeps
+  // the full original sentence. Both must be non-empty and both must name the publisher.
+  const PUBLISHER = '퍼블리셔 유윤희';
+  const holdsIntro = (v) => typeof intro === 'string' && intro.includes(PUBLISHER) && typeof v === 'string' && v.trim() !== '' && v.includes(PUBLISHER);
+  rec('description', holdsIntro(meta('description')));
   rec('og-title', title !== undefined && meta('og:title') === title);
-  rec('og-description', intro !== undefined && meta('og:description') === intro);
+  rec('og-description', holdsIntro(meta('og:description')));
   rec('og-type', meta('og:type') === 'website');
   rec('og-locale', meta('og:locale') === 'ko_KR');
   rec('og-url', meta('og:url') === BASE);
@@ -159,14 +163,15 @@ function report(res) {
 // Self-test
 // ---------------------------------------------------------------------------------------------
 
-const INTRO = '화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.';
+const INTRO = '반응형 웹/앱 퍼블리셔 유윤희 입니다.';
+const DESCRIPTION = '화면 너머의 경험까지 섬세하게. 앱, 반응형 웹 퍼블리셔 유윤희 입니다.';
 const TITLE = '퍼블리셔 유윤희 포트폴리오';
 
 function fixtureHtml({ extraMeta = '', drop = [], replace = {} } = {}) {
   const tags = {
-    description: `<meta name="description" content="${INTRO}">`,
+    description: `<meta name="description" content="${DESCRIPTION}">`,
     'og:title': `<meta property="og:title" content="${TITLE}">`,
-    'og:description': `<meta property="og:description" content="${INTRO}">`,
+    'og:description': `<meta property="og:description" content="${DESCRIPTION}">`,
     'og:type': '<meta property="og:type" content="website">',
     'og:locale': '<meta property="og:locale" content="ko_KR">',
     'og:url': `<meta property="og:url" content="${BASE}">`,
@@ -177,7 +182,7 @@ function fixtureHtml({ extraMeta = '', drop = [], replace = {} } = {}) {
     'og:image:alt': `<meta property="og:image:alt" content="${TITLE}">`,
     'twitter:card': '<meta name="twitter:card" content="summary_large_image">',
     'twitter:title': `<meta name="twitter:title" content="${TITLE}">`,
-    'twitter:description': `<meta name="twitter:description" content="${INTRO}">`,
+    'twitter:description': `<meta name="twitter:description" content="${DESCRIPTION}">`,
     'twitter:image': `<meta name="twitter:image" content="${IMAGE_URL}">`,
   };
   for (const [k, v] of Object.entries(replace)) tags[k] = v;
@@ -238,6 +243,13 @@ async function selfTest() {
     t('CRLF robots.txt passes', report0(await audit({ root: crlf })) === 0);
 
     await neg('relative og:image fails', { html_opts: { replace: { 'og:image': '<meta property="og:image" content="img/og-card.png">' } } });
+    await neg('og:description without the publisher name fails', {
+      html_opts: { replace: { 'og:description': '<meta property="og:description" content="화면 너머의 경험까지 섬세하게.">' } },
+    });
+    await neg('cover intro without the publisher name fails', { html: fixtureHtml().replace(`<p class="cover-intro">${INTRO}</p>`, '<p class="cover-intro">안녕하세요.</p>') });
+    await neg('empty og:description fails', {
+      html_opts: { replace: { 'og:description': '<meta property="og:description" content="">' } },
+    });
     await neg('og:description differs from cover-intro fails', {
       html_opts: { replace: { 'og:description': '<meta property="og:description" content="다른 문장">' } },
     });

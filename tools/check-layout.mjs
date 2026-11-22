@@ -135,14 +135,15 @@ try {
     })()`);
     report(eq.cards === EXPECT.cards && eq.bad === 0, `${p} equal heights in kn-curation: ${eq.cards}/${EXPECT.cards} cards, ${eq.bad} uneven rows`);
 
-    // keyword section shows all three blocks
+    // keyword section keeps all four steps with a laid-out top line and word (2026-11-22; while switching the
+    // step blocks are display: contents, so their parts are measured, not the block box)
     const kw = await evalJs(`(() => {
       const blocks = [...document.querySelectorAll('#keywords .keyword-block')];
       return blocks.map((b) => {
-        const r = b.getBoundingClientRect(), t = b.querySelector('.keyword-title'), l = b.querySelectorAll('.keyword-list a');
+        const t = b.querySelector('.keyword-title'), l = b.querySelector('.keyword-lead');
+        const lr = l ? l.getBoundingClientRect() : { width: 0, height: 0 };
         const tr = t ? t.getBoundingClientRect() : { width: 0, height: 0 };
-        const lv = [...l].every((a) => { const x = a.getBoundingClientRect(); return x.width > 0 && x.height > 0 && getComputedStyle(a).visibility === 'visible'; });
-        return r.height > 0 && tr.width > 0 && tr.height > 0 && l.length > 0 && lv && getComputedStyle(b).display !== 'none';
+        return lr.width > 0 && lr.height > 0 && tr.width > 0 && tr.height > 0 && getComputedStyle(t).visibility === 'visible' && getComputedStyle(b).display !== 'none';
       });
     })()`);
     report(kw.length === EXPECT.keywordBlocks && kw.every(Boolean), `${p} keyword section: ${kw.length} blocks, visible ${JSON.stringify(kw)}`);
@@ -179,8 +180,8 @@ try {
       ['#career', '.site-nav a[href="#career"]'],
       ['#keywords', null],
       ['#abbey-road', null], // company section anchor; the career list links are gone (2026-11-17)
-      ['#kn-fsd', '.keyword-list a[href="#kn-fsd"]'],
-      ['#gi-oneday', '.keyword-list a[href="#gi-oneday"]'],
+      ['#kn-fsd', null], // project anchors past the keyword track; the keyword links are gone (2026-11-22)
+      ['#gi-oneday', null],
       ['#ab-peach', null],
     ];
     for (const [target, sel] of cases) {
@@ -197,15 +198,14 @@ try {
     // tap targets
     const tap = await evalJs(`(() => {
       const bad = [];
-      document.querySelectorAll('.site-nav a, .keyword-list a, .links a, .contact-list a').forEach((a) => {
+      document.querySelectorAll('.site-nav a, .links a, .contact-list a').forEach((a) => {
         const r = a.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
-        const min = a.closest('.keyword-list') ? 48 : 44;
-        if (r.height < min - 0.5) bad.push((a.getAttribute('href') || '').slice(0, 24) + ':' + r.height.toFixed(1));
+        if (r.height < 44 - 0.5) bad.push((a.getAttribute('href') || '').slice(0, 24) + ':' + r.height.toFixed(1));
       });
       return bad;
     })()`);
-    report(tap.length === 0, `${p} tap targets: ${tap.length ? 'too small ' + JSON.stringify(tap.slice(0, 5)) : 'all >= 44px (keywords >= 48px)'}`);
+    report(tap.length === 0, `${p} tap targets: ${tap.length ? 'too small ' + JSON.stringify(tap.slice(0, 5)) : 'all >= 44px'}`);
 
     // fonts, same-origin only
     const f = await evalJs(`({

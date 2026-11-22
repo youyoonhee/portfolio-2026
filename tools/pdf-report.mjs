@@ -195,7 +195,9 @@ if (flag('--text') && !fixture) {
     const first = (needle) => { const i = sp.findIndex((t) => t.includes(strip(needle))); return i < 0 ? 0 : i + 1; };
     const kw = manifest.keywords.map((k) => first(k.title));
     const hero = manifest.hero.lines.map((l) => first(l));
-    assert('page plan: cover and keywords on page 1', [...hero, ...kw].every((p) => p === 1), `pages ${[...hero, ...kw].join(',')}`);
+    // 2026-11-22: four keyword steps, each a top line and a word, all on page 1 with the cover
+    const kwLead = manifest.keywords.map((k) => first(k.lead));
+    assert('page plan: cover and the four keyword steps on page 1', [...hero, ...kwLead, ...kw].every((p) => p === 1), `pages ${[...hero, ...kwLead, ...kw].join(',')}`);
     const sk = first(manifest.skillsSection.title); const ca = first(manifest.careerSection.title);
     // the career list is gone (2026-11-17): skills fill page 2, the career heading opens the GI Data page
     const co = manifest.companies.map((c) => first(c.name + '.'));

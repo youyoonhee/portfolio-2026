@@ -54,9 +54,7 @@
     gap: var(--space-lg);
   }
 
-  /* keywords: surface panel, every block expanded (Phase 3 adds scroll switching) */
-  /* the panel ground reaches one gutter past the wrap, so the content keeps the wrap edges */
-  .keywords,
+  /* contact: surface panel; the ground reaches one gutter past the wrap, so the content keeps the wrap edges */
   #contact {
     position: relative;
     isolation: isolate;
@@ -72,60 +70,218 @@
     }
   }
 
+  /* keywords (2026-11-22): four steps, each a top line and a dial group (counter, thin line, white word)
+     on a deep sage half-circle. Static state (no JS, reduced motion, short viewport, print): the half-circle
+     sits behind all four steps, stacked, each with its top line (white here) above its word. */
   .keywords {
-    padding-block: var(--space-xl);
+    isolation: isolate;
+    padding-block: var(--space-2xl) 0;
+    text-align: center;
+  }
+
+  .keywords-stage {
+    --line: clamp(48px, 6vw + 24px, 120px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .keywords-stage > * {
+    min-inline-size: 0;
+  }
+
+  /* the per-step counter and line, and SCROLL DOWN, belong to the switch only */
+  .keyword-count,
+  .keyword-line,
+  .keywords-scroll {
+    display: none;
+  }
+
+  /* full-bleed band behind the steps: the circle is wider than the wrap, so the band clips it itself
+     (overflow: clip creates no scroll container, and the band is not a sticky ancestor) */
+  .keywords-circle {
+    grid-column: 1;
+    grid-row: 2 / span 5;
+    z-index: -1;
+    position: relative;
+    align-self: stretch;
+    inline-size: 100vw;
+    margin-inline: calc(50% - 50vw);
+    margin-block-start: var(--space-2xl);
+    overflow: clip;
+    /* the band is sized by the steps it sits behind; the circle reads its height */
+    container-type: size;
+
+    /* static state: one thin white line dropping from the top of the circle (painted over the disc) */
+    &::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset-block-start: 0;
+      inset-inline-start: calc(50% - 0.5px);
+      inline-size: 1px;
+      block-size: var(--line);
+      background: var(--color-bg);
+    }
+  }
+
+  .keywords-disc {
+    /* 1.6 band heights at least, so only the top of the circle shows behind the stacked steps */
+    --disc: max(94vw, 160cqh);
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    inline-size: var(--disc);
+    aspect-ratio: 1;
+    margin-inline-start: calc(var(--disc) / -2);
+    border-radius: 50%;
+    background: var(--color-sage-deep);
   }
 
   .keyword-block {
+    grid-column: 1;
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-lg);
-    padding-block: var(--space-2xl);
+    justify-items: center;
+    gap: var(--space-xs);
+    padding-block: var(--space-md);
+    padding-inline: var(--gutter);
+    color: var(--color-bg);
 
-    & > * {
-      min-inline-size: 0;
+    &:nth-child(4) {
+      grid-row: 3;
+      padding-block-start: calc(var(--space-2xl) + var(--line) + var(--space-lg));
     }
 
-    & + & {
-      border-block-start: 1px solid var(--color-line);
+    &:nth-child(5) {
+      grid-row: 4;
     }
 
-    @media (min-width: 640px) {
-      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-      align-items: center;
+    &:nth-child(6) {
+      grid-row: 5;
     }
 
-    @media (min-width: 1024px) {
-      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
-      padding-block: var(--space-3xl);
+    &:nth-child(7) {
+      grid-row: 6;
+      padding-block-end: var(--space-3xl);
     }
   }
 
-  /* keyword switch: a tall track with a sticky one-screen stage; 0.5 screen per keyword, 1.5 screens in total.
-     No overflow on the stage or its ancestors, or sticky and focus rings break. */
-  @media screen and (min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+  /* keyword switch: a tall track with a sticky one-screen stage; 0.5 screen per step, 2 screens in total.
+     Every width (user request 2026-11-22); short viewports keep the static state.
+     Rows: eyebrow, top line (takes the spare height), the counter strip, the circle band.
+     The band follows the reference: about 48% of the screen, the circle about 94vw across; narrow screens get a
+     relatively wider circle (3 band heights) so the word fits and only the top of the circle shows.
+     The stage bleeds to the screen edges and clips (overflow: clip, no scroll container, so sticky still works):
+     the dial groups rotate along the circle and leave the screen there. */
+  @media screen and (min-height: 500px) and (prefers-reduced-motion: no-preference) {
     .keywords[data-switch="on"] {
-      block-size: calc(100svh + 3 * 50svh);
+      block-size: calc(100svh + 4 * 50svh);
       padding-block: 0;
 
       .keywords-stage {
+        --band: max(min(48svh, 28vw), 260px, 40svh);
+        --line: min(calc(var(--band) * 0.24), 140px);
+        --count-h: 96px;
+        /* pagination "(n/4)": 18px at every width (user revision 2026-11-22) */
+        --count-size: 1.125rem;
+        --disc: max(94vw, 3 * var(--band));
         position: sticky;
         inset-block-start: 0;
         block-size: 100svh;
-        display: grid;
-        grid-template-rows: auto 1fr;
-        grid-template-columns: minmax(0, 1fr);
+        inline-size: 100vw;
+        margin-inline: calc(50% - 50vw);
+        overflow: clip;
+        grid-template-rows: auto minmax(0, 1fr) var(--count-h) var(--band);
+        padding-block-start: calc(var(--header-h) + var(--space-lg));
       }
 
-      .eyebrow {
-        padding-block-start: calc(var(--header-h) + var(--space-md));
+      /* decoration: never in the way of a click */
+      .keywords-circle {
+        pointer-events: none;
+        grid-area: 4 / 1;
+        margin-block-start: 0;
+        container-type: normal;
+
+        &::before {
+          display: none;
+        }
       }
 
+      .keywords-disc {
+        --disc: inherit;
+      }
+
+      /* each step joins the stage grid: the top line above, the dial group over the counter strip and the band */
       .keyword-block {
+        display: contents;
+      }
+
+      .keyword-lead {
         grid-area: 2 / 1;
         align-self: center;
-        padding-block: 0;
-        border-block-start: 0;
+        padding-inline: var(--gutter);
+        color: var(--color-ink);
+      }
+
+      /* the dial group turns about the centre of the circle: one radius below the top of the arc.
+         It holds no controls and never takes pointer input: turned by ±32deg about that far centre, a full-width
+         group swings up over the top-line row and would swallow clicks on the project links (bug 2026-11-22). */
+      .keyword-dial {
+        pointer-events: none;
+        grid-area: 3 / 1 / 5 / 2;
+        position: relative;
+        align-self: stretch;
+        justify-self: stretch;
+        display: grid;
+        grid-template-rows: var(--count-h) minmax(0, 1fr);
+        justify-items: center;
+        transform-origin: 50% calc(var(--count-h) + var(--disc) / 2);
+      }
+
+      .keyword-count {
+        display: block;
+        grid-row: 1;
+        align-self: start;
+        margin: 0;
+        font-size: var(--count-size);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.04em;
+        line-height: 1.6;
+        color: var(--color-ink);
+      }
+
+      /* one thin line: ink from under the counter to the arc, white inside the circle */
+      .keyword-line {
+        display: block;
+        position: absolute;
+        inset-block-start: calc(var(--count-size) * 1.6 + var(--space-sm));
+        inset-inline-start: calc(50% - 0.5px);
+        inline-size: 1px;
+        block-size: calc(var(--count-h) - var(--count-size) * 1.6 - var(--space-sm) + var(--line));
+        background: linear-gradient(
+          to bottom,
+          var(--color-ink) 0 calc(var(--count-h) - var(--count-size) * 1.6 - var(--space-sm)),
+          var(--color-bg) 0
+        );
+      }
+
+      .keyword-title {
+        grid-row: 2;
+        align-self: center;
+        margin-block-start: calc(var(--line) / 2);
+        padding-inline: var(--gutter);
+      }
+
+      .keywords-scroll {
+        display: block;
+        position: absolute;
+        inset-inline: 0;
+        inset-block-end: var(--space-lg);
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: var(--weight-semibold);
+        letter-spacing: 0.16em;
+        color: var(--color-bg);
       }
     }
   }

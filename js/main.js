@@ -137,7 +137,8 @@ function init() {
   const kw = document.querySelector('#keywords');
   const kwStage = kw.querySelector('.keywords-stage');
   const kwBlocks = [...kw.querySelectorAll('.keyword-block')];
-  const mqSwitch = matchMedia('(min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)');
+  // every width (2026-11-22); short viewports and reduced motion keep the static, all-visible state
+  const mqSwitch = matchMedia('screen and (min-height: 500px) and (prefers-reduced-motion: no-preference)');
 
   const slotSize = () => (kw.offsetHeight - kwStage.offsetHeight) / kwBlocks.length;
   const scrollIndex = () => {
@@ -165,7 +166,7 @@ function init() {
     });
   };
 
-  /* a link in a hidden keyword gets Tab focus; bring that keyword in (instant, whatever scroll-behavior says) */
+  /* a top-line link in a hidden step gets Tab focus; bring that step in (instant, whatever scroll-behavior says) */
   const onKwFocus = (e) => {
     const block = e.target.closest('.keyword-block');
     if (!block) return;

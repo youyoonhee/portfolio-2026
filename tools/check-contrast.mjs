@@ -16,6 +16,8 @@ const PAIRS = [ // [fg, bg, min, why]
   ['color-ink-2', 'color-gold', 4.5],
   ['color-ink-2', 'color-orb-2', 4.5],
   ['color-ink-2', 'color-sage-soft', 4.5],
+  // Keywords half-circle: white keyword, SCROLL DOWN (small) on the deep sage
+  ['color-bg', 'color-sage-deep', 4.5],
   ['color-accent', 'color-bg', 3, 'focus ring'], ['color-line-strong', 'color-bg', 3, 'non-text'],
 ];
 let bad = 0;

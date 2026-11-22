@@ -402,29 +402,48 @@ function checkKeywords() {
   const km = manifest.keywordsSection;
   const ep = eyebrowProblem(sec, km.eyebrow);
   if (ep) return f(ep);
+  // 2026-11-22 (user revisions): four steps, each a top line (plain text or an in-page project link) and a dial group:
+  // an aria-hidden counter "(n/4)", an aria-hidden line and the word (h3)
   const h2 = elsIn(sec, 'h2')[0];
-  if (!h2 || !hasClass(h2, 'visually-hidden') || textIn(h2) !== km.title) return f('h2.visually-hidden title mismatch');
+  if (!h2 || !hasClass(h2, 'visually-hidden') || h2.attrs.id !== 'keywords-title' || textIn(h2) !== km.title) return f('h2#keywords-title.visually-hidden title mismatch');
+  if (elsIn(sec, 'ul').some((u) => hasClass(u, 'keyword-list'))) return f('ul.keyword-list must be gone (2026-11-22)');
+  const scroll = elsIn(sec, 'p').find((e) => hasClass(e, 'keywords-scroll'));
+  if (!scroll || scroll.attrs['aria-hidden'] !== 'true' || textIn(scroll) !== km.scrollLabel) return f(`p.keywords-scroll must read "${km.scrollLabel}" and be aria-hidden`);
   const blocks = elsIn(sec, 'div').filter((d) => hasClass(d, 'keyword-block'));
   if (blocks.length !== manifest.keywords.length) return f(`expected ${manifest.keywords.length} blocks, found ${blocks.length}`);
   if (descendants(sec).some((e) => isEl(e) && 'hidden' in e.attrs)) return f('hidden attribute inside section#keywords');
+  const expectedLinks = manifest.keywords.filter((k) => k.href).length;
+  if (elsIn(sec, 'a').length !== expectedLinks) return f(`expected ${expectedLinks} links in section#keywords, found ${elsIn(sec, 'a').length}`);
   const allow = new Set(manifest.uiAllowlist || []);
   const reasons = manifest.uiAllowlistReasons || {};
   manifest.keywords.forEach((kw, i) => {
     if (results.some((r) => !r.ok && r.line.startsWith('FAIL keywords'))) return;
     const b = blocks[i];
-    const h3 = elsIn(b, 'h3').find((e) => hasClass(e, 'keyword-title'));
-    if (!h3 || textIn(h3) !== kw.title) return f(`block ${i + 1} title differs`);
-    if (!allow.has(kw.title) || reasons[kw.title] !== 'user-provided 2026-11-11') return f(`title "${kw.title}" lacks user-provided allowlist reason`);
-    const ul = elsIn(b, 'ul').find((e) => hasClass(e, 'keyword-list'));
-    if (!ul) return f(`block ${i + 1} ul.keyword-list missing`);
-    const links = elsIn(ul, 'li').map((li) => elsIn(li, 'a')[0]);
-    if (links.length !== kw.ids.length || links.some((a) => !a)) return f(`block ${i + 1} link count differs`);
-    kw.ids.forEach((id, j) => {
-      const pm = manifest.projects.find((p) => p.id === id);
-      if (!pm) return f(`id "${id}" not in manifest.projects`);
-      if (links[j].attrs.href !== `#${id}`) return f(`block ${i + 1} link ${j + 1} href is ${links[j].attrs.href}, expected #${id}`);
-      if (normalize(textIn(links[j])) !== normalize(pm.name)) return f(`block ${i + 1} link ${j + 1} text differs from project name`);
-    });
+    const kids = b.kids.filter(isEl);
+    if (kids.length !== 2 || kids[0].tag !== 'p' || !hasClass(kids[0], 'keyword-lead') || kids[1].tag !== 'div' || !hasClass(kids[1], 'keyword-dial')) {
+      return f(`block ${i + 1} must hold p.keyword-lead then div.keyword-dial`);
+    }
+    const lead = kids[0];
+    const dial = kids[1].kids.filter(isEl);
+    const counter = `(${i + 1}/${manifest.keywords.length})`;
+    if (dial.length !== 3 || dial[0].tag !== 'p' || !hasClass(dial[0], 'keyword-count') || dial[0].attrs['aria-hidden'] !== 'true' || textIn(dial[0]) !== counter
+      || dial[1].tag !== 'span' || !hasClass(dial[1], 'keyword-line') || dial[1].attrs['aria-hidden'] !== 'true' || textIn(dial[1]) !== ''
+      || dial[2].tag !== 'h3' || !hasClass(dial[2], 'keyword-title')) {
+      return f(`block ${i + 1} dial must hold an aria-hidden p.keyword-count "${counter}", an empty aria-hidden span.keyword-line and h3.keyword-title`);
+    }
+    const h3 = dial[2];
+    if (textIn(lead) !== kw.lead) return f(`block ${i + 1} top line differs`);
+    if (textIn(h3) !== kw.title) return f(`block ${i + 1} title differs`);
+    if ((h3.attrs.lang || null) !== (kw.lang || null)) return f(`block ${i + 1} title lang differs`);
+    const a = elsIn(lead, 'a');
+    if (kw.href) {
+      if (a.length !== 1 || a[0].attrs.href !== kw.href || textIn(a[0]) !== kw.lead) return f(`block ${i + 1} top line must be one link to ${kw.href}`);
+      if (!manifest.projects.some((p) => `#${p.id}` === kw.href)) return f(`block ${i + 1} link ${kw.href} is not a project card`);
+    } else if (a.length) return f(`block ${i + 1} top line must be plain text`);
+    for (const s of [kw.title, kw.lead]) {
+      const want = s === kw.title ? kw.note : 'user-provided 2026-11-22';
+      if (!allow.has(s) || reasons[s] !== want) return f(`"${s}" lacks uiAllowlist entry with reason "${want}"`);
+    }
   });
   if (results.some((r) => !r.ok && r.line.startsWith('FAIL keywords'))) return;
   pass('keywords');

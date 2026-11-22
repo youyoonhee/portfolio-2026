@@ -1,6 +1,6 @@
 // UI behaviour checks (menu, header hide/show, keyboard, focus ring, current section, no-JS).
 // Heavy (needs Chrome), so it is NOT part of `npm run check` or the git hooks. Run: npm run check:ui
-// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback|skills-slider]
+// Usage: node tools/check-ui.mjs [--only menu|header|skip|focus-ring|spy|nojs|cover|keywords|keyword-steps|keyword-links|keyword-focus|keyword-media|cover-orbs|reduced|nojs-all|print-state|shot-frame|shot-nojs|shot-dialog|shot-reduced|shot-fallback|skills-slider]
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -360,7 +360,22 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       sw: kw.dataset.switch || '',
       act: kw.dataset.active ?? '',
       st: [...kw.querySelectorAll('.keyword-block')].map((b) => b.dataset.state || ''),
-      op: [...kw.querySelectorAll('.keyword-block')].map((b) => [getComputedStyle(b.querySelector('.keyword-title')).opacity, getComputedStyle(b.querySelector('.keyword-list')).opacity]),
+      // dial group (counter, line, word): its opacity and its turn in degrees (0 = upright at the top of the circle)
+      op: [...kw.querySelectorAll('.keyword-block')].map((b) => getComputedStyle(b.querySelector('.keyword-dial')).opacity),
+      rot: [...kw.querySelectorAll('.keyword-block')].map((b) => {
+        const t = getComputedStyle(b.querySelector('.keyword-dial')).transform;
+        if (!t || t === 'none') return 0;
+        const m = new DOMMatrixReadOnly(t);
+        return Math.round(Math.atan2(m.b, m.a) * 1800 / Math.PI) / 10;
+      }),
+      leadOp: [...kw.querySelectorAll('.keyword-block')].map((b) => getComputedStyle(b.querySelector('.keyword-lead')).opacity),
+      // the counter that shows: the one in the visible dial group
+      count: [...kw.querySelectorAll('.keyword-block')].filter((b) => getComputedStyle(b.querySelector('.keyword-dial')).opacity === '1')
+        .map((b) => b.querySelector('.keyword-count').textContent).join('|'),
+      // some(): in the static state none may show; while switching each group carries its own
+      countShown: [...kw.querySelectorAll('.keyword-count')].some((e) => getComputedStyle(e).display !== 'none'),
+      lineShown: [...kw.querySelectorAll('.keyword-line')].some((e) => getComputedStyle(e).display !== 'none'),
+      scrollShown: getComputedStyle(kw.querySelector('.keywords-scroll')).display !== 'none',
     };
   });
   const trackInfo = (page) => page.evaluate(() => {
@@ -468,8 +483,8 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const P = 'keywords';
     const t = await trackInfo(page);
     const s0 = await kwState(page);
-    report(`${P} 1 switch on, blocks have state`, s0.sw === 'on' && s0.st.length === 3 && s0.st.every(Boolean), JSON.stringify(s0.st));
-    report(`${P} 2 track height 2.5 viewports`, Math.abs(t.h - t.vh * 2.5) <= 2, `${t.h} vs ${t.vh * 2.5}`);
+    report(`${P} 1 switch on, blocks have state`, s0.sw === 'on' && s0.st.length === 4 && s0.st.every(Boolean), JSON.stringify(s0.st));
+    report(`${P} 2 track height 3 viewports (four steps)`, Math.abs(t.h - t.vh * 3) <= 2, `${t.h} vs ${t.vh * 3}`);
     report(`${P} 3 stage sticky`, (await cs(page, '.keywords-stage', 'position').catch(() => '')) === 'sticky');
     const ov = await page.evaluate(() => {
       const bad = [];
@@ -482,41 +497,187 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       return bad;
     });
     report(`${P} 4 ancestors create no scroll container (overflow visible or clip)`, ov.length === 0, ov.join());
-    const slot = (t.h - t.stageH) / 3;
-    const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + t.h + 50, 2]];
+    const slot = (t.h - t.stageH) / 4;
+    const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + 3 * slot + 10, 3], [t.top + t.h + 50, 3]];
     for (const [y, exp] of marks) {
       await scrollToY(page, Math.max(0, y));
       await sleep(700);
       const s = await kwState(page);
       const okAct = s.act === String(exp);
-      const okOp = s.op.every((pair, i) => pair.every((o) => o === (i === exp ? '1' : '0')));
-      report(`${P} 5 y ${Math.round(y)} -> ${exp}`, okAct && okOp, `${s.act} ${JSON.stringify(s.op)}`);
+      const okOp = s.op.every((o, i) => o === (i === exp ? '1' : '0')) && s.leadOp.every((o, i) => o === (i === exp ? '1' : '0')) && Math.abs(s.rot[exp]) < 0.5;
+      const okCount = s.count === `(${exp + 1}/4)`;
+      report(`${P} 5 y ${Math.round(y)} -> ${exp}, counter ${s.count}`, okAct && okOp && okCount, `${s.act} ${JSON.stringify(s.op)} ${JSON.stringify(s.rot)} ${s.count}`);
     }
     await scrollToY(page, t.top + slot + 10);
     await sleep(700);
     const mid = await kwState(page);
-    report(`${P} 6 past, active, next`, mid.st.join() === 'past,active,next', mid.st.join());
+    report(`${P} 6 past, active, next`, mid.st.join() === 'past,active,next,next', mid.st.join());
     const dom = await page.evaluate(() => {
       const kw = document.querySelector('#keywords');
-      const bad = [...kw.querySelectorAll('*')].filter((e) => e.hasAttribute('aria-hidden') || e.hasAttribute('inert') || e.hasAttribute('hidden') || getComputedStyle(e).visibility === 'hidden');
+      // the counter, the circle and SCROLL DOWN are decoration (aria-hidden); every keyword stays exposed
+      const deco = new Set(kw.querySelectorAll('.keyword-count, .keyword-line, .keywords-disc, .keywords-scroll'));
+      const bad = [...kw.querySelectorAll('*')].filter((e) => (e.hasAttribute('aria-hidden') && !deco.has(e)) || e.hasAttribute('inert') || e.hasAttribute('hidden') || getComputedStyle(e).visibility === 'hidden');
       const stage = kw.querySelector(':scope > .keywords-stage');
+      const circle = stage && stage.querySelector(':scope > .keywords-circle');
+      const kids = (el) => (el ? [...el.children].map((c) => c.tagName + '.' + c.className).join() : '');
       return {
         bad: bad.length,
+        deco: deco.size === 10 && [...deco].every((e) => e.getAttribute('aria-hidden') === 'true'),
         direct: kw.children.length,
-        kids: stage ? [...stage.children].map((c) => c.tagName + '.' + c.className).join() : '',
+        kids: kids(stage),
+        circle: kids(circle),
+        links: kw.querySelectorAll('a').length,
+        lists: kw.querySelectorAll('ul').length,
       };
     });
-    report(`${P} 7 nothing hidden by attribute or visibility`, dom.bad === 0, String(dom.bad));
-    report(`${P} 8 structure unchanged`, dom.direct === 1 && dom.kids === 'P.eyebrow,H2.visually-hidden,DIV.keyword-block,DIV.keyword-block,DIV.keyword-block', `${dom.direct} ${dom.kids}`);
+    report(`${P} 7 nothing hidden by attribute or visibility (decoration aria-hidden only)`, dom.bad === 0 && dom.deco, `${dom.bad} ${dom.deco}`);
+    report(`${P} 8 structure: hidden h2, circle, four steps (top line + dial group), three links`,
+      dom.direct === 1 && dom.kids === 'P.eyebrow,H2.visually-hidden,DIV.keywords-circle,DIV.keyword-block,DIV.keyword-block,DIV.keyword-block,DIV.keyword-block'
+        && dom.circle === 'SPAN.keywords-disc,P.keywords-scroll' && dom.links === 3 && dom.lists === 0,
+      `${dom.direct} ${dom.kids} | ${dom.circle} | links ${dom.links}`);
   }));
+
+  /* 2026-11-22 half-circle, four steps (user revision): at 375, 768 and 1440 the scroll steps through 1..4;
+     the top line and the word switch together and the counter reads (n/4). The active word is centred, inside
+     the circle and white on the sage at 4.5:1 or more, like SCROLL DOWN; the top line sits above the counter. */
+  await scenario('keyword-steps', browser, url, async () => {
+    for (const [vw, vh] of [[375, 812], [768, 1024], [1440, 900]]) {
+      await withPage(browser, url, vw, vh, {}, async (page) => {
+        const P = `keyword-steps ${vw}`;
+        const t = await trackInfo(page);
+        const n = 4;
+        const slot = (t.h - t.stageH) / n;
+        const seen = [];
+        const counts = [];
+        for (let i = 0; i < n; i++) {
+          await scrollToY(page, t.top + slot * i + slot / 2);
+          await sleep(800);
+          const s = await kwState(page);
+          seen.push(s.op.map((o) => (o === '1' ? 1 : 0)).join(''));
+          counts.push(s.count);
+          report(`${P} step ${i + 1}: top line and word ${i + 1} alone, counter (${i + 1}/${n})`,
+            s.sw === 'on' && s.act === String(i) && s.op.every((o, k) => o === (k === i ? '1' : '0')) && s.leadOp.every((o, k) => o === (k === i ? '1' : '0'))
+              && s.count === `(${i + 1}/${n})` && s.countShown && s.lineShown && s.scrollShown,
+            JSON.stringify({ sw: s.sw, act: s.act, op: s.op, leadOp: s.leadOp, count: s.count }));
+          // the active group stands upright; the others are turned along the circle (left: passed, right: to come)
+          const turnOk = s.rot.every((r, k) => (k === i ? Math.abs(r) < 0.5 : k < i ? r <= -20 : r >= 20));
+          const unfocusable = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-block:not([data-state="active"]) .keyword-dial')]
+            .every((d) => d.querySelectorAll('a[href], button, input, select, textarea, [tabindex]').length === 0));
+          report(`${P} step ${i + 1}: active dial group at 0deg and opacity 1, the others turned and at opacity 0, none focusable`,
+            turnOk && unfocusable, JSON.stringify({ rot: s.rot, op: s.op, unfocusable }));
+          const g = await page.evaluate(() => {
+            const rgb = (v) => v.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number);
+            const lum = (c) => { const v = c.map((x) => x / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+            const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+            const disc = document.querySelector('.keywords-disc');
+            const d = disc.getBoundingClientRect();
+            const o = { cx: d.left + d.width / 2, cy: d.top + d.height / 2, r: d.width / 2 };
+            const bg = rgb(getComputedStyle(disc).backgroundColor);
+            const inDisc = (b) => [[b.left, b.top], [b.right, b.top], [b.left, b.bottom], [b.right, b.bottom]].every(([x, y]) => Math.hypot(x - o.cx, y - o.cy) <= o.r);
+            const textBox = (el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
+            const block = document.querySelector('#keywords .keyword-block[data-state="active"]');
+            const title = block.querySelector('.keyword-title');
+            const lead = block.querySelector('.keyword-lead');
+            const scroll = document.querySelector('.keywords-scroll');
+            const count = block.querySelector('.keyword-count');
+            const band = document.querySelector('.keywords-circle').getBoundingClientRect();
+            const tb = textBox(title), sb = textBox(scroll), lb = textBox(lead), cb = count.getBoundingClientRect();
+            const hd = document.querySelector('.site-header').getBoundingClientRect();
+            return {
+              titleIn: inDisc(tb), scrollIn: inDisc(sb),
+              titleC: ratio(rgb(getComputedStyle(title).color), bg), scrollC: ratio(rgb(getComputedStyle(scroll).color), bg),
+              off: Math.abs((tb.left + tb.right) / 2 - innerWidth / 2),
+              leadOff: Math.abs((lb.left + lb.right) / 2 - innerWidth / 2),
+              titleInBand: tb.top >= band.top && tb.bottom <= Math.min(band.bottom, innerHeight),
+              scrollOnScreen: sb.bottom <= innerHeight && sb.top > tb.bottom,
+              leadAbove: lb.bottom <= cb.top && lb.top >= Math.max(hd.bottom, 0),
+              countAbove: cb.bottom <= d.top + 0.5,
+              discTop: d.top / innerHeight,
+              discBottomOff: d.bottom > innerHeight,
+              sw: document.documentElement.scrollWidth, vw: innerWidth,
+            };
+          });
+          report(`${P} step ${i + 1}: word and SCROLL DOWN inside the circle, white at 4.5:1+`,
+            g.titleIn && g.scrollIn && g.titleC >= 4.5 && g.scrollC >= 4.5 && g.titleInBand && g.scrollOnScreen,
+            JSON.stringify({ titleIn: g.titleIn, scrollIn: g.scrollIn, titleC: g.titleC.toFixed(2), scrollC: g.scrollC.toFixed(2), band: g.titleInBand, scroll: g.scrollOnScreen }));
+          report(`${P} step ${i + 1}: centred, top line above the counter, counter above the circle, circle top in the lower half, bottom off screen, no x overflow`,
+            g.off <= 2 && g.leadOff <= 2 && g.leadAbove && g.countAbove && g.discTop >= 0.45 && g.discBottomOff && g.sw <= g.vw,
+            JSON.stringify({ off: g.off, leadOff: g.leadOff, leadAbove: g.leadAbove, countAbove: g.countAbove, discTop: g.discTop.toFixed(2), discBottomOff: g.discBottomOff, sw: g.sw }));
+        }
+        if (vw === 375 || vw === 1440) {
+          // pagination "(n/4)" is 18px (1.125rem) at every width (user revision 2026-11-22)
+          const sizes = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-count')].map((e) => getComputedStyle(e).fontSize));
+          report(`${P} counter font-size 18px`, sizes.length === 4 && sizes.every((v) => v === '18px'), sizes.join());
+        }
+        report(`${P} steps 1, 2, 3, 4 in turn, counter ${counts.join(' ')}`, seen.join() === '1000,0100,0010,0001' && counts.join() === '(1/4),(2/4),(3/4),(4/4)', seen.join());
+      });
+    }
+  });
+
+  /* the top lines of steps 2-4 link to their project cards: a real mouse click scrolls the card in below the fixed header.
+     Bug 2026-11-22: the turned (inactive) dial groups swung up over the top line and swallowed the click, so every
+     point across the link must hit the link itself before the click */
+  await scenario('keyword-links', browser, url, async () => {
+    for (const [vw, vh] of [[375, 812], [768, 1024], [1440, 900]]) {
+      await withPage(browser, url, vw, vh, {}, async (page) => {
+        const P = `keyword-links ${vw}`;
+        const t = await trackInfo(page);
+        const slot = (t.h - t.stageH) / 4;
+        const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-lead a')].map((a) => a.getAttribute('href')));
+        report(`${P} three project links`, hrefs.join() === '#kn-fsd,#kn-universe,#gi-oneday', hrefs.join());
+        for (let k = 0; k < hrefs.length; k++) {
+          const step = k + 1;
+          await scrollToY(page, t.top + slot * step + slot / 2);
+          await sleep(800);
+          const hit = await page.evaluate((h) => {
+            const a = document.querySelector(`#keywords .keyword-block[data-state="active"] .keyword-lead a[href="${h}"]`);
+            if (!a) return { found: false, bad: [] };
+            const r = a.getBoundingClientRect();
+            const bad = [];
+            for (const fx of [0.03, 0.25, 0.5, 0.75, 0.97]) {
+              for (const fy of [0.15, 0.5, 0.85]) {
+                const el = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy);
+                if (!(el === a || a.contains(el))) bad.push(`${fx},${fy}:${el ? el.tagName + '.' + el.className : 'none'}`);
+              }
+            }
+            return { found: true, x: r.left + r.width / 2, y: r.top + r.height / 2, bad };
+          }, hrefs[k]);
+          report(`${P} step ${step + 1} link ${hrefs[k]} is the topmost element across its whole box`, hit.found && hit.bad.length === 0, JSON.stringify(hit.bad.slice(0, 4)));
+          if (!hit.found) continue;
+          await page.mouse.click(hit.x, hit.y);
+          // wait for the smooth scroll to settle
+          await sleep(300);
+          let last = -1;
+          let same = 0;
+          for (let n = 0; n < 80 && same < 3; n++) {
+            await sleep(100);
+            const y = await page.evaluate(() => Math.round(scrollY));
+            same = y === last ? same + 1 : 0;
+            last = y;
+          }
+          await sleep(400);
+          const r = await page.evaluate((h) => {
+            const card = document.querySelector(h);
+            const head = document.querySelector('.site-header').getBoundingClientRect();
+            const top = card.getBoundingClientRect().top;
+            // the header may be hidden after a downward scroll; the card must clear it even when it shows again
+            const nominal = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+            return { top, headBottom: Math.max(head.bottom, nominal), hash: location.hash, vh: innerHeight };
+          }, hrefs[k]);
+          report(`${P} step ${step + 1} link ${hrefs[k]} brings its card in below the header`,
+            r.hash === hrefs[k] && r.top >= r.headBottom - 0.5 && r.top < r.vh / 2, JSON.stringify(r));
+        }
+      });
+    }
+  });
 
   await scenario('keyword-focus', browser, url, () => withPage(browser, url, 1440, 900, {}, async (page) => {
     const P = 'keyword-focus';
     const hh = await headerH(page);
-    const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-list a')].map((a) => a.getAttribute('href')));
-    // #main (tabindex -1) sits right before the first keyword link in tab order
+    const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-lead a')].map((a) => a.getAttribute('href')));
+    // #main (tabindex -1) sits right before the first top-line link in tab order; step 1 has no link
     await page.focus('#main');
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < hrefs.length; i++) {
       await tab(page);
       await sleep(150);
       const r = await page.evaluate(() => {
@@ -524,39 +685,38 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         const b = a.closest('.keyword-block');
         const blocks = [...document.querySelectorAll('#keywords .keyword-block')];
         const rc = a.getBoundingClientRect();
-        return { href: a.getAttribute('href'), idx: blocks.indexOf(b), st: b ? b.dataset.state : '', act: document.querySelector('#keywords').dataset.active, top: rc.top, bottom: rc.bottom, vh: innerHeight };
+        return { href: a.getAttribute('href'), idx: blocks.indexOf(b), st: b ? b.dataset.state : '', act: document.querySelector('#keywords').dataset.active, count: b ? b.querySelector('.keyword-count').textContent : '', top: rc.top, bottom: rc.bottom, vh: innerHeight };
       });
       await sleep(700);
-      const op = await page.evaluate(() => getComputedStyle(document.activeElement.closest('.keyword-list') || document.body).opacity);
-      const ok = r.href === hrefs[i] && r.idx === Math.floor(i / 3) && r.st === 'active' && r.act === String(r.idx) && op === '1' && r.top >= hh && r.bottom <= r.vh;
-      report(`${P} tab ${i + 1}`, ok, `${r.href} idx ${r.idx} ${r.st} act ${r.act} op ${op} top ${Math.round(r.top)}`);
+      const op = await page.evaluate(() => getComputedStyle(document.activeElement.closest('.keyword-lead') || document.body).opacity);
+      const ok = r.href === hrefs[i] && r.idx === i + 1 && r.st === 'active' && r.act === String(r.idx) && r.count === `(${i + 2}/4)` && op === '1' && r.top >= hh && r.bottom <= r.vh;
+      report(`${P} tab ${i + 1}`, ok, `${r.href} idx ${r.idx} ${r.st} act ${r.act} ${r.count} op ${op} top ${Math.round(r.top)}`);
     }
     await tab(page);
     await sleep(300);
     const out = await page.evaluate(() => !document.activeElement.closest('#keywords'));
-    report(`${P} 10th tab leaves keywords`, out);
+    report(`${P} 4th tab leaves keywords`, out);
     await shiftTab(page);
     await sleep(800);
-    report(`${P} shift+tab back to block 3`, (await kwState(page)).act === '2');
-    for (let i = 0; i < 3; i++) { await shiftTab(page); await sleep(300); }
+    report(`${P} shift+tab back to step 4`, (await kwState(page)).act === '3');
+    await shiftTab(page);
     await sleep(800);
-    report(`${P} shift+tab x3 more to block 2`, (await kwState(page)).act === '1');
+    report(`${P} shift+tab again to step 3`, (await kwState(page)).act === '2');
   }));
 
   await scenario('keyword-media', browser, url, async () => {
-    for (const [vw, vh, on] of [[1023, 768, false], [1440, 500, false], [375, 812, false], [1024, 768, true], [1440, 900, true]]) {
+    for (const [vw, vh, on] of [[1440, 480, false], [812, 375, false], [320, 640, true], [375, 812, true], [768, 1024, true], [1023, 768, true], [1440, 900, true]]) {
       await withPage(browser, url, vw, vh, {}, async (page) => {
         const s = await kwState(page);
-        const lists = s.op.map((p) => p[1]);
         const ok = on
-          ? s.sw === 'on'
-          : s.sw === '' && s.st.every((x) => x === '') && lists.every((o) => o === '1');
-        report(`keyword-media ${vw}x${vh} ${on ? 'on' : 'off'}`, ok, JSON.stringify({ sw: s.sw, st: s.st, lists }));
+          ? s.sw === 'on' && s.countShown && s.scrollShown
+          : s.sw === '' && s.st.every((x) => x === '') && s.op.every((o) => o === '1') && s.leadOp.every((o) => o === '1') && !s.countShown && !s.lineShown && !s.scrollShown;
+        report(`keyword-media ${vw}x${vh} ${on ? 'on' : 'off'}`, ok, JSON.stringify({ sw: s.sw, st: s.st, op: s.op, count: s.countShown, scroll: s.scrollShown }));
       });
     }
     await withPage(browser, url, 1440, 900, {}, async (page) => {
       const seq = [];
-      for (const [w, h] of [[1440, 900], [1023, 768], [1440, 900]]) {
+      for (const [w, h] of [[1440, 900], [1440, 480], [1440, 900]]) {
         await page.setViewport({ width: w, height: h });
         await sleep(300);
         seq.push((await kwState(page)).sw || 'off');
@@ -568,12 +728,23 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
   await scenario('reduced', browser, url, () => withPage(browser, url, 1440, 900, { reduce: true }, async (page) => {
     const s = await kwState(page);
     report('reduced 1 no data-switch', s.sw === '');
+    report('reduced 1b all four steps visible, no counter or SCROLL DOWN', s.op.length === 4 && s.op.every((o) => o === '1') && s.leadOp.every((o) => o === '1') && !s.countShown && !s.lineShown && !s.scrollShown, JSON.stringify(s));
     report('reduced 2 cover-line has no animation', (await cs(page, '.cover-line', 'animationName').catch(() => 'none')) === 'none');
     report('reduced 3 no element below full opacity', (await dimCount(page)) === 0);
     report('reduced 4 scroll-behavior auto', (await cs(page, 'html', 'scrollBehavior')) === 'auto');
     await scrollToY(page, 300);
     await sleep(300);
     report('reduced 5 header never hides', (await attr(page, '.site-header', 'data-hidden')) === null);
+  }));
+  await scenario('reduced', browser, url, () => withPage(browser, url, 375, 812, { reduce: true }, async (page) => {
+    await page.evaluate(() => document.querySelector('#keywords').scrollIntoView({ behavior: 'instant' }));
+    await sleep(300);
+    const s = await kwState(page);
+    // the closed mobile nav is opacity 0 by design; only the keywords section is checked here
+    const dim = await page.evaluate(() => [...document.querySelectorAll('#keywords *')].filter((e) => getComputedStyle(e).opacity !== '1').length);
+    const boxes = await page.evaluate(() => [...document.querySelectorAll('#keywords :is(.keyword-title, .keyword-lead)')].map((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }));
+    report('reduced 375 no switch, all four steps visible, no counter or SCROLL DOWN',
+      s.sw === '' && s.op.length === 4 && s.op.every((o) => o === '1') && s.leadOp.every((o) => o === '1') && boxes.every(Boolean) && !s.countShown && !s.lineShown && !s.scrollShown && dim === 0, JSON.stringify({ s, boxes, dim }));
   }));
 
   await scenario('nojs-all', browser, url, async () => {
@@ -590,7 +761,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         await sleep(1500);
         const b = await read();
         report(`${P} no js class, no switch`, !a.js && a.sw === '');
-        report(`${P} dim 0, blocks have height`, dim === 0 && a.h.length === 3 && a.h.every((x) => x > 0) && (await dimCount(page)) === 0 && b.h.every((x) => x > 0));
+        report(`${P} dim 0, blocks have height`, dim === 0 && a.h.length === 4 && a.h.every((x) => x > 0) && (await dimCount(page)) === 0 && b.h.every((x) => x > 0));
       });
     }
   });
@@ -601,11 +772,13 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const hd = await cs(page, '.site-header', 'display');
     const ov = await page.evaluate(() => { const o = document.querySelector('.nav-overlay'); return o ? getComputedStyle(o).display : 'none'; });
     report('print-state 1 header and overlay hidden', hd === 'none' && ov === 'none', `${hd} ${ov}`);
-    const ops = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .keyword-block, .keyword-title, .keyword-list')].map((e) => getComputedStyle(e).opacity));
+    const ops = await page.evaluate(() => [...document.querySelectorAll('.cover-line, .keyword-block, .keyword-dial, .keyword-title, .keyword-lead')].map((e) => getComputedStyle(e).opacity));
     report('print-state 2 all opacity 1', ops.length > 0 && ops.every((o) => o === '1'), ops.join());
     const pos = await page.evaluate(() => { const e = document.querySelector('.keywords-stage'); return e ? getComputedStyle(e).position : 'static'; });
     report('print-state 3 stage not sticky', pos !== 'sticky', pos);
     report('print-state 4 cover circles hidden', (await cs(page, '.cover-orbs', 'display')) === 'none');
+    const deco = await page.evaluate(() => [...document.querySelectorAll('.keyword-count, .keyword-line, .keywords-scroll')].map((e) => getComputedStyle(e).display));
+    report('print-state 5 keyword counters, lines and SCROLL DOWN hidden', deco.length === 9 && deco.every((d) => d === 'none'), deco.join());
   }));
 
   /* ---- Plan 04-03: screenshot frames (fixture figures, repo untouched) ---- */

@@ -15,6 +15,8 @@
     --color-gold: #e4d3aa;
     --color-sage: #a9b89b;
     --color-sage-strong: #8fa382;
+    /* Keywords half-circle: a deeper sage of the same hue, so white text on it keeps 4.5:1 */
+    --color-sage-deep: #5f7353;
     /* circles that pass behind cover text are lightened just enough for ink-2 and the
        cover link (accent-strong) to keep 4.5:1 (user chose: text stays centred, circles lighter) */
     --color-orb-2: #cccbaa;
@@ -54,9 +56,10 @@
     --dur: 200ms;
     --dur-header: 250ms;
     --dur-switch: 500ms;
+    /* keyword dial turn (user revision 2026-11-22) */
+    --dur-dial: 700ms;
     --dur-enter: 600ms;
     --stagger-enter: 150ms;
-    --stagger-switch: 80ms;
     --orb-dur: 2000ms;
     --orb-stagger: 500ms;
     /* user request: slow opacity fade, 3.5s in total; last circle ends at orb-dur + 3 x orb-stagger = 3500ms.

@@ -392,43 +392,63 @@
     }
   }
 
-  /* keyword switch states: written by main.js only inside this media query. The title and the list
-     move and fade (the list 80ms later); nothing is hidden by attribute, display or visibility. */
-  @media screen and (min-width: 1024px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+  /* keyword switch states: written by main.js only inside this media query (user revision 2026-11-22).
+     The dial group (counter, line, word) turns along the circle like a dial: the leaving group rotates down
+     to the left and fades near the end, the next one rises in from the right. The top line fades with a short
+     slide and does not rotate. Transform and opacity only; nothing is hidden by attribute, display or
+     visibility, and only the active step takes pointer input (the steps share one place). */
+  @media screen and (min-height: 500px) and (prefers-reduced-motion: no-preference) {
     .keywords[data-switch="on"] .keyword-block {
-      :is(.keyword-title, .keyword-list) {
+      --turn: 32deg;
+
+      .keyword-lead {
         transition: opacity var(--dur-switch) var(--ease), transform var(--dur-switch) var(--ease);
+      }
+
+      .keyword-dial {
         will-change: transform, opacity;
+        /* leaving: the turn runs its full length, the fade comes at the end */
+        transition: transform var(--dur-dial) var(--ease), opacity calc(var(--dur-dial) * 0.5) var(--ease) calc(var(--dur-dial) * 0.4);
       }
 
       &[data-state="next"] {
-        pointer-events: none;
-
-        :is(.keyword-title, .keyword-list) {
+        .keyword-lead {
           opacity: 0;
-          transform: translateY(var(--space-xl));
+          transform: translateY(var(--space-lg));
+          pointer-events: none;
+        }
+
+        .keyword-dial {
+          opacity: 0;
+          transform: rotate(var(--turn));
         }
       }
 
       &[data-state="past"] {
-        pointer-events: none;
-
-        :is(.keyword-title, .keyword-list) {
+        .keyword-lead {
           opacity: 0;
-          transform: translateY(calc(-1 * var(--space-xl)));
+          transform: translateY(calc(-1 * var(--space-lg)));
+          pointer-events: none;
+        }
+
+        .keyword-dial {
+          opacity: 0;
+          transform: rotate(calc(-1 * var(--turn)));
         }
       }
 
       &[data-state="active"] {
-        pointer-events: auto;
-
-        :is(.keyword-title, .keyword-list) {
+        .keyword-lead {
           opacity: 1;
           transform: none;
+          pointer-events: auto;
         }
 
-        .keyword-list {
-          transition-delay: var(--stagger-switch);
+        /* arriving: it shows early in the turn */
+        .keyword-dial {
+          opacity: 1;
+          transform: none;
+          transition: transform var(--dur-dial) var(--ease), opacity calc(var(--dur-dial) * 0.5) var(--ease);
         }
       }
     }
@@ -463,53 +483,59 @@
     color: var(--color-accent);
   }
 
-  .keyword-title {
-    font-size: var(--text-display);
-    font-weight: var(--weight-semibold);
-    line-height: 1.05;
-    color: var(--color-accent);
-  }
-
-  .keyword-list {
-    list-style: none;
+  /* a step's top line: small and white over the circle in the static state, the big centred line
+     above the circle while the switch runs */
+  .keyword-lead {
+    max-inline-size: 22em;
     margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-sm);
+    font-size: var(--text-body);
+    font-weight: var(--weight-semibold);
+    line-height: 1.4;
+    text-wrap: balance;
 
     a {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-md);
-      min-block-size: 48px;
-      padding: var(--space-md);
-      border-radius: var(--radius-md);
-      font-size: var(--text-body);
-      font-weight: var(--weight-regular);
-      color: var(--color-ink);
-      text-decoration: none;
-      transition: background-color var(--dur) var(--ease);
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
 
-      &::after {
-        content: "";
-        flex: none;
-        inline-size: 8px;
-        block-size: 8px;
-        border-inline-end: 2px solid currentColor;
-        border-block-start: 2px solid currentColor;
-        transform: rotate(45deg);
-        transition: transform var(--dur) var(--ease);
+    a:focus-visible {
+      outline-color: currentColor;
+    }
+
+    .keywords[data-switch="on"] & {
+      max-inline-size: 16em;
+      font-size: clamp(28px, 2.6vw + 16px, 52px);
+      line-height: 1.3;
+      letter-spacing: -0.03em;
+
+      /* the Korean sentence breaks into two lines like the reference heading; project names may stay on one */
+      &:not(:has(a)) {
+        max-inline-size: 11em;
       }
 
-      &:hover {
-        background: var(--color-bg);
+      a {
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.16em;
+        transition: color var(--dur) var(--ease);
 
-        &::after {
-          transform: translateX(4px) rotate(45deg);
+        &:hover {
+          color: var(--color-accent);
+        }
+
+        &:focus-visible {
+          outline-color: var(--color-accent);
         }
       }
     }
+  }
+
+  .keyword-title {
+    font-size: clamp(36px, 4vw + 20px, 64px);
+    font-weight: var(--weight-semibold);
+    line-height: 1.15;
+    color: var(--color-bg);
   }
 
   /* project card */
