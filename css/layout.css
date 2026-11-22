@@ -175,12 +175,14 @@
      the dial groups rotate along the circle and leave the screen there. */
   @media screen and (min-height: 500px) and (prefers-reduced-motion: no-preference) {
     .keywords[data-switch="on"] {
-      block-size: calc(100svh + 4 * 50svh);
+      /* quick 261122-tgl / 261122 hold: after step 4 the stage stays pinned for 0.7 of a step more
+         (user request: a short pause after AI 활용 before the page scrolls on). js/main.js KW_TAIL matches 0.7. */
+      block-size: calc(100svh + 4.7 * 50svh);
       padding-block: 0;
 
       /* quick 261122-tgl: phones get more track per step (0.7 screen), so one flick does not pass two steps */
       @media (width < 640px) {
-        block-size: calc(100svh + 4 * 70svh);
+        block-size: calc(100svh + 4.7 * 70svh);
       }
 
       .keywords-stage {

@@ -155,12 +155,15 @@ function init() {
   const kwBlocks = [...kw.querySelectorAll('.keyword-block')];
   // every width (2026-11-22); short viewports and reduced motion keep the static, all-visible state
   const mqSwitch = matchMedia('screen and (min-height: 500px) and (prefers-reduced-motion: no-preference)');
-  const KW_MARGIN = 0.15;
-  const KW_DWELL = 350;
+  // user request 2026-11-22: still too touchy on phones, so a wider margin and a longer hold
+  const KW_MARGIN = 0.25;
+  const KW_DWELL = 500;
+  // extra track after the last step, in steps: the stage holds on step 4 before the page moves on (css/layout.css 4.7)
+  const KW_TAIL = 0.7;
 
   let kwSlot = 0;
   const measure = () => {
-    kwSlot = (kw.offsetHeight - kwStage.offsetHeight) / kwBlocks.length;
+    kwSlot = (kw.offsetHeight - kwStage.offsetHeight) / (kwBlocks.length + KW_TAIL);
   };
   const clampStep = (i) => Math.min(Math.max(Number.isFinite(i) ? i : 0, 0), kwBlocks.length - 1);
   // progress through the track in steps (0 at the top of step 1, 4 at the end of step 4)

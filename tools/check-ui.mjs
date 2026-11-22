@@ -9,6 +9,8 @@ import { ladder, figureMarkup, readArticle, replaceFigure, articleIds, emptyFigu
 import { makeUiImage } from './lib/shot-fixtures.mjs';
 import { startStaticServer } from './lib/static-server.mjs';
 import { launchChrome, closeBrowser } from './lib/browser.mjs';
+// keyword track: 4 steps plus a hold of 0.7 step after the last (js/main.js KW_TAIL)
+const KW_TAIL = 0.7;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const onlyIdx = process.argv.indexOf('--only');
@@ -494,7 +496,9 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     const t = await trackInfo(page);
     const s0 = await kwState(page);
     report(`${P} 1 switch on, blocks have state`, s0.sw === 'on' && s0.st.length === 4 && s0.st.every(Boolean), JSON.stringify(s0.st));
-    report(`${P} 2 track height 3 viewports (four steps)`, Math.abs(t.h - t.vh * 3) <= 2, `${t.h} vs ${t.vh * 3}`);
+    // one screen + (4 steps + KW_TAIL hold) x 0.5 screen
+    const want = t.vh * (1 + (4 + KW_TAIL) * 0.5);
+    report(`${P} 2 track height: four steps plus the hold`, Math.abs(t.h - want) <= 2, `${t.h} vs ${want}`);
     report(`${P} 3 stage sticky`, (await cs(page, '.keywords-stage', 'position').catch(() => '')) === 'sticky');
     const ov = await page.evaluate(() => {
       const bad = [];
@@ -507,7 +511,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       return bad;
     });
     report(`${P} 4 ancestors create no scroll container (overflow visible or clip)`, ov.length === 0, ov.join());
-    const slot = (t.h - t.stageH) / 4;
+    const slot = (t.h - t.stageH) / (4 + KW_TAIL);
     const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + 3 * slot + 10, 3], [t.top + t.h + 50, 3]];
     for (const [y, exp] of marks) {
       await scrollToY(page, Math.max(0, y));
@@ -556,7 +560,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         const P = `keyword-steps ${vw}`;
         const t = await trackInfo(page);
         const n = 4;
-        const slot = (t.h - t.stageH) / n;
+        const slot = (t.h - t.stageH) / (n + KW_TAIL);
         const seen = [];
         const counts = [];
         for (let i = 0; i < n; i++) {
@@ -632,7 +636,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       await withPage(browser, url, vw, vh, {}, async (page) => {
         const P = `keyword-links ${vw}`;
         const t = await trackInfo(page);
-        const slot = (t.h - t.stageH) / 4;
+        const slot = (t.h - t.stageH) / (4 + KW_TAIL);
         const hrefs = await page.evaluate(() => [...document.querySelectorAll('#keywords .keyword-lead a')].map((a) => a.getAttribute('href')));
         report(`${P} three project links`, hrefs.join() === '#kn-fsd,#kn-universe,#gi-oneday', hrefs.join());
         for (let k = 0; k < hrefs.length; k++) {
@@ -1229,8 +1233,20 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
   await scenario('keyword-touch', browser, url, () => withPage(browser, url, 375, 812, { touch: true }, async (page) => {
     const P = 'keyword-touch 375';
     const t = await trackInfo(page);
-    const slot = (t.h - t.stageH) / 4;
+    const slot = (t.h - t.stageH) / (4 + KW_TAIL);
     report(`${P} step length 0.7 screen`, Math.abs(slot - 0.7 * t.vh) <= 2, `${slot.toFixed(1)} vs ${(0.7 * t.vh).toFixed(1)}`);
+    // hold after step 4 (user request 2026-11-22): past the end of step 4 the stage is still pinned on step 4
+    for (const f of [4.2, 4.6]) {
+      await scrollToY(page, t.top + f * slot);
+      await sleep(700);
+      const h = await page.evaluate(() => ({
+        act: document.querySelector('#keywords').dataset.active,
+        top: Math.round(document.querySelector('#keywords .keywords-stage').getBoundingClientRect().top),
+      }));
+      report(`${P} hold at ${f} steps: step 4, stage pinned`, h.act === '3' && Math.abs(h.top) <= 1, JSON.stringify(h));
+    }
+    await scrollToY(page, t.top);
+    await sleep(400);
     await page.evaluate(() => {
       window.__kwLog = [];
       new MutationObserver(() => window.__kwLog.push(document.querySelector('#keywords').dataset.active))
