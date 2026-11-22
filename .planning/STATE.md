@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-22 - Completed quick task 261122-ohp: 프로젝트 제목 띄어쓰기, 피치 문구 수정
+Last activity: 2026-11-22 - Completed quick task 261122-ozp: 첫 화면 이메일 삭제, 소개 문구 18px
 
 Progress: [██████████] 100%
 
@@ -108,6 +108,7 @@ None yet.
 | 261117-qqx | 모바일 Contact 고양이를 제목 아래로, Colophon 섹션·도구 삭제(QUAL-06 제거) | 2026-11-17 | 5109c90 | [261117-qqx-contact-cat-mobile-drop-colophon](./quick/261117-qqx-contact-cat-mobile-drop-colophon/) |
 | 261117-wrm | Career 표 삭제 후 지아이데이타 바로 이어서, 회사 번호 04~07 삭제, Contact 04로 | 2026-11-17 | cb3f89c | [261117-wrm-career-list-removal-and-company-numbers](./quick/261117-wrm-career-list-removal-and-company-numbers/) |
 | 261122-ohp | 프로젝트 제목 띄어쓰기 6건, 피치 제목에서 "앱", 피치·ADDY 담당 업무에서 "현재 운영 종료" 삭제 | 2026-11-22 | 4de8761, e236a20 | [261122-ohp-project-title-spacing-and-peach-text](./quick/261122-ohp-project-title-spacing-and-peach-text/) |
+| 261122-ozp | 첫 화면 이메일 삭제(Contact에는 유지), 첫 화면 소개 문구 1.125rem(18px) | 2026-11-22 | 50ca1ff | [261122-ozp-cover-email-removal-and-intro-size](./quick/261122-ozp-cover-email-removal-and-intro-size/) |
 
 ## Deferred Items
 
