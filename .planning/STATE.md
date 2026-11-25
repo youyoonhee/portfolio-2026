@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-11-11)
 Phase: 5
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-11-22 - Completed quick task 261122-vtp: Keywords 4단계 뒤 머무름, 터치 임계값 상향
+Last activity: 2026-11-25 - Completed quick task 261125-tf4: 휴대폰 Keywords 다이얼 터치 추가 보완
 
 Progress: [██████████] 100%
 
@@ -113,6 +113,7 @@ None yet.
 | 261122-s7k | 제출용 PDF를 PC 웹 화면 디자인 그대로 16:9 슬라이드 12장으로(글자·링크 유지) | 2026-11-22 | ba604a8 | [261122-s7k-pdf-as-web-screen-slides](./quick/261122-s7k-pdf-as-web-screen-slides/) |
 | 261122-tgl | 모바일 슬라이더·Keywords 다이얼 터치 임계값(15% 히스테리시스, 350ms, 휴대폰 0.7화면/단계), 지아이데이타·비스톤스·애비로드 설명 문구, 프로젝트명 수정 | 2026-11-22 | e53a828, 005db72 | [261122-tgl-mobile-touch-thresholds-and-company-desc](./quick/261122-tgl-mobile-touch-thresholds-and-company-desc/) |
 | 261122-vtp | Keywords 4단계 뒤 0.7단계 머무름, 임계값 0.25·0.5초로 상향 | 2026-11-22 | 5797e24 | [261122-vtp-keywords-hold-and-touch-margin](./quick/261122-vtp-keywords-hold-and-touch-margin/) |
+| 261125-tf4 | 휴대폰 Keywords: 단계당 1화면, 임계값 0.3·0.6초, 한 번에 한 단계, 멈출 때 되돌아가지 않음 | 2026-11-25 | 71bfbe8 | [261125-tf4-keywords-calmer-dial-on-phones](./quick/261125-tf4-keywords-calmer-dial-on-phones/) |
 
 ## Deferred Items
 
