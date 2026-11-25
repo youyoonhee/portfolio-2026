@@ -180,9 +180,10 @@
       block-size: calc(100svh + 4.7 * 50svh);
       padding-block: 0;
 
-      /* quick 261122-tgl: phones get more track per step (0.7 screen), so one flick does not pass two steps */
+      /* phones get more track per step (one full screen since 2026-11-25; 0.7 before), so a small swipe
+         does not turn the dial */
       @media (width < 640px) {
-        block-size: calc(100svh + 4.7 * 70svh);
+        block-size: calc(100svh + 4.7 * 100svh);
       }
 
       .keywords-stage {

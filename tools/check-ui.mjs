@@ -187,7 +187,7 @@ try {
     await page.keyboard.press('Enter');
     await sleep(350);
     await page.click('.site-nav a[href="#career"]');
-    // the smooth scroll runs longer since the phone keyword track grew (0.7 screen per step, quick 261122-tgl):
+    // the smooth scroll runs longer since the phone keyword track grew (one screen per step since 2026-11-25):
     // wait until scrollY has stopped changing for 600ms (a frame gap of up to ~400ms can occur mid-scroll while
     // the screenshots decode) instead of a fixed 900ms
     await sleep(300);
@@ -512,7 +512,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
     });
     report(`${P} 4 ancestors create no scroll container (overflow visible or clip)`, ov.length === 0, ov.join());
     const slot = (t.h - t.stageH) / (4 + KW_TAIL);
-    const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot + 10, 1], [t.top + 2 * slot + 10, 2], [t.top + 3 * slot + 10, 3], [t.top + t.h + 50, 3]];
+    const marks = [[t.top - t.vh, 0], [t.top + 10, 0], [t.top + slot * 1.5, 1], [t.top + slot * 2.5, 2], [t.top + slot * 3.5, 3], [t.top + t.h + 50, 3]];
     for (const [y, exp] of marks) {
       await scrollToY(page, Math.max(0, y));
       await sleep(700);
@@ -522,7 +522,7 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       const okCount = s.count === `(${exp + 1}/4)`;
       report(`${P} 5 y ${Math.round(y)} -> ${exp}, counter ${s.count}`, okAct && okOp && okCount, `${s.act} ${JSON.stringify(s.op)} ${JSON.stringify(s.rot)} ${s.count}`);
     }
-    await scrollToY(page, t.top + slot + 10);
+    await scrollToY(page, t.top + slot * 1.5);
     await sleep(700);
     const mid = await kwState(page);
     report(`${P} 6 past, active, next`, mid.st.join() === 'past,active,next,next', mid.st.join());
@@ -1229,12 +1229,12 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
   }));
 
   // Keyword dial: hysteresis around each boundary, one switch for a scroll well past it, and at rest the counter
-  // matches the position. 375x812 with touch; one step is 0.7 of the screen there
+  // matches the position. 375x812 with touch; one step is one full screen there (2026-11-25)
   await scenario('keyword-touch', browser, url, () => withPage(browser, url, 375, 812, { touch: true }, async (page) => {
     const P = 'keyword-touch 375';
     const t = await trackInfo(page);
     const slot = (t.h - t.stageH) / (4 + KW_TAIL);
-    report(`${P} step length 0.7 screen`, Math.abs(slot - 0.7 * t.vh) <= 2, `${slot.toFixed(1)} vs ${(0.7 * t.vh).toFixed(1)}`);
+    report(`${P} step length 1 screen`, Math.abs(slot - t.vh) <= 2, `${slot.toFixed(1)} vs ${t.vh.toFixed(1)}`);
     // hold after step 4 (user request 2026-11-22): past the end of step 4 the stage is still pinned on step 4
     for (const f of [4.2, 4.6]) {
       await scrollToY(page, t.top + f * slot);
@@ -1312,7 +1312,8 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
         await log();
       }
     }
-    // let go inside the margin (no flick): when the scroll is at rest the counter equals the step for the position
+    // let go inside the margin (no flick): at rest the step shown stays (2026-11-25: no flip after the finger lifts),
+    // and the counter matches it
     for (const [start, stop] of [[0.5, 1.07], [1.5, 0.94], [1.5, 2.06], [2.5, 1.95], [2.5, 3.08], [3.5, 2.93]]) {
       await park(start);
       await page.touchscreen.touchStart(X, Y);
@@ -1331,7 +1332,8 @@ const dimCount = (page) => page.evaluate(() => [...document.querySelectorAll('bo
       await sleep(900);
       const s = await kwState(page);
       const rest = await now();
-      const want = Math.min(3, Math.max(0, Math.floor(rest.p)));
+      // every stop below is within 0.1 of a boundary, inside the 0.3 margin: the step from the start stays
+      const want = Math.floor(start);
       report(`${P} at rest at ${rest.p.toFixed(2)} (from ${start}): step ${want + 1}, counter (${want + 1}/4)`,
         rest.act === want && s.count === `(${want + 1}/4)` && Math.abs(held.p - stop) < 0.04,
         JSON.stringify({ held: held.p.toFixed(3), heldAct: held.act, rest: rest.p.toFixed(3), act: rest.act, count: s.count }));

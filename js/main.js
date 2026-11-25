@@ -147,7 +147,7 @@ function init() {
   /* keyword switch: sticky stage + scroll position drives data-state only (scroll is never intercepted).
      Quick 261122-tgl, calmer on touch: a boundary must be passed by KW_MARGIN of a step before the step changes
      (both directions, so momentum jitter around a boundary does not flip it), a switch holds for KW_DWELL ms
-     unless the scroll has moved more than a whole step since, and when the scroll comes to rest the step is set
+     and the dial turns at most one step per hold (2026-11-25), and when the scroll comes to rest the step is set
      straight from the position. The slot is measured at layout time (svh track, ResizeObserver), never per scroll,
      so the mobile address bar showing or hiding does not move the mapping. */
   const kw = document.querySelector('#keywords');
@@ -155,9 +155,10 @@ function init() {
   const kwBlocks = [...kw.querySelectorAll('.keyword-block')];
   // every width (2026-11-22); short viewports and reduced motion keep the static, all-visible state
   const mqSwitch = matchMedia('screen and (min-height: 500px) and (prefers-reduced-motion: no-preference)');
-  // user request 2026-11-22: still too touchy on phones, so a wider margin and a longer hold
-  const KW_MARGIN = 0.25;
-  const KW_DWELL = 500;
+  // user requests 2026-11-22 and 2026-11-25: still too touchy on phones, so a wider margin, a longer hold,
+  // and while the finger or momentum is moving the dial turns one step at a time (each keyword is seen)
+  const KW_MARGIN = 0.3;
+  const KW_DWELL = 600;
   // extra track after the last step, in steps: the stage holds on step 4 before the page moves on (css/layout.css 4.7)
   const KW_TAIL = 0.7;
 
@@ -197,13 +198,18 @@ function init() {
     const next = stepFor(p, kwIndex);
     if (next === kwIndex) return;
     const wait = KW_DWELL - (performance.now() - switchedAt);
-    if (wait > 0 && Math.abs(p - switchedP) <= 1) {
+    if (wait > 0) {
       // too soon after the last switch: look again when the hold is over (or when the scroll settles)
       clearTimeout(dwellTimer);
       dwellTimer = setTimeout(onKwScroll, wait);
       return;
     }
-    setActive(next);
+    // one step per move: a fast flick shows each keyword in turn; the settle below catches up at rest
+    setActive(kwIndex < 0 ? next : kwIndex + Math.sign(next - kwIndex));
+    if (next !== kwIndex) {
+      clearTimeout(dwellTimer);
+      dwellTimer = setTimeout(onKwScroll, KW_DWELL);
+    }
   }
 
   let kwTicking = false;
@@ -212,10 +218,11 @@ function init() {
     kwTicking = true;
     requestAnimationFrame(onKwFrame);
   };
-  // at rest the shown step always matches the position
+  // at rest the dial catches up with the position, but a stop just past a boundary (inside KW_MARGIN) keeps the
+  // step shown (2026-11-25: letting go a little past a boundary no longer flips the keyword after the finger lifts)
   const onKwSettle = () => {
     clearTimeout(dwellTimer);
-    setActive(scrollIndex());
+    setActive(kwIndex < 0 ? scrollIndex() : stepFor(progress(), kwIndex));
   };
   const onKwSettleEvent = SETTLE_EVENT === 'scrollend' ? onKwSettle : debounce(onKwSettle, SETTLE_MS);
 
